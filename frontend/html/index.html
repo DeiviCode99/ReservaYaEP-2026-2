@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Regístrate en Restaurante Doña Marta y empieza a reservar tu mesa."
+    />
+    <title>Restaurante Doña Marta | Crear cuenta</title>
+    <link rel="stylesheet" href="/styles/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <nav class="container navigation" aria-label="Navegación principal">
+        <a class="brand" href="/html/">Restaurante Doña Marta</a>
+        <div class="nav-actions">
+          <a class="navigation-link" href="#contenido">Reservas</a>
+          <div
+            class="view-toggle"
+            role="group"
+            aria-label="Cambiar entre panel de usuario y panel de administración"
+          >
+            <a class="view-toggle-link is-active" href="/html/" aria-current="page">Usuario</a>
+            <a class="view-toggle-link" href="/html/admin.html">Admin</a>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main id="contenido" class="container main-content">
+      <section class="intro" aria-labelledby="titulo-principal">
+        <p class="eyebrow">Sabores para recordar</p>
+        <h1 id="titulo-principal">Tu mesa te está esperando.</h1>
+        <p class="intro-copy">
+          Crea tu cuenta en Restaurante Doña Marta y disfruta una experiencia
+          especial en cada reserva.
+        </p>
+      </section>
+
+      <section class="registration-panel" aria-labelledby="registro-titulo">
+        <h2 id="registro-titulo">Registro</h2>
+        <form id="registration-form" novalidate>
+          <label for="name">Nombre</label>
+          <input id="name" name="name" type="text" autocomplete="name" required />
+          <p class="field-error" id="name-error"></p>
+
+          <label for="email">Correo electrónico</label>
+          <input id="email" name="email" type="email" autocomplete="email" required />
+          <p class="field-error" id="email-error"></p>
+
+          <label for="password">Contraseña</label>
+          <div class="password-field">
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autocomplete="new-password"
+              minlength="8"
+              required
+            />
+            <button
+              class="password-toggle"
+              type="button"
+              aria-controls="password"
+              aria-pressed="false"
+              aria-label="Mantener pulsado para mostrar la contraseña"
+              data-visible="false"
+            >
+              <svg
+                class="password-toggle-icon"
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle cx="12" cy="12" r="3" />
+                <line class="password-toggle-slash" x1="3.5" y1="3.5" x2="20.5" y2="20.5" />
+              </svg>
+            </button>
+          </div>
+          <p class="field-hint">Mínimo 8 caracteres.</p>
+          <p class="field-error" id="password-error"></p>
+
+          <button class="button" type="submit">Crear cuenta</button>
+          <p class="status" id="status" aria-live="polite"></p>
+        </form>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <small>&copy; 2026 Restaurante Doña Marta</small>
+      </div>
+    </footer>
+
+    <script src="/js/script.js" defer></script>
+  </body>
+</html>

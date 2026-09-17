@@ -1,0 +1,12 @@
+{
+  "name": "proyecto-base-registro",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Proyecto HTML base con registro seguro mediante BCrypt.",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0"
+  }
+}

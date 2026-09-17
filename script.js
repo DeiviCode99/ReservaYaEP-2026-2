@@ -2,7 +2,10 @@ const registrationForm = document.querySelector("#registration-form");
 const nameInput = document.querySelector("#name");
 const emailInput = document.querySelector("#email");
 const passwordInput = document.querySelector("#password");
+const passwordToggle = document.querySelector(".password-toggle");
 const statusMessage = document.querySelector("#status");
+
+const inputs = { name: nameInput, email: emailInput, password: passwordInput };
 
 const errors = {
   name: document.querySelector("#name-error"),
@@ -10,15 +13,63 @@ const errors = {
   password: document.querySelector("#password-error"),
 };
 
+function setStatus(message, tone) {
+  statusMessage.textContent = message || "";
+  statusMessage.classList.toggle("is-success", tone === "success");
+  statusMessage.classList.toggle("is-error", tone === "error");
+}
+
 function showError(field, message) {
   errors[field].textContent = message;
+  inputs[field].setAttribute("aria-invalid", "true");
 }
 
 function clearErrors() {
   Object.values(errors).forEach((error) => {
     error.textContent = "";
   });
-  statusMessage.textContent = "";
+  Object.values(inputs).forEach((input) => {
+    input.removeAttribute("aria-invalid");
+  });
+  setStatus("");
+}
+
+function showPassword() {
+  passwordInput.type = "text";
+  passwordToggle.dataset.visible = "true";
+  passwordToggle.setAttribute("aria-pressed", "true");
+  passwordToggle.setAttribute("aria-label", "Suelta para ocultar la contraseña");
+}
+
+function hidePassword() {
+  passwordInput.type = "password";
+  passwordToggle.dataset.visible = "false";
+  passwordToggle.setAttribute("aria-pressed", "false");
+  passwordToggle.setAttribute("aria-label", "Mantener pulsado para mostrar la contraseña");
+}
+
+if (passwordToggle) {
+  passwordToggle.addEventListener("pointerdown", (event) => {
+    event.preventDefault();
+    showPassword();
+  });
+
+  ["pointerup", "pointerleave", "pointercancel", "blur"].forEach((type) => {
+    passwordToggle.addEventListener(type, hidePassword);
+  });
+
+  passwordToggle.addEventListener("keydown", (event) => {
+    if (event.key === " " || event.key === "Enter") {
+      event.preventDefault();
+      showPassword();
+    }
+  });
+
+  passwordToggle.addEventListener("keyup", (event) => {
+    if (event.key === " " || event.key === "Enter") {
+      hidePassword();
+    }
+  });
 }
 
 if (registrationForm) {
@@ -59,14 +110,14 @@ if (registrationForm) {
       const result = await response.json();
 
       if (!response.ok) {
-        statusMessage.textContent = result.message || "No se pudo completar el registro.";
+        setStatus(result.message || "No se pudo completar el registro.", "error");
         return;
       }
 
       registrationForm.reset();
-      statusMessage.textContent = `Cuenta creada para ${result.user.name}.`;
+      setStatus(`Cuenta creada para ${result.user.name}.`, "success");
     } catch {
-      statusMessage.textContent = "No se pudo conectar con el servidor.";
+      setStatus("No se pudo conectar con el servidor.", "error");
     }
   });
 }

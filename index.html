@@ -14,7 +14,17 @@
     <header class="site-header">
       <nav class="container navigation" aria-label="Navegación principal">
         <a class="brand" href="/">Restaurante Doña Marta</a>
-        <a class="navigation-link" href="#contenido">Reservas</a>
+        <div class="nav-actions">
+          <a class="navigation-link" href="#contenido">Reservas</a>
+          <div
+            class="view-toggle"
+            role="group"
+            aria-label="Cambiar entre panel de usuario y panel de administración"
+          >
+            <a class="view-toggle-link is-active" href="/" aria-current="page">Usuario</a>
+            <a class="view-toggle-link" href="/admin.html">Admin</a>
+          </div>
+        </div>
       </nav>
     </header>
 
@@ -40,14 +50,39 @@
           <p class="field-error" id="email-error"></p>
 
           <label for="password">Contraseña</label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            autocomplete="new-password"
-            minlength="8"
-            required
-          />
+          <div class="password-field">
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autocomplete="new-password"
+              minlength="8"
+              required
+            />
+            <button
+              class="password-toggle"
+              type="button"
+              aria-controls="password"
+              aria-pressed="false"
+              aria-label="Mantener pulsado para mostrar la contraseña"
+              data-visible="false"
+            >
+              <svg
+                class="password-toggle-icon"
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle cx="12" cy="12" r="3" />
+                <line class="password-toggle-slash" x1="3.5" y1="3.5" x2="20.5" y2="20.5" />
+              </svg>
+            </button>
+          </div>
           <p class="field-hint">Mínimo 8 caracteres.</p>
           <p class="field-error" id="password-error"></p>
 

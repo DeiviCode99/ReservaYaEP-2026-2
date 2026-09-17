@@ -25,6 +25,8 @@ body {
   min-width: 320px;
   min-height: 100vh;
   margin: 0;
+  display: flex;
+  flex-direction: column;
   background-color: var(--wine-deep);
   background-image:
     linear-gradient(90deg, rgb(77 18 32 / 88%) 0%, rgb(77 18 32 / 68%) 43%, rgb(77 18 32 / 44%) 100%),
@@ -205,7 +207,390 @@ input:focus {
   color: #a53b2c;
 }
 
+/* ------------------------------------------------------------------ */
+/* Panel administrativo (HU-08)                                        */
+/* ------------------------------------------------------------------ */
+
+[hidden] {
+  display: none !important;
+}
+
+input[type="checkbox"],
+input[type="number"] {
+  width: auto;
+}
+
+.panel {
+  width: 100%;
+  padding: 2rem;
+  border: 1px solid var(--line);
+  border-radius: 0.35rem;
+  background: rgb(255 253 248 / 94%);
+  box-shadow: 0 1rem 3rem rgb(114 28 45 / 12%);
+}
+
+.panel h2 {
+  margin: 0 0 1.5rem;
+  font-family: "Fredoka", "Trebuchet MS", sans-serif;
+  font-size: 2rem;
+  font-weight: 400;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.view-toggle {
+  display: inline-flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border: 1px solid rgb(229 183 45 / 45%);
+  border-radius: 999px;
+  background: rgb(77 18 32 / 55%);
+}
+
+.view-toggle-link {
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  color: var(--yellow);
+  text-decoration: none;
+  font-size: 0.82rem;
+  font-weight: 700;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.view-toggle-link:hover,
+.view-toggle-link:focus-visible {
+  background: rgb(229 183 45 / 18%);
+}
+
+.view-toggle-link.is-active {
+  color: var(--wine-deep);
+  background: var(--yellow);
+}
+
+/* Campo de contraseña con toggle de visibilidad */
+.password-field {
+  position: relative;
+}
+
+.password-field input {
+  padding-right: 2.75rem;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 0.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  border: 0;
+  border-radius: 0.25rem;
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.password-toggle:hover,
+.password-toggle:focus-visible {
+  color: var(--wine);
+}
+
+.password-toggle:focus-visible {
+  outline: 3px solid rgb(229 183 45 / 55%);
+  outline-offset: 2px;
+}
+
+.password-toggle-icon {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+/* Oculta el revelador de contraseña nativo del navegador (Edge) para
+   evitar que aparezcan dos ojos dentro del campo. */
+input::-ms-reveal,
+input::-ms-clear {
+  display: none;
+}
+
+.password-toggle-icon .password-toggle-slash {
+  display: none;
+}
+
+.password-toggle[data-visible="true"] .password-toggle-slash {
+  display: block;
+}
+
+.session-label {
+  color: #ffd4d4;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.button-small {
+  width: auto;
+  padding: 0.5rem 0.9rem;
+  font-size: 0.85rem;
+  border-radius: 0.3rem;
+}
+
+.button-outline {
+  color: var(--wine);
+  background: transparent;
+  border: 1px solid rgb(114 28 45 / 40%);
+}
+
+.button-outline:hover,
+.button-outline:focus-visible {
+  color: var(--white);
+  background: var(--wine);
+}
+
+.button-ghost {
+  width: auto;
+  color: var(--wine);
+  background: transparent;
+  border: 1px solid transparent;
+}
+
+.button-ghost:hover,
+.button-ghost:focus-visible {
+  background: rgb(114 28 45 / 8%);
+}
+
+.button-danger {
+  width: auto;
+  color: var(--white);
+  background: #a53b2c;
+}
+
+.button-danger:hover,
+.button-danger:focus-visible {
+  background: #85301f;
+}
+
+.status.is-success {
+  color: #1d7a43;
+}
+
+.status.is-error {
+  color: #a53b2c;
+}
+
+/* Vista de ingreso */
+.login-view {
+  min-height: calc(100vh - 9.5rem);
+  display: grid;
+  place-items: center;
+  padding: 4rem 0;
+}
+
+.login-panel {
+  max-width: 30rem;
+  text-align: left;
+}
+
+.login-copy {
+  margin: 0 0 1rem;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+/* Portada del panel */
+.main-admin {
+  padding-bottom: 1rem;
+}
+
+.dashboard {
+  padding: 4rem 0 5rem;
+}
+
+.dashboard-head {
+  max-width: 46rem;
+  margin-bottom: 2.5rem;
+}
+
+.dashboard-head h1 {
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  max-width: 16ch;
+}
+
+.demo-banner {
+  display: inline-block;
+  margin: 0 0 1rem;
+  padding: 0.45rem 0.8rem;
+  border-radius: 0.25rem;
+  color: var(--wine);
+  background: var(--yellow-soft);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 2rem;
+  align-items: start;
+}
+
+/* Horarios */
+.schedule-group {
+  margin: 1rem 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.schedule-group legend {
+  margin-bottom: 0.2rem;
+  color: var(--ink);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.schedule-row {
+  display: grid;
+  grid-template-columns: 6.5rem 6.5rem 1fr 1fr;
+  gap: 0.6rem;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-top: 1px solid var(--line);
+}
+
+.schedule-day {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.schedule-toggle {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.schedule-time-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.schedule-time-field input {
+  padding: 0.45rem;
+}
+
+/* Acciones del formulario */
+.form-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 1.25rem;
+}
+
+.form-actions .button {
+  width: auto;
+  flex: 1;
+}
+
+/* Lista de restaurantes */
+.restaurant-list {
+  display: grid;
+  gap: 1rem;
+  margin: 1.25rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.restaurant-card {
+  padding: 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: 0.35rem;
+  background: #fff;
+}
+
+.restaurant-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.restaurant-card h3 {
+  margin: 0;
+  color: var(--wine);
+  font-family: "Fredoka", "Trebuchet MS", sans-serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+}
+
+.badge {
+  display: inline-block;
+  flex-shrink: 0;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  color: #fff;
+  background: var(--wine);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.restaurant-address,
+.restaurant-meta {
+  margin: 0.3rem 0 0;
+}
+
+.restaurant-address {
+  color: var(--muted);
+}
+
+.restaurant-meta {
+  font-size: 0.85rem;
+}
+
+.restaurant-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+@media (max-width: 60rem) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 48rem) {
+  .schedule-row {
+    grid-template-columns: 6rem 1fr 1fr;
+  }
+
+  .schedule-toggle {
+    grid-column: 2 / 4;
+    justify-self: end;
+  }
+
+  .restaurant-card-head {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+}
+
 .site-footer {
+  margin-top: auto;
   padding: 1.25rem 0;
   color: var(--white);
   border-top: 1px solid rgb(255 253 248 / 24%);
@@ -220,6 +605,15 @@ input:focus {
   .main-content {
     min-height: calc(100vh - 10.5rem);
     padding: 3.5rem 0;
+  }
+
+  .navigation {
+    flex-wrap: wrap;
+    row-gap: 0.5rem;
+  }
+
+  .nav-actions {
+    flex-wrap: wrap;
   }
 
   .navigation-link {

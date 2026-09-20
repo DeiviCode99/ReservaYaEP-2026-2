@@ -1,3 +1,10 @@
+/* =====================================================================
+   ReservaYa - Registro de usuario
+   POST /api/auth/register → redirección a login tras registro exitoso
+   ===================================================================== */
+
+redirectIfLoggedIn();
+
 const registrationForm = document.querySelector("#registration-form");
 const nameInput = document.querySelector("#name");
 const emailInput = document.querySelector("#email");
@@ -25,12 +32,8 @@ function showError(field, message) {
 }
 
 function clearErrors() {
-  Object.values(errors).forEach((error) => {
-    error.textContent = "";
-  });
-  Object.values(inputs).forEach((input) => {
-    input.removeAttribute("aria-invalid");
-  });
+  Object.values(errors).forEach(function (error) { error.textContent = ""; });
+  Object.values(inputs).forEach(function (input) { input.removeAttribute("aria-invalid"); });
   setStatus("");
 }
 
@@ -49,23 +52,23 @@ function hidePassword() {
 }
 
 if (passwordToggle) {
-  passwordToggle.addEventListener("pointerdown", (event) => {
+  passwordToggle.addEventListener("pointerdown", function (event) {
     event.preventDefault();
     showPassword();
   });
 
-  ["pointerup", "pointerleave", "pointercancel", "blur"].forEach((type) => {
+  ["pointerup", "pointerleave", "pointercancel", "blur"].forEach(function (type) {
     passwordToggle.addEventListener(type, hidePassword);
   });
 
-  passwordToggle.addEventListener("keydown", (event) => {
+  passwordToggle.addEventListener("keydown", function (event) {
     if (event.key === " " || event.key === "Enter") {
       event.preventDefault();
       showPassword();
     }
   });
 
-  passwordToggle.addEventListener("keyup", (event) => {
+  passwordToggle.addEventListener("keyup", function (event) {
     if (event.key === " " || event.key === "Enter") {
       hidePassword();
     }
@@ -73,21 +76,23 @@ if (passwordToggle) {
 }
 
 if (registrationForm) {
-  registrationForm.addEventListener("submit", async (event) => {
+  registrationForm.addEventListener("submit", async function (event) {
     event.preventDefault();
     clearErrors();
 
     const name = nameInput.value.trim();
     const email = emailInput.value.trim();
     const password = passwordInput.value;
+    const roleInput = document.querySelector('input[name="role"]:checked');
+    const role = roleInput ? roleInput.value : "CLIENT";
     let isValid = true;
 
     if (name.length < 2) {
-      showError("name", "Escribe un nombre válido.");
+      showError("name", "Escribe un nombre válido (mínimo 2 caracteres).");
       isValid = false;
     }
 
-    if (!emailInput.validity.valid) {
+    if (!emailInput.validity.valid || email.length === 0) {
       showError("email", "Introduce un correo electrónico válido.");
       isValid = false;
     }
@@ -97,25 +102,31 @@ if (registrationForm) {
       isValid = false;
     }
 
-    if (!isValid) {
-      return;
-    }
+    if (!isValid) return;
 
     try {
-      const response = await fetch("/api/register", {
+      const response = await fetch(API_BASE + "/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email, password, role }),
       });
-      const result = await response.json();
+
+      if (response.status === 409) {
+        setStatus("Ya existe una cuenta con ese correo electrónico.", "error");
+        return;
+      }
 
       if (!response.ok) {
+        const result = await response.json().catch(function () { return {}; });
         setStatus(result.message || "No se pudo completar el registro.", "error");
         return;
       }
 
-      registrationForm.reset();
-      setStatus(`Cuenta creada para ${result.user.name}.`, "success");
+      const data = await response.json();
+
+      /* Auto-login: guardar sesión y redirigir según rol */
+      saveSession(data.token, data.user);
+      redirectByRole(data.user);
     } catch {
       setStatus("No se pudo conectar con el servidor.", "error");
     }

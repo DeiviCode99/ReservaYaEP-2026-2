@@ -341,26 +341,41 @@ function listDebugUsers(response) {
 
 function serveStaticFile(response, pathname) {
   const requestedPath = pathname === "/" ? "/html/index.html" : pathname;
-  const filePath = path.resolve(publicDirectory, `.${requestedPath}`);
+  let filePath = path.resolve(publicDirectory, `.${requestedPath}`);
 
   if (!filePath.startsWith(publicDirectory) || !fs.existsSync(filePath)) {
     sendJson(response, 404, { message: "Recurso no encontrado." });
     return;
   }
 
+  // Una carpeta (por ejemplo "/html/") se sirve con su index.html.
+  if (fs.statSync(filePath).isDirectory()) {
+    filePath = path.join(filePath, "index.html");
+    if (!fs.existsSync(filePath)) {
+      sendJson(response, 404, { message: "Recurso no encontrado." });
+      return;
+    }
+  }
+
   const contentTypes = {
     ".css": "text/css; charset=utf-8",
     ".html": "text/html; charset=utf-8",
     ".js": "text/javascript; charset=utf-8",
+    ".json": "application/json; charset=utf-8",
     ".jpg": "image/jpeg",
     ".jpeg": "image/jpeg",
     ".png": "image/png",
     ".svg": "image/svg+xml",
     ".webp": "image/webp",
+    ".ico": "image/x-icon",
+    ".woff2": "font/woff2",
   };
   const contentType = contentTypes[path.extname(filePath)] || "application/octet-stream";
   response.writeHead(200, { "Content-Type": contentType });
-  fs.createReadStream(filePath).pipe(response);
+
+  const stream = fs.createReadStream(filePath);
+  stream.on("error", () => response.destroy());
+  stream.pipe(response);
 }
 
 const server = http.createServer(async (request, response) => {

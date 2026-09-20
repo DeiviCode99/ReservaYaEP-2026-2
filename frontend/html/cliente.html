@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Panel del cliente ReservaYa: consulta y gestiona tus reservas." />
+    <title>ReservaYa | Mis reservas</title>
+    <link rel="icon" href="../images/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="../styles/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <nav class="container navigation" aria-label="Navegación principal">
+        <a class="brand" href="cliente.html">
+          <img class="brand-mark" src="../images/logo-reservaya.svg" alt="" />
+          <span>ReservaYa</span>
+        </a>
+        <div class="nav-actions">
+          <span class="session-label" id="session-label"></span>
+          <button class="button button-small button-outline" id="logout-button" type="button">
+            Cerrar sesión
+          </button>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container page" id="contenido">
+      <div class="page-head">
+        <h1>Mis reservas</h1>
+        <p class="page-lead">
+          Revisa lo que tienes reservado, cancela si cambian tus planes y
+          consulta las mesas en las que ya estuviste.
+        </p>
+      </div>
+
+      <section class="summary" aria-label="Resumen de tus reservas">
+        <div class="summary-item">
+          <span class="summary-value" id="count-active">0</span>
+          <span class="summary-label">Reservas activas</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-value" id="next-date">—</span>
+          <span class="summary-label">Tu próxima reserva</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-value" id="count-history">0</span>
+          <span class="summary-label">Reservas en el historial</span>
+        </div>
+      </section>
+
+      <div class="dashboard-grid">
+        <section class="panel" aria-labelledby="reservas-titulo">
+          <h2 id="reservas-titulo">Reservas activas</h2>
+          <div class="empty-state" id="reservations-empty">
+            <img class="empty-art" src="../images/vacio-reservas.svg" alt="" />
+            <p class="empty-text">
+              Todavía no tienes reservas. Busca un restaurante y aparta tu mesa.
+            </p>
+          </div>
+          <ul class="restaurant-list" id="reservations-list"></ul>
+        </section>
+
+        <section class="panel" aria-labelledby="historial-titulo">
+          <h2 id="historial-titulo">Historial</h2>
+          <div class="empty-state" id="history-empty">
+            <img class="empty-art" src="../images/vacio-restaurantes.svg" alt="" />
+            <p class="empty-text">
+              Aquí quedarán tus reservas completadas, canceladas o rechazadas.
+            </p>
+          </div>
+          <ul class="restaurant-list" id="history-list"></ul>
+        </section>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">ReservaYa, plataforma de reservas. Proyecto de Entornos de Programación, UIS 2026.</div>
+    </footer>
+
+    <script src="../js/auth.js" defer></script>
+    <script src="../js/cliente.js" defer></script>
+  </body>
+</html>

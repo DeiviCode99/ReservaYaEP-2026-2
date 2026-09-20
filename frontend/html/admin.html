@@ -5,159 +5,207 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Registra y configura tu restaurante en ReservaYa: horarios y capacidad."
+      content="Panel de administración de ReservaYa: registra tu restaurante, sus sedes, horarios y aforo."
     />
     <title>ReservaYa | Panel del restaurante</title>
-    <link rel="stylesheet" href="/styles/styles.css" />
+    <link rel="icon" href="../images/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="../styles/styles.css" />
   </head>
   <body>
     <header class="site-header">
       <nav class="container navigation" aria-label="Navegación principal">
-        <a class="brand" href="/html/">ReservaYa</a>
+        <a class="brand" href="admin.html">
+          <img class="brand-mark" src="../images/logo-reservaya.svg" alt="" />
+          <span>ReservaYa</span>
+        </a>
         <div class="nav-actions">
-          <span class="session-label" id="session-label" hidden></span>
-          <button
-            class="button button-small button-outline"
-            id="logout-button"
-            type="button"
-            hidden
-          >
+          <span class="session-label" id="session-label"></span>
+          <button class="button button-small button-outline" id="logout-button" type="button">
             Cerrar sesión
           </button>
-          <div
-            class="view-toggle"
-            role="group"
-            aria-label="Cambiar entre panel de usuario y panel de administración"
-          >
-            <a class="view-toggle-link" href="/html/">Usuario</a>
-            <a class="view-toggle-link is-active" href="/html/admin.html" aria-current="page">Admin</a>
-          </div>
         </div>
       </nav>
     </header>
 
-    <main id="contenido" class="container main-admin">
-      <section class="login-view" id="login-screen" aria-labelledby="login-titulo">
-        <div class="panel login-panel">
-          <p class="eyebrow">Panel administrativo</p>
-          <h2 id="login-titulo">Acceso de administrador</h2>
-          <p class="login-copy">
-            Gestiona tu restaurante: regístralo, define su capacidad máxima y configura los
-            horarios de atención para que tus clientes puedan reservar.
+    <main class="container page" id="contenido">
+      <div class="page-head">
+        <h1 id="dashboard-titulo">Tu restaurante en ReservaYa</h1>
+        <p class="page-lead">
+          Registra tu marca, agrega las sedes y define horarios y aforo. Con eso
+          tus clientes ya pueden reservar mesa.
+        </p>
+      </div>
+
+      <div class="dashboard-grid">
+        <section class="panel" aria-labelledby="formulario-titulo">
+          <h2 id="formulario-titulo">Datos del restaurante</h2>
+          <p class="panel-note">
+            Estos datos son los que verán tus clientes al buscar dónde comer.
           </p>
-          <label for="admin-name">Nombre del administrador</label>
-          <input
-            id="admin-name"
-            name="admin-name"
-            type="text"
-            maxlength="40"
-            placeholder="Ej. Doña Marta"
-            autocomplete="name"
-          />
-          <p class="field-hint">Este nombre es opcional y solo se usa para identificar la sesión.</p>
-          <button class="button" id="demo-login-button" type="button">
-            Entrar como administrador
-          </button>
-          <p class="status" id="login-status" aria-live="polite"></p>
-        </div>
-      </section>
 
-      <section class="dashboard" id="dashboard" aria-label="Gestión de restaurante" hidden>
-        <div class="dashboard-head">
-          <p class="demo-banner">
-            Sesión simulada: este acceso será reemplazado por el inicio de sesión real (HU-02).
-          </p>
-          <p class="eyebrow">Registro y configuración de restaurante</p>
-          <h1 id="dashboard-titulo">Gestiona tu restaurante.</h1>
-          <p class="intro-copy">
-            Registra tu establecimiento y mantén actualizados horarios y capacidad para tus
-            clientes.
-          </p>
-        </div>
+          <form id="restaurant-form" novalidate>
+            <label for="restaurant-name">Nombre del restaurante</label>
+            <input
+              id="restaurant-name"
+              name="restaurant-name"
+              type="text"
+              maxlength="80"
+              autocomplete="organization"
+              placeholder="Ej. Doña Marta"
+              required
+            />
+            <p class="field-error" id="restaurant-name-error"></p>
 
-        <div class="dashboard-grid">
-          <section class="panel" aria-labelledby="formulario-titulo">
-            <h2 id="formulario-titulo">Datos del restaurante</h2>
-            <form id="restaurant-form" novalidate>
-              <label for="restaurant-name">Nombre del restaurante</label>
-              <input
-                id="restaurant-name"
-                name="restaurant-name"
-                type="text"
-                maxlength="80"
-                autocomplete="organization"
-                required
-              />
-              <p class="field-error" id="restaurant-name-error"></p>
+            <label for="restaurant-address">Dirección</label>
+            <input
+              id="restaurant-address"
+              name="restaurant-address"
+              type="text"
+              maxlength="150"
+              autocomplete="street-address"
+              placeholder="Ej. Calle 34 #21-15"
+              required
+            />
+            <p class="field-error" id="restaurant-address-error"></p>
 
-              <label for="restaurant-address">Dirección</label>
-              <input
-                id="restaurant-address"
-                name="restaurant-address"
-                type="text"
-                maxlength="150"
-                autocomplete="street-address"
-                required
-              />
-              <p class="field-error" id="restaurant-address-error"></p>
+            <label for="restaurant-city">Ciudad</label>
+            <input
+              id="restaurant-city"
+              name="restaurant-city"
+              type="text"
+              maxlength="80"
+              placeholder="Ej. Bucaramanga"
+              required
+            />
+            <p class="field-error" id="restaurant-city-error"></p>
 
-              <label for="restaurant-cuisine">Tipo de cocina</label>
-              <input
-                id="restaurant-cuisine"
-                name="restaurant-cuisine"
-                type="text"
-                maxlength="60"
-                placeholder="Ej. Colombiana"
-                required
-              />
-              <p class="field-error" id="restaurant-cuisine-error"></p>
+            <label for="restaurant-cuisine">Tipo de cocina</label>
+            <input
+              id="restaurant-cuisine"
+              name="restaurant-cuisine"
+              type="text"
+              maxlength="60"
+              placeholder="Ej. Colombiana"
+              required
+            />
+            <p class="field-error" id="restaurant-cuisine-error"></p>
 
-              <label for="restaurant-capacity">Capacidad máxima (mesas o aforo)</label>
-              <input
-                id="restaurant-capacity"
-                name="restaurant-capacity"
-                type="number"
-                min="1"
-                max="500"
-                inputmode="numeric"
-                required
-              />
-              <p class="field-error" id="restaurant-capacity-error"></p>
+            <label for="restaurant-capacity">Capacidad máxima por franja horaria</label>
+            <input
+              id="restaurant-capacity"
+              name="restaurant-capacity"
+              type="number"
+              min="1"
+              max="500"
+              inputmode="numeric"
+              placeholder="60"
+              required
+            />
+            <p class="field-hint">Personas que puedes atender en una misma hora.</p>
+            <p class="field-error" id="restaurant-capacity-error"></p>
 
-              <fieldset class="schedule-group">
-                <legend>Horarios de atención</legend>
-                <p class="field-hint">Marca un día como cerrado si no atiendes ese día.</p>
-                <div id="schedule-rows"></div>
-                <p class="field-error" id="schedules-error"></p>
-              </fieldset>
+            <div class="form-actions">
+              <button class="button" type="submit">Guardar restaurante</button>
+              <button class="button button-ghost" type="button" id="reset-button">
+                Limpiar formulario
+              </button>
+            </div>
+            <p class="status" id="form-status" aria-live="polite"></p>
+          </form>
+        </section>
 
-              <div class="form-actions">
-                <button class="button" type="submit">Guardar restaurante</button>
-                <button class="button button-ghost" type="button" id="reset-button">
-                  Nuevo / limpiar
-                </button>
-              </div>
-              <p class="status" id="form-status" aria-live="polite"></p>
-            </form>
-          </section>
-
-          <section class="panel" aria-labelledby="lista-titulo">
-            <h2 id="lista-titulo">Mis restaurantes</h2>
-            <p class="field-hint" id="list-empty">
-              Aún no tienes restaurantes registrados. Completa el formulario para crear el primero.
+        <section class="panel" aria-labelledby="lista-titulo">
+          <h2 id="lista-titulo">Mis restaurantes</h2>
+          <div class="empty-state" id="list-empty">
+            <img class="empty-art" src="../images/vacio-restaurantes.svg" alt="" />
+            <p class="empty-text">
+              Aún no has registrado ningún restaurante. Completa el formulario
+              para crear el primero.
             </p>
-            <ul class="restaurant-list" id="restaurant-list"></ul>
-          </section>
-        </div>
-      </section>
+          </div>
+          <ul class="restaurant-list" id="restaurant-list"></ul>
+        </section>
+      </div>
+
+      <div class="dashboard-grid" id="branches-section" hidden>
+        <section class="panel" aria-labelledby="branch-form-titulo">
+          <h2 id="branch-form-titulo">Sedes del restaurante</h2>
+          <p class="panel-note" id="branch-restaurant-label"></p>
+
+          <form id="branch-form" novalidate>
+            <label for="branch-name">Nombre de la sede</label>
+            <input
+              id="branch-name"
+              name="branch-name"
+              type="text"
+              maxlength="80"
+              placeholder="Ej. Sede Cabecera"
+              required
+            />
+            <p class="field-error" id="branch-name-error"></p>
+
+            <label for="branch-address">Dirección</label>
+            <input id="branch-address" name="branch-address" type="text" maxlength="150" required />
+            <p class="field-error" id="branch-address-error"></p>
+
+            <label for="branch-city">Ciudad</label>
+            <input id="branch-city" name="branch-city" type="text" maxlength="80" required />
+            <p class="field-error" id="branch-city-error"></p>
+
+            <label for="branch-phone">Teléfono</label>
+            <input id="branch-phone" name="branch-phone" type="tel" maxlength="30" />
+            <p class="field-hint">Opcional. Sirve para que el cliente confirme por llamada.</p>
+
+            <label for="branch-capacity">Capacidad por franja horaria</label>
+            <input
+              id="branch-capacity"
+              name="branch-capacity"
+              type="number"
+              min="1"
+              max="500"
+              inputmode="numeric"
+              required
+            />
+            <p class="field-error" id="branch-capacity-error"></p>
+
+            <fieldset class="schedule-group">
+              <legend>Horarios de atención</legend>
+              <p class="field-hint">Marca el día como cerrado si esa sede no atiende.</p>
+              <div id="schedule-rows"></div>
+              <p class="field-error" id="schedules-error"></p>
+            </fieldset>
+
+            <div class="form-actions">
+              <button class="button" type="submit">Guardar sede</button>
+              <button class="button button-ghost" type="button" id="branch-reset-button">
+                Limpiar formulario
+              </button>
+            </div>
+            <p class="status" id="branch-form-status" aria-live="polite"></p>
+          </form>
+        </section>
+
+        <section class="panel" aria-labelledby="branch-list-titulo">
+          <h2 id="branch-list-titulo">Sedes registradas</h2>
+          <div class="empty-state" id="branch-list-empty">
+            <img class="empty-art" src="../images/vacio-restaurantes.svg" alt="" />
+            <p class="empty-text">
+              Este restaurante todavía no tiene sedes. Crea la primera con el
+              formulario de al lado.
+            </p>
+          </div>
+          <ul class="restaurant-list" id="branch-list"></ul>
+        </section>
+      </div>
     </main>
 
     <footer class="site-footer">
-      <div class="container">
-        <small>&copy; 2026 ReservaYa · Reserva de restaurantes</small>
-      </div>
+      <div class="container">ReservaYa, plataforma de reservas. Proyecto de Entornos de Programación, UIS 2026.</div>
     </footer>
 
-    <script src="/js/admin.js" defer></script>
+    <script src="../js/auth.js" defer></script>
+    <script src="../js/admin.js" defer></script>
   </body>
 </html>

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" role="img" aria-label="Aún sin restaurantes">
+  <ellipse cx="80" cy="104" rx="56" ry="7" fill="#6B1626" opacity=".08"/>
+  <path d="M36 52h88v46H36z" fill="#FBF5EA" stroke="#6B1626" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M30 52c0-8 6-14 6-14h88s6 6 6 14c0 5-4 9-9 9s-9-4-9-9c0 5-4 9-9 9s-9-4-9-9c0 5-4 9-9 9s-9-4-9-9c0 5-4 9-9 9s-9-4-9-9c0 5-4 9-9 9s-9-4-9-9z" fill="#E9B23C" stroke="#6B1626" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M68 98V74h24v24" fill="none" stroke="#6B1626" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M80 26v12" fill="none" stroke="#6B1626" stroke-width="2.5" stroke-linecap="round" opacity=".5"/>
+</svg>

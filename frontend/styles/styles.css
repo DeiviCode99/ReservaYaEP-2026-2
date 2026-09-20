@@ -1,21 +1,62 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fredoka:wght@500;600;700&display=swap");
+/* =====================================================================
+   ReservaYa · Hoja de estilos única
+   Dirección visual: "Mantel y brasa" — peltre vinotinto, mostaza de
+   letrero y papel cálido. Un solo gesto fuerte (la portada partida con
+   el logotipo en slab); todo lo demás, tranquilo y ordenado.
+
+   Índice
+   01. Tipografías y tokens
+   02. Base y utilidades
+   03. Cabecera y pie
+   04. Botones
+   05. Formularios
+   06. Pantallas de acceso (registro e ingreso)
+   07. Paneles y portada interna
+   08. Tarjetas y listas
+   09. Horarios de atención
+   10. Estados vacíos
+   11. Adaptación a pantallas pequeñas
+   ===================================================================== */
+
+/* -- 01. Tipografías y tokens --------------------------------------- */
+
+@import url("https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Epilogue:wght@400;500;600;700&display=swap");
 
 :root {
-  --wine: #721c2d;
-  --wine-deep: #4d1220;
-  --yellow: #e5b72d;
-  --yellow-soft: #fff3c7;
-  --white: #fffdf8;
-  --ink: #321c22;
-  --muted: #765e62;
-  --line: rgb(114 28 45 / 18%);
+  /* Marca */
+  --vino: #6b1626;
+  --vino-claro: #8e2233;
+  --brasa: #3a0c16;
+  --mostaza: #e9b23c;
+  --mostaza-suave: #f7e3b4;
+
+  /* Superficies y texto */
+  --papel: #fbf5ea;
+  --papel-hondo: #f2e8d8;
+  --blanco: #fffdf9;
+  --tinta: #26161a;
+  --humo: #7c666b;
+
+  /* Semánticos */
+  --verde: #2e7d57;
+  --ladrillo: #b23a2b;
+
+  /* Líneas, sombras y ritmo */
+  --linea: rgb(107 22 38 / 14%);
+  --linea-fuerte: rgb(107 22 38 / 28%);
+  --sombra-baja: 0 1px 2px rgb(58 12 22 / 6%);
+  --sombra-media: 0 12px 28px rgb(58 12 22 / 10%);
+  --radio: 10px;
+  --radio-chico: 6px;
+
   color-scheme: light;
-  font-family: "DM Sans", "Trebuchet MS", sans-serif;
-  color: var(--ink);
-  background: var(--white);
+  font-family: "Epilogue", "Segoe UI", system-ui, sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
+
+/* -- 02. Base y utilidades ------------------------------------------ */
 
 * {
   box-sizing: border-box;
@@ -27,24 +68,65 @@ body {
   margin: 0;
   display: flex;
   flex-direction: column;
-  background-color: var(--wine-deep);
-  background-image:
-    linear-gradient(90deg, rgb(77 18 32 / 88%) 0%, rgb(77 18 32 / 68%) 43%, rgb(77 18 32 / 44%) 100%),
-    url("/images/comida-colombiana-imagen-destacada.jpg");
-  background-position: center;
-  background-size: cover;
-  background-attachment: fixed;
+  color: var(--tinta);
+  background-color: var(--papel);
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+img,
+svg {
+  max-width: 100%;
 }
 
 .container {
-  width: min(100% - 2rem, 68rem);
-  margin: 0 auto;
+  width: min(100% - 2.5rem, 72rem);
+  margin-inline: auto;
 }
 
+h1,
+h2,
+h3 {
+  margin: 0;
+  color: var(--tinta);
+  font-weight: 600;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: clamp(2rem, 4.5vw, 2.9rem);
+  letter-spacing: -0.015em;
+}
+
+h2 {
+  font-size: 1.4rem;
+}
+
+h3 {
+  font-size: 1.1rem;
+}
+
+a {
+  color: var(--vino);
+}
+
+:focus-visible {
+  outline: 3px solid var(--mostaza);
+  outline-offset: 3px;
+}
+
+/* -- 03. Cabecera y pie --------------------------------------------- */
+
 .site-header {
-  padding: 1.25rem 0;
-  border-bottom: 1px solid var(--line);
-  background: rgb(77 18 32 / 92%);
+  padding: 0.9rem 0;
+  color: var(--papel);
+  background: var(--vino);
+  box-shadow: inset 0 -3px 0 var(--mostaza);
 }
 
 .navigation {
@@ -54,243 +136,253 @@ body {
   gap: 1rem;
 }
 
-.brand,
-.navigation-link {
-  color: #e5b72d;
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--papel);
+  font-family: "Alfa Slab One", Georgia, serif;
+  font-size: 1.15rem;
+  font-weight: 400;
+  letter-spacing: 0.01em;
   text-decoration: none;
 }
 
-.brand {
-  font-family: "Fredoka", "Trebuchet MS", sans-serif;
-  font-size: 1.15rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-
-.navigation-link {
-  color: var(--yellow);
-  font-size: 0.9rem;
-  font-weight: 700;
-}
-
-.main-content {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(20rem, 34rem);
-  align-items: center;
-  gap: clamp(2rem, 8vw, 6rem);
-  min-height: calc(100vh - 9.5rem);
-  place-items: center;
-  padding: 5rem 0;
-}
-
-.intro {
-  max-width: 42rem;
-  text-align: left;
-}
-
-.eyebrow {
-  margin: 0 0 1rem;
-  color: #e5b72d;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-h1 {
-  max-width: 11ch;
-  margin: 0;
-  color: var(--white);
-  font-family: "Fredoka", "Trebuchet MS", sans-serif;
-  font-size: clamp(2.8rem, 8vw, 5.75rem);
-  font-weight: 600;
-  line-height: 0.98;
-  text-shadow: 0 0.15rem 0.8rem rgb(77 18 32 / 58%);
-}
-
-.intro-copy {
-  max-width: 34rem;
-  margin: 1.5rem 0 0;
-  color: #ffd4d4;
-  font-size: 1.1rem;
-  line-height: 1.65;
-}
-
-.button {
-  width: 100%;
-  border: 0;
-  border-radius: 0.35rem;
-  padding: 0.85rem 1.2rem;
-  color: var(--white);
-  background: var(--wine);
-  cursor: pointer;
-  font: inherit;
-  font-weight: 700;
-  transition: background-color 160ms ease, transform 160ms ease;
-}
-
-.button:hover,
-.button:focus-visible {
-  background: var(--wine-deep);
-  transform: translateY(-2px);
-}
-
-.button:focus-visible,
-.navigation-link:focus-visible,
-.brand:focus-visible {
-  outline: 3px solid var(--yellow);
-  outline-offset: 4px;
-}
-
-.status {
-  min-height: 1.5rem;
-  margin: 1rem 0 0;
-  color: var(--wine);
-  font-weight: 700;
-}
-
-.registration-panel {
-  width: 100%;
-  padding: 2rem;
-  border: 1px solid var(--line);
-  border-radius: 0.35rem;
-  background: rgb(255 253 248 / 94%);
-  box-shadow: 0 1rem 3rem rgb(114 28 45 / 12%);
-}
-
-.registration-panel h2 {
-  margin: 0 0 1.5rem;
-  font-family: "Fredoka", "Trebuchet MS", sans-serif;
-  font-size: 2rem;
-  font-weight: 400;
-}
-
-form {
-  display: grid;
-  gap: 0.55rem;
-}
-
-label {
-  margin-top: 0.65rem;
-  color: var(--ink);
-  font-size: 0.9rem;
-  font-weight: 700;
-}
-
-input {
-  width: 100%;
-  border: 1px solid rgb(114 28 45 / 32%);
-  border-radius: 0.25rem;
-  padding: 0.75rem;
-  color: var(--ink);
-  background: #fff;
-  font: inherit;
-}
-
-input:focus {
-  border-color: var(--wine);
-  outline: 3px solid rgb(229 183 45 / 32%);
-}
-
-.field-hint,
-.field-error {
-  margin: 0;
-  font-size: 0.8rem;
-}
-
-.field-hint {
-  color: var(--muted);
-}
-
-.field-error {
-  min-height: 1rem;
-  color: #a53b2c;
-}
-
-/* ------------------------------------------------------------------ */
-/* Panel administrativo (HU-08)                                        */
-/* ------------------------------------------------------------------ */
-
-[hidden] {
-  display: none !important;
-}
-
-input[type="checkbox"],
-input[type="number"] {
-  width: auto;
-}
-
-.panel {
-  width: 100%;
-  padding: 2rem;
-  border: 1px solid var(--line);
-  border-radius: 0.35rem;
-  background: rgb(255 253 248 / 94%);
-  box-shadow: 0 1rem 3rem rgb(114 28 45 / 12%);
-}
-
-.panel h2 {
-  margin: 0 0 1.5rem;
-  font-family: "Fredoka", "Trebuchet MS", sans-serif;
-  font-size: 2rem;
-  font-weight: 400;
+.brand-mark {
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
 }
 
 .nav-actions {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.9rem;
 }
 
-.view-toggle {
+.session-label {
+  color: var(--mostaza-suave);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.site-footer {
+  margin-top: auto;
+  padding: 1.1rem 0;
+  color: var(--humo);
+  border-top: 1px solid var(--linea);
+  background: var(--papel-hondo);
+  font-size: 0.85rem;
+}
+
+/* -- 04. Botones ----------------------------------------------------- */
+
+.button {
   display: inline-flex;
-  gap: 0.25rem;
-  padding: 0.25rem;
-  border: 1px solid rgb(229 183 45 / 45%);
-  border-radius: 999px;
-  background: rgb(77 18 32 / 55%);
-}
-
-.view-toggle-link {
-  padding: 0.35rem 0.85rem;
-  border-radius: 999px;
-  color: var(--yellow);
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
+  border: 1px solid transparent;
+  border-radius: var(--radio-chico);
+  padding: 0.8rem 1.25rem;
+  color: var(--papel);
+  background: var(--vino);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  line-height: 1.2;
   text-decoration: none;
+  transition: background-color 140ms ease, color 140ms ease, border-color 140ms ease;
+}
+
+.button:hover,
+.button:focus-visible {
+  background: var(--vino-claro);
+}
+
+.button:active {
+  background: var(--brasa);
+}
+
+.button-small {
+  width: auto;
+  padding: 0.5rem 0.9rem;
+  font-size: 0.88rem;
+}
+
+.button-outline {
+  color: var(--vino);
+  background: transparent;
+  border-color: var(--linea-fuerte);
+}
+
+.button-outline:hover,
+.button-outline:focus-visible {
+  color: var(--papel);
+  background: var(--vino);
+  border-color: var(--vino);
+}
+
+/* Sobre la barra vinotinto el contorno se invierte. */
+.site-header .button-outline {
+  color: var(--mostaza-suave);
+  border-color: rgb(251 245 234 / 45%);
+}
+
+.site-header .button-outline:hover,
+.site-header .button-outline:focus-visible {
+  color: var(--vino);
+  background: var(--mostaza);
+  border-color: var(--mostaza);
+}
+
+.button-ghost {
+  width: auto;
+  color: var(--vino);
+  background: transparent;
+}
+
+.button-ghost:hover,
+.button-ghost:focus-visible {
+  background: rgb(107 22 38 / 8%);
+}
+
+.button-danger {
+  width: auto;
+  background: var(--ladrillo);
+}
+
+.button-danger:hover,
+.button-danger:focus-visible {
+  background: #93301f;
+}
+
+/* -- 05. Formularios ------------------------------------------------- */
+
+form {
+  display: grid;
+  gap: 0.35rem;
+}
+
+label {
+  margin-top: 0.85rem;
+  color: var(--tinta);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+input {
+  width: 100%;
+  border: 1px solid var(--linea-fuerte);
+  border-radius: var(--radio-chico);
+  padding: 0.7rem 0.8rem;
+  color: var(--tinta);
+  background: var(--blanco);
+  box-shadow: var(--sombra-baja);
+  font: inherit;
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+
+input::placeholder {
+  color: rgb(124 102 107 / 70%);
+}
+
+input:focus {
+  border-color: var(--vino);
+  box-shadow: 0 0 0 3px rgb(233 178 60 / 35%);
+  outline: none;
+}
+
+input[aria-invalid="true"] {
+  border-color: var(--ladrillo);
+}
+
+input:disabled {
+  color: var(--humo);
+  background: var(--papel-hondo);
+  cursor: not-allowed;
+}
+
+input[type="checkbox"],
+input[type="number"],
+input[type="time"] {
+  width: auto;
+}
+
+input[type="checkbox"] {
+  width: 1.05rem;
+  height: 1.05rem;
+  accent-color: var(--vino);
+  box-shadow: none;
+}
+
+.field-hint,
+.field-error {
+  margin: 0.15rem 0 0;
   font-size: 0.82rem;
-  font-weight: 700;
-  transition: background-color 160ms ease, color 160ms ease;
+  line-height: 1.4;
 }
 
-.view-toggle-link:hover,
-.view-toggle-link:focus-visible {
-  background: rgb(229 183 45 / 18%);
+.field-hint {
+  color: var(--humo);
 }
 
-.view-toggle-link.is-active {
-  color: var(--wine-deep);
-  background: var(--yellow);
+.field-error {
+  min-height: 1.05rem;
+  color: var(--ladrillo);
+  font-weight: 500;
 }
 
-/* Campo de contraseña con toggle de visibilidad */
+.status {
+  min-height: 1.4rem;
+  margin: 0.9rem 0 0;
+  color: var(--humo);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.status.is-success {
+  color: var(--verde);
+}
+
+.status.is-error {
+  color: var(--ladrillo);
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 1.4rem;
+}
+
+.form-actions .button {
+  width: auto;
+  flex: 1 1 10rem;
+}
+
+/* Campo de contraseña con revelado al mantener pulsado */
 .password-field {
   position: relative;
 }
 
 .password-field input {
-  padding-right: 2.75rem;
+  padding-right: 2.8rem;
 }
 
 .password-toggle {
   position: absolute;
   top: 50%;
-  right: 0.6rem;
+  right: 0.55rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.25rem;
+  padding: 0.3rem;
   border: 0;
-  border-radius: 0.25rem;
-  color: var(--muted);
+  border-radius: var(--radio-chico);
+  color: var(--humo);
   background: transparent;
   cursor: pointer;
   transform: translateY(-50%);
@@ -298,24 +390,12 @@ input[type="number"] {
 
 .password-toggle:hover,
 .password-toggle:focus-visible {
-  color: var(--wine);
-}
-
-.password-toggle:focus-visible {
-  outline: 3px solid rgb(229 183 45 / 55%);
-  outline-offset: 2px;
+  color: var(--vino);
 }
 
 .password-toggle-icon {
-  width: 1.1rem;
-  height: 1.1rem;
-}
-
-/* Oculta el revelador de contraseña nativo del navegador (Edge) para
-   evitar que aparezcan dos ojos dentro del campo. */
-input::-ms-reveal,
-input::-ms-clear {
-  display: none;
+  width: 1.15rem;
+  height: 1.15rem;
 }
 
 .password-toggle-icon .password-toggle-slash {
@@ -326,310 +406,496 @@ input::-ms-clear {
   display: block;
 }
 
-.session-label {
-  color: #ffd4d4;
-  font-size: 0.85rem;
+/* Oculta el revelador nativo de Edge para no mostrar dos ojos. */
+input::-ms-reveal,
+input::-ms-clear {
+  display: none;
+}
+
+/* Selector de rol en el registro */
+.role-selector {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.role-legend {
+  margin-bottom: 0.6rem;
+  padding: 0;
+  color: var(--tinta);
+  font-size: 0.9rem;
   font-weight: 600;
 }
 
-.button-small {
-  width: auto;
-  padding: 0.5rem 0.9rem;
-  font-size: 0.85rem;
-  border-radius: 0.3rem;
-}
-
-.button-outline {
-  color: var(--wine);
-  background: transparent;
-  border: 1px solid rgb(114 28 45 / 40%);
-}
-
-.button-outline:hover,
-.button-outline:focus-visible {
-  color: var(--white);
-  background: var(--wine);
-}
-
-.button-ghost {
-  width: auto;
-  color: var(--wine);
-  background: transparent;
-  border: 1px solid transparent;
-}
-
-.button-ghost:hover,
-.button-ghost:focus-visible {
-  background: rgb(114 28 45 / 8%);
-}
-
-.button-danger {
-  width: auto;
-  color: var(--white);
-  background: #a53b2c;
-}
-
-.button-danger:hover,
-.button-danger:focus-visible {
-  background: #85301f;
-}
-
-.status.is-success {
-  color: #1d7a43;
-}
-
-.status.is-error {
-  color: #a53b2c;
-}
-
-/* Vista de ingreso */
-.login-view {
-  min-height: calc(100vh - 9.5rem);
+.role-options {
   display: grid;
-  place-items: center;
-  padding: 4rem 0;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.7rem;
 }
 
-.login-panel {
-  max-width: 30rem;
-  text-align: left;
+.role-option {
+  margin: 0;
+  cursor: pointer;
 }
 
-.login-copy {
-  margin: 0 0 1rem;
-  color: var(--muted);
+.role-option input[type="radio"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.role-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  height: 100%;
+  padding: 0.85rem 0.95rem;
+  border: 1px solid var(--linea-fuerte);
+  border-radius: var(--radio);
+  background: var(--blanco);
+  transition: border-color 140ms ease, background-color 140ms ease;
+}
+
+.role-card-title {
+  color: var(--tinta);
+  font-size: 0.98rem;
+  font-weight: 600;
+}
+
+.role-card-desc {
+  color: var(--humo);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.role-option input[type="radio"]:checked + .role-card {
+  border-color: var(--vino);
+  background: rgb(233 178 60 / 16%);
+  box-shadow: inset 3px 0 0 var(--vino);
+}
+
+.role-option input[type="radio"]:focus-visible + .role-card {
+  outline: 3px solid var(--mostaza);
+  outline-offset: 2px;
+}
+
+/* -- 06. Pantallas de acceso ---------------------------------------- */
+
+.auth-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  flex: 1;
+  min-height: 100vh;
+}
+
+.auth-aside {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 3rem;
+  padding: 2.5rem clamp(2rem, 4vw, 4rem);
+  color: var(--papel);
+  background-color: var(--brasa);
+  background-image:
+    linear-gradient(200deg, rgb(58 12 22 / 90%) 0%, rgb(107 22 38 / 82%) 55%, rgb(58 12 22 / 95%) 100%),
+    url("../images/comida-colombiana-imagen-destacada.jpg");
+  background-position: center;
+  background-size: cover;
+}
+
+.auth-aside .brand {
+  font-size: 1.25rem;
+}
+
+.hero-title {
+  max-width: 12ch;
+  color: var(--papel);
+  font-family: "Alfa Slab One", Georgia, serif;
+  font-size: clamp(2.6rem, 5.5vw, 4.4rem);
+  font-weight: 400;
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+}
+
+.hero-lead {
+  max-width: 36ch;
+  margin: 1.2rem 0 0;
+  color: var(--mostaza-suave);
+  font-size: 1.05rem;
   line-height: 1.6;
 }
 
-/* Portada del panel */
-.main-admin {
-  padding-bottom: 1rem;
+.hero-points {
+  display: grid;
+  gap: 0.5rem;
+  max-width: 34ch;
+  margin: 2rem 0 0;
+  padding: 0 0 0 1rem;
+  border-left: 3px solid var(--mostaza);
+  list-style: none;
+  color: var(--papel);
+  font-size: 0.95rem;
 }
 
-.dashboard {
-  padding: 4rem 0 5rem;
+.auth-aside-foot {
+  margin: 0;
+  color: rgb(251 245 234 / 62%);
+  font-size: 0.82rem;
 }
 
-.dashboard-head {
-  max-width: 46rem;
-  margin-bottom: 2.5rem;
+.auth-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 2.5rem clamp(1.25rem, 4vw, 4rem) 3rem;
+  background: var(--papel);
+  overflow-y: auto;
 }
 
-.dashboard-head h1 {
-  font-size: clamp(2rem, 5vw, 3.4rem);
-  max-width: 16ch;
+.auth-switch {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  color: var(--humo);
+  font-size: 0.9rem;
 }
 
-.demo-banner {
-  display: inline-block;
-  margin: 0 0 1rem;
-  padding: 0.45rem 0.8rem;
-  border-radius: 0.25rem;
-  color: var(--wine);
-  background: var(--yellow-soft);
-  font-size: 0.8rem;
-  font-weight: 700;
+.auth-switch a {
+  color: var(--vino);
+  font-weight: 600;
+}
+
+.auth-card {
+  width: min(100%, 30rem);
+  margin: auto;
+}
+
+.auth-card h2 {
+  font-size: clamp(1.7rem, 3vw, 2.1rem);
+}
+
+.auth-card-lead {
+  margin: 0.5rem 0 1.5rem;
+  max-width: 44ch;
+  color: var(--humo);
+}
+
+/* -- 07. Paneles y portada interna ---------------------------------- */
+
+.page {
+  padding: 2.5rem 0 3.5rem;
+}
+
+.page-head {
+  max-width: 52rem;
+  margin-bottom: 2rem;
+}
+
+.page-lead {
+  margin: 0.6rem 0 0;
+  max-width: 60ch;
+  color: var(--humo);
+  font-size: 1.02rem;
+}
+
+.panel {
+  padding: 1.75rem;
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  background: var(--blanco);
+  box-shadow: var(--sombra-media);
+}
+
+.panel h2 {
+  margin: 0 0 1.25rem;
+  padding-bottom: 0.7rem;
+  border-bottom: 3px solid var(--mostaza);
+}
+
+.panel-note {
+  margin: -0.75rem 0 1.25rem;
+  color: var(--humo);
+  font-size: 0.9rem;
 }
 
 .dashboard-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 2rem;
+  gap: 1.75rem;
   align-items: start;
 }
 
-/* Horarios */
-.schedule-group {
-  margin: 1rem 0 0;
-  padding: 0;
-  border: 0;
+.dashboard-grid + .dashboard-grid {
+  margin-top: 2rem;
 }
 
-.schedule-group legend {
-  margin-bottom: 0.2rem;
-  color: var(--ink);
-  font-size: 0.9rem;
-  font-weight: 700;
-}
-
-.schedule-row {
+/* Resumen de cifras del cliente: son datos, no adorno. */
+.summary {
   display: grid;
-  grid-template-columns: 6.5rem 6.5rem 1fr 1fr;
-  gap: 0.6rem;
-  align-items: center;
-  padding: 0.5rem 0;
-  border-top: 1px solid var(--line);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
 }
 
-.schedule-day {
-  font-size: 0.9rem;
-  font-weight: 700;
+.summary-item {
+  padding: 1.1rem 1.25rem;
+  border: 1px solid var(--linea);
+  border-left: 4px solid var(--vino);
+  border-radius: var(--radio);
+  background: var(--papel-hondo);
 }
 
-.schedule-toggle {
-  display: flex;
-  gap: 0.35rem;
-  align-items: center;
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.82rem;
-  font-weight: 600;
+.summary-value {
+  display: block;
+  color: var(--vino);
+  font-family: "Alfa Slab One", Georgia, serif;
+  font-size: 1.85rem;
+  font-weight: 400;
+  line-height: 1.1;
 }
 
-.schedule-time-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.75rem;
-  font-weight: 600;
+.summary-label {
+  display: block;
+  margin-top: 0.2rem;
+  color: var(--humo);
+  font-size: 0.88rem;
 }
 
-.schedule-time-field input {
-  padding: 0.45rem;
-}
+/* -- 08. Tarjetas y listas ------------------------------------------ */
 
-/* Acciones del formulario */
-.form-actions {
-  display: flex;
-  gap: 0.75rem;
-  align-items: center;
-  margin-top: 1.25rem;
-}
-
-.form-actions .button {
-  width: auto;
-  flex: 1;
-}
-
-/* Lista de restaurantes */
 .restaurant-list {
   display: grid;
-  gap: 1rem;
-  margin: 1.25rem 0 0;
+  gap: 0.9rem;
+  margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .restaurant-card {
-  padding: 1.25rem;
-  border: 1px solid var(--line);
-  border-radius: 0.35rem;
-  background: #fff;
+  padding: 1.15rem 1.25rem;
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  background: var(--papel);
 }
 
 .restaurant-card-head {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 0.5rem;
+  gap: 0.75rem;
+  margin-bottom: 0.35rem;
 }
 
 .restaurant-card h3 {
-  margin: 0;
-  color: var(--wine);
-  font-family: "Fredoka", "Trebuchet MS", sans-serif;
-  font-size: 1.35rem;
+  color: var(--vino);
+  font-size: 1.15rem;
   font-weight: 600;
-}
-
-.badge {
-  display: inline-block;
-  flex-shrink: 0;
-  padding: 0.25rem 0.6rem;
-  border-radius: 999px;
-  color: #fff;
-  background: var(--wine);
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.03em;
 }
 
 .restaurant-address,
 .restaurant-meta {
-  margin: 0.3rem 0 0;
-}
-
-.restaurant-address {
-  color: var(--muted);
+  margin: 0.25rem 0 0;
+  color: var(--humo);
+  font-size: 0.92rem;
 }
 
 .restaurant-meta {
-  font-size: 0.85rem;
+  font-size: 0.88rem;
 }
 
 .restaurant-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
-  margin-top: 1rem;
+  margin-top: 0.9rem;
 }
 
-@media (max-width: 60rem) {
+.restaurant-actions:empty {
+  display: none;
+}
+
+.badge {
+  flex-shrink: 0;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  color: var(--papel);
+  background: var(--vino);
+  font-size: 0.76rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge-ok {
+  background: var(--verde);
+}
+
+.badge-warn {
+  color: var(--brasa);
+  background: var(--mostaza);
+}
+
+.badge-alert {
+  background: var(--ladrillo);
+}
+
+.badge-off {
+  background: var(--humo);
+}
+
+/* -- 09. Horarios de atención --------------------------------------- */
+
+.schedule-group {
+  margin: 1.5rem 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.schedule-group legend {
+  padding: 0;
+  color: var(--tinta);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.schedule-row {
+  display: grid;
+  grid-template-columns: 6.5rem 7rem 1fr 1fr;
+  gap: 0.6rem;
+  align-items: center;
+  padding: 0.55rem 0;
+  border-top: 1px solid var(--linea);
+}
+
+.schedule-row:last-of-type {
+  border-bottom: 1px solid var(--linea);
+}
+
+.schedule-day {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.schedule-toggle {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  margin: 0;
+  color: var(--humo);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.schedule-time-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin: 0;
+  color: var(--humo);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.schedule-time-field input {
+  width: 100%;
+  padding: 0.45rem 0.5rem;
+}
+
+/* -- 10. Estados vacíos ---------------------------------------------- */
+
+.empty-state {
+  display: grid;
+  justify-items: center;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 1.5rem 1rem;
+  border: 1px dashed var(--linea-fuerte);
+  border-radius: var(--radio);
+  color: var(--humo);
+  font-size: 0.92rem;
+  text-align: center;
+}
+
+.empty-art {
+  width: 8.5rem;
+  opacity: 0.9;
+}
+
+.empty-text {
+  max-width: 38ch;
+  margin: 0;
+}
+
+/* -- 11. Adaptación a pantallas pequeñas ----------------------------- */
+
+@media (max-width: 64rem) {
   .dashboard-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 56rem) {
+  .auth-layout {
     grid-template-columns: 1fr;
+    min-height: 0;
+  }
+
+  .auth-aside {
+    gap: 1.5rem;
+    padding: 1.75rem 1.25rem 2.25rem;
+  }
+
+  .auth-aside-foot,
+  .hero-points {
+    display: none;
+  }
+
+  .hero-title {
+    max-width: 100%;
+    font-size: clamp(2.1rem, 9vw, 3rem);
+  }
+
+  .auth-main {
+    padding: 1.75rem 1.25rem 2.5rem;
   }
 }
 
 @media (max-width: 48rem) {
-  .schedule-row {
-    grid-template-columns: 6rem 1fr 1fr;
-  }
-
-  .schedule-toggle {
-    grid-column: 2 / 4;
-    justify-self: end;
-  }
-
-  .restaurant-card-head {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 0.4rem;
-  }
-}
-
-.site-footer {
-  margin-top: auto;
-  padding: 1.25rem 0;
-  color: var(--white);
-  border-top: 1px solid rgb(255 253 248 / 24%);
-  background: rgb(77 18 32 / 86%);
-}
-
-@media (max-width: 40rem) {
-  .main-content {
+  .summary {
     grid-template-columns: 1fr;
   }
 
-  .main-content {
-    min-height: calc(100vh - 10.5rem);
-    padding: 3.5rem 0;
+  .schedule-row {
+    grid-template-columns: 1fr 1fr;
+    row-gap: 0.4rem;
+    padding: 0.8rem 0;
+  }
+
+  .schedule-day {
+    grid-column: 1;
+  }
+
+  .schedule-toggle {
+    grid-column: 2;
+    justify-self: end;
   }
 
   .navigation {
     flex-wrap: wrap;
-    row-gap: 0.5rem;
+    row-gap: 0.6rem;
   }
 
   .nav-actions {
     flex-wrap: wrap;
   }
+}
 
-  .navigation-link {
-    font-size: 0.82rem;
-  }
-
-  .intro {
-    text-align: center;
-  }
-
-  h1 {
-    margin: 0 auto;
-  }
-
-  .intro-copy {
-    margin-right: auto;
-    margin-left: auto;
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
   }
 }

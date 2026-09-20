@@ -5,99 +5,142 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Regístrate en Restaurante Doña Marta y empieza a reservar tu mesa."
+      content="Crea tu cuenta en ReservaYa: reserva mesa en tus restaurantes favoritos o registra el tuyo."
     />
-    <title>Restaurante Doña Marta | Crear cuenta</title>
-    <link rel="stylesheet" href="/styles/styles.css" />
+    <title>ReservaYa | Crear cuenta</title>
+    <link rel="icon" href="../images/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="../styles/styles.css" />
   </head>
   <body>
-    <header class="site-header">
-      <nav class="container navigation" aria-label="Navegación principal">
-        <a class="brand" href="/html/">Restaurante Doña Marta</a>
-        <div class="nav-actions">
-          <a class="navigation-link" href="#contenido">Reservas</a>
-          <div
-            class="view-toggle"
-            role="group"
-            aria-label="Cambiar entre panel de usuario y panel de administración"
-          >
-            <a class="view-toggle-link is-active" href="/html/" aria-current="page">Usuario</a>
-            <a class="view-toggle-link" href="/html/admin.html">Admin</a>
-          </div>
+    <div class="auth-layout">
+      <aside class="auth-aside">
+        <a class="brand" href="index.html">
+          <img class="brand-mark" src="../images/logo-reservaya.svg" alt="" />
+          <span>ReservaYa</span>
+        </a>
+
+        <div>
+          <h1 class="hero-title">Tu mesa te está esperando.</h1>
+          <p class="hero-lead">
+            Reserva en los restaurantes de tu ciudad y llega directo a la mesa,
+            sin llamadas ni filas en la puerta.
+          </p>
+          <ul class="hero-points">
+            <li>Elige sede, día y hora según la disponibilidad real.</li>
+            <li>Sigue el estado de tu reserva desde tu panel.</li>
+            <li>¿Tienes restaurante? Administra sedes, horarios y aforo.</li>
+          </ul>
         </div>
-      </nav>
-    </header>
 
-    <main id="contenido" class="container main-content">
-      <section class="intro" aria-labelledby="titulo-principal">
-        <p class="eyebrow">Sabores para recordar</p>
-        <h1 id="titulo-principal">Tu mesa te está esperando.</h1>
-        <p class="intro-copy">
-          Crea tu cuenta en Restaurante Doña Marta y disfruta una experiencia
-          especial en cada reserva.
+        <p class="auth-aside-foot">
+          Proyecto de Entornos de Programación, UIS 2026
         </p>
-      </section>
+      </aside>
 
-      <section class="registration-panel" aria-labelledby="registro-titulo">
-        <h2 id="registro-titulo">Registro</h2>
-        <form id="registration-form" novalidate>
-          <label for="name">Nombre</label>
-          <input id="name" name="name" type="text" autocomplete="name" required />
-          <p class="field-error" id="name-error"></p>
+      <main class="auth-main" id="contenido">
+        <nav class="auth-switch" aria-label="Acceso a la cuenta">
+          <span>¿Ya tienes cuenta?</span>
+          <a href="login.html">Inicia sesión</a>
+        </nav>
 
-          <label for="email">Correo electrónico</label>
-          <input id="email" name="email" type="email" autocomplete="email" required />
-          <p class="field-error" id="email-error"></p>
+        <section class="auth-card" aria-labelledby="registro-titulo">
+          <h2 id="registro-titulo">Crear cuenta</h2>
+          <p class="auth-card-lead">
+            Toma menos de un minuto. Solo necesitas un correo y una contraseña.
+          </p>
 
-          <label for="password">Contraseña</label>
-          <div class="password-field">
+          <form id="registration-form" novalidate>
+            <fieldset class="role-selector" role="radiogroup" aria-label="Tipo de cuenta">
+              <legend class="role-legend">¿Cómo vas a usar ReservaYa?</legend>
+              <div class="role-options">
+                <label class="role-option">
+                  <input type="radio" name="role" value="CLIENT" checked />
+                  <span class="role-card">
+                    <span class="role-card-title">Quiero reservar</span>
+                    <span class="role-card-desc">Busca mesa y gestiona tus reservas.</span>
+                  </span>
+                </label>
+                <label class="role-option">
+                  <input type="radio" name="role" value="RESTAURANT_ADMIN" />
+                  <span class="role-card">
+                    <span class="role-card-title">Tengo un restaurante</span>
+                    <span class="role-card-desc">Registra tus sedes, horarios y aforo.</span>
+                  </span>
+                </label>
+              </div>
+            </fieldset>
+
+            <label for="name">Nombre</label>
             <input
-              id="password"
-              name="password"
-              type="password"
-              autocomplete="new-password"
-              minlength="8"
+              id="name"
+              name="name"
+              type="text"
+              autocomplete="name"
+              placeholder="Ej. María Gómez"
               required
             />
-            <button
-              class="password-toggle"
-              type="button"
-              aria-controls="password"
-              aria-pressed="false"
-              aria-label="Mantener pulsado para mostrar la contraseña"
-              data-visible="false"
-            >
-              <svg
-                class="password-toggle-icon"
-                aria-hidden="true"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
+            <p class="field-error" id="name-error"></p>
+
+            <label for="email">Correo electrónico</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              placeholder="tucorreo@ejemplo.com"
+              required
+            />
+            <p class="field-error" id="email-error"></p>
+
+            <label for="password">Contraseña</label>
+            <div class="password-field">
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autocomplete="new-password"
+                minlength="8"
+                required
+              />
+              <button
+                class="password-toggle"
+                type="button"
+                aria-controls="password"
+                aria-pressed="false"
+                aria-label="Mantén pulsado para ver la contraseña"
+                data-visible="false"
               >
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                <circle cx="12" cy="12" r="3" />
-                <line class="password-toggle-slash" x1="3.5" y1="3.5" x2="20.5" y2="20.5" />
-              </svg>
-            </button>
-          </div>
-          <p class="field-hint">Mínimo 8 caracteres.</p>
-          <p class="field-error" id="password-error"></p>
+                <svg
+                  class="password-toggle-icon"
+                  aria-hidden="true"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                  <line class="password-toggle-slash" x1="3.5" y1="3.5" x2="20.5" y2="20.5" />
+                </svg>
+              </button>
+            </div>
+            <p class="field-hint">Usa al menos 8 caracteres.</p>
+            <p class="field-error" id="password-error"></p>
 
-          <button class="button" type="submit">Crear cuenta</button>
-          <p class="status" id="status" aria-live="polite"></p>
-        </form>
-      </section>
-    </main>
+            <div class="form-actions">
+              <button class="button" type="submit">Crear cuenta</button>
+            </div>
+            <p class="status" id="status" aria-live="polite"></p>
+          </form>
+        </section>
+      </main>
+    </div>
 
-    <footer class="site-footer">
-      <div class="container">
-        <small>&copy; 2026 Restaurante Doña Marta</small>
-      </div>
-    </footer>
-
-    <script src="/js/script.js" defer></script>
+    <script src="../js/auth.js" defer></script>
+    <script src="../js/script.js" defer></script>
   </body>
 </html>

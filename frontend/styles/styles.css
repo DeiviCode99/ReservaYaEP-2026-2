@@ -1,0 +1,1049 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fredoka:wght@500;600;700&display=swap");
+
+:root {
+  --wine: #721c2d;
+  --wine-deep: #4d1220;
+  --yellow: #e5b72d;
+  --yellow-soft: #fff3c7;
+  --white: #fffdf8;
+  --ink: #321c22;
+  --muted: #765e62;
+  --line: rgb(114 28 45 / 18%);
+  color-scheme: light;
+  font-family: "DM Sans", "Trebuchet MS", sans-serif;
+  color: var(--ink);
+  background: var(--white);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--wine-deep);
+  background-image:
+    linear-gradient(90deg, rgb(77 18 32 / 88%) 0%, rgb(77 18 32 / 68%) 43%, rgb(77 18 32 / 44%) 100%),
+    url("/images/comida-colombiana-imagen-destacada.jpg");
+  background-position: center;
+  background-size: cover;
+  background-attachment: fixed;
+}
+
+.container {
+  width: min(100% - 2rem, 68rem);
+  margin: 0 auto;
+}
+
+.site-header {
+  padding: 1.25rem 0;
+  border-bottom: 1px solid var(--line);
+  background: rgb(77 18 32 / 92%);
+}
+
+.navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.brand,
+.navigation-link {
+  color: var(--white);
+  text-decoration: none;
+  transition: color 160ms ease, opacity 160ms ease;
+}
+
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(1.25rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes reveal-side {
+  from {
+    opacity: 0;
+    transform: translateX(1.25rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes soft-glow {
+  0%,
+  100% {
+    box-shadow: 0 1rem 3rem rgb(114 28 45 / 12%);
+  }
+
+  50% {
+    box-shadow: 0 1.25rem 3.5rem rgb(114 28 45 / 20%);
+  }
+}
+
+.brand {
+  animation: reveal-up 600ms ease both;
+  font-family: "Fredoka", "Trebuchet MS", sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.navigation-link {
+  color: var(--yellow);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.main-content > .intro {
+  animation: reveal-up 700ms 120ms ease both;
+}
+
+.main-content > .registration-panel {
+  animation: reveal-side 700ms 220ms ease both, soft-glow 4s 1.2s ease-in-out infinite;
+}
+
+.main-content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(20rem, 34rem);
+  align-items: center;
+  gap: clamp(2rem, 8vw, 6rem);
+  min-height: calc(100vh - 9.5rem);
+  place-items: center;
+  padding: 5rem 0;
+}
+
+.intro {
+  max-width: 42rem;
+  text-align: left;
+}
+
+.eyebrow {
+  margin: 0 0 1rem;
+  color: #e5b72d;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+h1 {
+  max-width: 11ch;
+  margin: 0;
+  color: var(--white);
+  font-family: "Fredoka", "Trebuchet MS", sans-serif;
+  font-size: clamp(2.8rem, 8vw, 5.75rem);
+  font-weight: 600;
+  line-height: 0.98;
+  text-shadow: 0 0.15rem 0.8rem rgb(77 18 32 / 58%);
+}
+
+.intro-copy {
+  max-width: 34rem;
+  margin: 1.5rem 0 0;
+  color: #ffd4d4;
+  font-size: 1.1rem;
+  line-height: 1.65;
+}
+
+.button {
+  width: 100%;
+  border: 0;
+  border-radius: 0.35rem;
+  padding: 0.85rem 1.2rem;
+  color: var(--white);
+  background: var(--wine);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  transition: background-color 160ms ease, transform 160ms ease;
+}
+
+.button:hover,
+.button:focus-visible {
+  background: var(--wine-deep);
+  transform: translateY(-2px);
+}
+
+.button:focus-visible,
+.navigation-link:focus-visible,
+.brand:focus-visible {
+  outline: 3px solid var(--yellow);
+  outline-offset: 4px;
+}
+
+.status {
+  min-height: 1.5rem;
+  margin: 1rem 0 0;
+  color: var(--wine);
+  font-weight: 700;
+}
+
+.registration-panel {
+  width: 100%;
+  padding: 2rem;
+  border: 1px solid var(--line);
+  border-radius: 0.35rem;
+  background: rgb(255 253 248 / 94%);
+  box-shadow: 0 1rem 3rem rgb(114 28 45 / 12%);
+}
+
+.registration-panel h2 {
+  margin: 0 0 1.5rem;
+  font-family: "Fredoka", "Trebuchet MS", sans-serif;
+  font-size: 2rem;
+  font-weight: 400;
+}
+
+form {
+  display: grid;
+  gap: 0.55rem;
+}
+
+label {
+  margin-top: 0.65rem;
+  color: var(--ink);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+input {
+  width: 100%;
+  border: 1px solid rgb(114 28 45 / 32%);
+  border-radius: 0.25rem;
+  padding: 0.75rem;
+  color: var(--ink);
+  background: #fff;
+  font: inherit;
+}
+
+input:focus {
+  border-color: var(--wine);
+  outline: 3px solid rgb(229 183 45 / 32%);
+}
+
+.field-hint,
+.field-error {
+  margin: 0;
+  font-size: 0.8rem;
+}
+
+.field-hint {
+  color: var(--muted);
+}
+
+.field-error {
+  min-height: 1rem;
+  color: #a53b2c;
+}
+
+.locations-page {
+  padding: 4rem 0 5rem;
+}
+
+.locations-heading {
+  max-width: 46rem;
+  margin-bottom: 2rem;
+}
+
+.locations-heading h1 {
+  max-width: 16ch;
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+}
+
+.search-panel {
+  margin-bottom: 2.5rem;
+}
+
+.locations-search-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  align-items: end;
+}
+
+select {
+  width: 100%;
+  min-height: 2.85rem;
+  border: 1px solid rgb(114 28 45 / 32%);
+  border-radius: 0.25rem;
+  padding: 0.75rem;
+  color: var(--ink);
+  background: #fff;
+  font: inherit;
+}
+
+.results-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.results-heading h2 {
+  margin: 0;
+  color: var(--white);
+  font-family: "Fredoka", "Trebuchet MS", sans-serif;
+  font-size: 2rem;
+}
+
+#results-count {
+  color: var(--yellow-soft);
+  font-size: 0.9rem;
+}
+
+.location-results {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.location-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 10rem;
+  padding: 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: 0.35rem;
+  background: rgb(255 253 248 / 94%);
+  box-shadow: 0 1rem 3rem rgb(77 18 32 / 12%);
+}
+
+.location-card h3 {
+  margin: 0.25rem 0 0;
+  color: var(--wine);
+  font-family: "Fredoka", "Trebuchet MS", sans-serif;
+  font-size: 1.35rem;
+}
+
+.location-card-kicker {
+  margin: 0;
+  color: var(--wine);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.location-address,
+.location-capacity {
+  margin: 0.35rem 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.location-card .button {
+  flex-shrink: 0;
+  width: auto;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+}
+
+.pagination-button {
+  min-width: 2.5rem;
+  min-height: 2.5rem;
+  border: 1px solid var(--yellow);
+  border-radius: 0.3rem;
+  color: var(--yellow-soft);
+  background: rgb(77 18 32 / 70%);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.pagination-button:hover,
+.pagination-button:focus-visible,
+.pagination-button.is-active {
+  color: var(--wine-deep);
+  background: var(--yellow);
+}
+
+.reservation-panel {
+  max-width: 50rem;
+  margin: 3rem auto 0;
+}
+
+.reservation-confirm {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--line);
+}
+
+.reservation-confirm h3 {
+  margin: 0;
+  color: var(--wine);
+  font-family: "Fredoka", "Trebuchet MS", sans-serif;
+  font-size: 1.5rem;
+}
+
+.deposit-note {
+  margin: 0.25rem 0;
+  color: var(--wine);
+  font-weight: 700;
+}
+
+.reservation-ticket {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  border: 2px dashed var(--yellow);
+  border-radius: 0.35rem;
+  background: var(--yellow-soft);
+}
+
+.reservation-ticket h3 {
+  margin: 0 0 1rem;
+  color: var(--wine-deep);
+  font-family: "Fredoka", "Trebuchet MS", sans-serif;
+  font-size: 1.5rem;
+}
+
+.ticket-details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem 1.5rem;
+  margin: 0;
+}
+
+.ticket-details div {
+  padding-top: 0.65rem;
+  border-top: 1px solid rgb(114 28 45 / 18%);
+}
+
+.ticket-details dt {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.ticket-details dd {
+  margin: 0.2rem 0 0;
+  color: var(--ink);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.booking-panel {
+  grid-column: 1 / -1;
+  width: 100%;
+  padding: 2rem;
+  border: 1px solid var(--line);
+  border-radius: 0.35rem;
+  background: rgb(255 253 248 / 94%);
+  box-shadow: 0 1rem 3rem rgb(114 28 45 / 12%);
+}
+
+.booking-heading,
+.availability-section,
+.reservation-section {
+  max-width: 48rem;
+}
+
+.booking-panel h2 {
+  margin: 0 0 0.75rem;
+  color: var(--wine-deep);
+  font-family: "Fredoka", "Trebuchet MS", sans-serif;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.booking-copy {
+  margin: 0 0 1.25rem;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.search-form,
+.availability-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 0.65rem;
+  align-items: end;
+}
+
+.search-form .button,
+.availability-form .button {
+  width: auto;
+}
+
+.restaurant-results {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.restaurant-result {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.35rem;
+  background: #fff;
+}
+
+.restaurant-result h3 {
+  margin: 0;
+  color: var(--wine);
+  font-family: "Fredoka", "Trebuchet MS", sans-serif;
+}
+
+.restaurant-result p,
+.restaurant-result small {
+  display: block;
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+}
+
+.availability-section,
+.reservation-section {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--line);
+}
+
+.slot-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+.slot-button {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.75rem;
+  border: 1px solid var(--wine);
+  border-radius: 0.35rem;
+  color: var(--wine);
+  background: var(--white);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.slot-button:hover,
+.slot-button:focus-visible {
+  color: var(--white);
+  background: var(--wine);
+}
+
+.slot-button small {
+  color: var(--muted);
+}
+
+.slot-button:hover small,
+.slot-button:focus-visible small {
+  color: var(--yellow-soft);
+}
+
+.slot-button:disabled {
+  border-color: #cbbfc1;
+  color: #987f84;
+  background: #eee9e7;
+  cursor: not-allowed;
+}
+
+/* ------------------------------------------------------------------ */
+/* Panel administrativo (HU-08)                                        */
+/* ------------------------------------------------------------------ */
+
+[hidden] {
+  display: none !important;
+}
+
+input[type="checkbox"],
+input[type="number"] {
+  width: auto;
+}
+
+.panel {
+  width: 100%;
+  padding: 2rem;
+  border: 1px solid var(--line);
+  border-radius: 0.35rem;
+  background: rgb(255 253 248 / 94%);
+  box-shadow: 0 1rem 3rem rgb(114 28 45 / 12%);
+}
+
+.panel h2 {
+  margin: 0 0 1.5rem;
+  font-family: "Fredoka", "Trebuchet MS", sans-serif;
+  font-size: 2rem;
+  font-weight: 400;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.view-toggle {
+  display: inline-flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border: 1px solid rgb(229 183 45 / 45%);
+  border-radius: 999px;
+  background: rgb(77 18 32 / 55%);
+}
+
+.view-toggle-link {
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  color: var(--yellow);
+  text-decoration: none;
+  font-size: 0.82rem;
+  font-weight: 700;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.view-toggle-link:hover,
+.view-toggle-link:focus-visible {
+  background: rgb(229 183 45 / 18%);
+}
+
+.view-toggle-link.is-active {
+  color: var(--wine-deep);
+  background: var(--yellow);
+}
+
+/* Campo de contraseña con toggle de visibilidad */
+.password-field {
+  position: relative;
+}
+
+.password-field input {
+  padding-right: 2.75rem;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 0.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  border: 0;
+  border-radius: 0.25rem;
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.password-toggle:hover,
+.password-toggle:focus-visible {
+  color: var(--wine);
+}
+
+.password-toggle:focus-visible {
+  outline: 3px solid rgb(229 183 45 / 55%);
+  outline-offset: 2px;
+}
+
+.password-toggle-icon {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+/* Oculta el revelador de contraseña nativo del navegador (Edge) para
+   evitar que aparezcan dos ojos dentro del campo. */
+input::-ms-reveal,
+input::-ms-clear {
+  display: none;
+}
+
+.password-toggle-icon .password-toggle-slash {
+  display: none;
+}
+
+.password-toggle[data-visible="true"] .password-toggle-slash {
+  display: block;
+}
+
+.session-label {
+  color: #ffd4d4;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.button-small {
+  width: auto;
+  padding: 0.5rem 0.9rem;
+  font-size: 0.85rem;
+  border-radius: 0.3rem;
+}
+
+.button-outline {
+  color: var(--wine);
+  background: transparent;
+  border: 1px solid rgb(114 28 45 / 40%);
+}
+
+.button-outline:hover,
+.button-outline:focus-visible {
+  color: var(--white);
+  background: var(--wine);
+}
+
+.button-ghost {
+  width: auto;
+  color: var(--wine);
+  background: transparent;
+  border: 1px solid transparent;
+}
+
+.button-ghost:hover,
+.button-ghost:focus-visible {
+  background: rgb(114 28 45 / 8%);
+}
+
+.button-danger {
+  width: auto;
+  color: var(--white);
+  background: #a53b2c;
+}
+
+.button-danger:hover,
+.button-danger:focus-visible {
+  background: #85301f;
+}
+
+.status.is-success {
+  color: #1d7a43;
+}
+
+.status.is-error {
+  color: #a53b2c;
+}
+
+/* Vista de ingreso */
+.login-view {
+  min-height: calc(100vh - 9.5rem);
+  display: grid;
+  place-items: center;
+  padding: 4rem 0;
+}
+
+.login-panel {
+  max-width: 30rem;
+  text-align: left;
+}
+
+.login-copy {
+  margin: 0 0 1rem;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+/* Portada del panel */
+.main-admin {
+  padding-bottom: 1rem;
+}
+
+.dashboard {
+  padding: 4rem 0 5rem;
+}
+
+.dashboard-head {
+  max-width: 46rem;
+  margin-bottom: 2.5rem;
+}
+
+.dashboard-head h1 {
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  max-width: 16ch;
+}
+
+.demo-banner {
+  display: inline-block;
+  margin: 0 0 1rem;
+  padding: 0.45rem 0.8rem;
+  border-radius: 0.25rem;
+  color: var(--wine);
+  background: var(--yellow-soft);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 2rem;
+  align-items: start;
+}
+
+/* Horarios */
+.schedule-group {
+  margin: 1rem 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.schedule-group legend {
+  margin-bottom: 0.2rem;
+  color: var(--ink);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.schedule-row {
+  display: grid;
+  grid-template-columns: 6.5rem 6.5rem 1fr 1fr;
+  gap: 0.6rem;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-top: 1px solid var(--line);
+}
+
+.schedule-day {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.schedule-toggle {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.schedule-time-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.schedule-time-field input {
+  padding: 0.45rem;
+}
+
+/* Acciones del formulario */
+.form-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 1.25rem;
+}
+
+.form-actions .button {
+  width: auto;
+  flex: 1;
+}
+
+/* Lista de restaurantes */
+.restaurant-list {
+  display: grid;
+  gap: 1rem;
+  margin: 1.25rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.restaurant-card {
+  padding: 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: 0.35rem;
+  background: #fff;
+}
+
+.restaurant-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.restaurant-card h3 {
+  margin: 0;
+  color: var(--wine);
+  font-family: "Fredoka", "Trebuchet MS", sans-serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+}
+
+.badge {
+  display: inline-block;
+  flex-shrink: 0;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  color: #fff;
+  background: var(--wine);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.restaurant-address,
+.restaurant-meta {
+  margin: 0.3rem 0 0;
+}
+
+.restaurant-address {
+  color: var(--muted);
+}
+
+.restaurant-meta {
+  font-size: 0.85rem;
+}
+
+.restaurant-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+@media (max-width: 60rem) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 48rem) {
+  .schedule-row {
+    grid-template-columns: 6rem 1fr 1fr;
+  }
+
+  .schedule-toggle {
+    grid-column: 2 / 4;
+    justify-self: end;
+  }
+
+  .restaurant-card-head {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+}
+
+.site-footer {
+  margin-top: auto;
+  padding: 1.25rem 0;
+  color: var(--white);
+  border-top: 1px solid rgb(255 253 248 / 24%);
+  background: rgb(77 18 32 / 86%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (max-width: 40rem) {
+  .main-content {
+    grid-template-columns: 1fr;
+  }
+
+  .main-content {
+    min-height: calc(100vh - 10.5rem);
+    padding: 3.5rem 0;
+  }
+
+  .navigation {
+    flex-wrap: wrap;
+    row-gap: 0.5rem;
+  }
+
+  .nav-actions {
+    flex-wrap: wrap;
+  }
+
+  .navigation-link {
+    font-size: 0.82rem;
+  }
+
+  .intro {
+    text-align: center;
+  }
+
+  h1 {
+    margin: 0 auto;
+  }
+
+  .intro-copy {
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  .booking-panel {
+    padding: 1.25rem;
+  }
+
+  .search-form,
+  .availability-form {
+    grid-template-columns: 1fr;
+  }
+
+  .search-form .button,
+  .availability-form .button {
+    width: 100%;
+  }
+
+  .restaurant-result {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .locations-page {
+    padding: 3rem 0;
+  }
+
+  .locations-search-form,
+  .location-results {
+    grid-template-columns: 1fr;
+  }
+
+  .location-card {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .location-card .button {
+    width: 100%;
+  }
+
+  .ticket-details {
+    grid-template-columns: 1fr;
+  }
+}

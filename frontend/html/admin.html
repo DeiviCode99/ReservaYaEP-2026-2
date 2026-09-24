@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Registra y configura tu restaurante en ReservaYa: horarios y capacidad."
+    />
+    <title>ReservaYa | Panel del restaurante</title>
+    <link rel="stylesheet" href="/styles/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <nav class="container navigation" aria-label="Navegación principal">
+        <a class="brand" href="/html/">ReservaYa</a>
+        <div class="nav-actions">
+          <span class="session-label" id="session-label" hidden></span>
+          <button
+            class="button button-small button-outline"
+            id="logout-button"
+            type="button"
+            hidden
+          >
+            Cerrar sesión
+          </button>
+          <div
+            class="view-toggle"
+            role="group"
+            aria-label="Cambiar entre panel de usuario y panel de administración"
+          >
+            <a class="view-toggle-link" href="/html/">Usuario</a>
+            <a class="view-toggle-link is-active" href="/html/admin.html" aria-current="page">Admin</a>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main id="contenido" class="container main-admin">
+      <section class="login-view" id="login-screen" aria-labelledby="login-titulo">
+        <div class="panel login-panel">
+          <p class="eyebrow">Panel administrativo</p>
+          <h2 id="login-titulo">Acceso de administrador</h2>
+          <p class="login-copy">
+            Gestiona tu restaurante: regístralo, define su capacidad máxima y configura los
+            horarios de atención para que tus clientes puedan reservar.
+          </p>
+          <label for="admin-name">Nombre del administrador</label>
+          <input
+            id="admin-name"
+            name="admin-name"
+            type="text"
+            maxlength="40"
+            placeholder="Ej. Doña Marta"
+            autocomplete="name"
+          />
+          <p class="field-hint">Este nombre es opcional y solo se usa para identificar la sesión.</p>
+          <button class="button" id="demo-login-button" type="button">
+            Entrar como administrador
+          </button>
+          <p class="status" id="login-status" aria-live="polite"></p>
+        </div>
+      </section>
+
+      <section class="dashboard" id="dashboard" aria-label="Gestión de restaurante" hidden>
+        <div class="dashboard-head">
+          <p class="demo-banner">
+            Sesión simulada: este acceso será reemplazado por el inicio de sesión real (HU-02).
+          </p>
+          <p class="eyebrow">Registro y configuración de restaurante</p>
+          <h1 id="dashboard-titulo">Gestiona tu restaurante.</h1>
+          <p class="intro-copy">
+            Registra tu establecimiento y mantén actualizados horarios y capacidad para tus
+            clientes.
+          </p>
+        </div>
+
+        <div class="dashboard-grid">
+          <section class="panel" aria-labelledby="formulario-titulo">
+            <h2 id="formulario-titulo">Datos del restaurante</h2>
+            <form id="restaurant-form" novalidate>
+              <label for="restaurant-name">Nombre del restaurante</label>
+              <input
+                id="restaurant-name"
+                name="restaurant-name"
+                type="text"
+                maxlength="80"
+                autocomplete="organization"
+                required
+              />
+              <p class="field-error" id="restaurant-name-error"></p>
+
+              <label for="restaurant-address">Dirección</label>
+              <input
+                id="restaurant-address"
+                name="restaurant-address"
+                type="text"
+                maxlength="150"
+                autocomplete="street-address"
+                required
+              />
+              <p class="field-error" id="restaurant-address-error"></p>
+
+              <label for="restaurant-cuisine">Tipo de cocina</label>
+              <input
+                id="restaurant-cuisine"
+                name="restaurant-cuisine"
+                type="text"
+                maxlength="60"
+                placeholder="Ej. Colombiana"
+                required
+              />
+              <p class="field-error" id="restaurant-cuisine-error"></p>
+
+              <label for="restaurant-capacity">Capacidad máxima (mesas o aforo)</label>
+              <input
+                id="restaurant-capacity"
+                name="restaurant-capacity"
+                type="number"
+                min="1"
+                max="500"
+                inputmode="numeric"
+                required
+              />
+              <p class="field-error" id="restaurant-capacity-error"></p>
+
+              <fieldset class="schedule-group">
+                <legend>Horarios de atención</legend>
+                <p class="field-hint">Marca un día como cerrado si no atiendes ese día.</p>
+                <div id="schedule-rows"></div>
+                <p class="field-error" id="schedules-error"></p>
+              </fieldset>
+
+              <div class="form-actions">
+                <button class="button" type="submit">Guardar restaurante</button>
+                <button class="button button-ghost" type="button" id="reset-button">
+                  Nuevo / limpiar
+                </button>
+              </div>
+              <p class="status" id="form-status" aria-live="polite"></p>
+            </form>
+          </section>
+
+          <section class="panel" aria-labelledby="lista-titulo">
+            <h2 id="lista-titulo">Mis restaurantes</h2>
+            <p class="field-hint" id="list-empty">
+              Aún no tienes restaurantes registrados. Completa el formulario para crear el primero.
+            </p>
+            <ul class="restaurant-list" id="restaurant-list"></ul>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <small>&copy; 2026 ReservaYa · Reserva de restaurantes</small>
+      </div>
+    </footer>
+
+    <script src="/js/admin.js" defer></script>
+  </body>
+</html>

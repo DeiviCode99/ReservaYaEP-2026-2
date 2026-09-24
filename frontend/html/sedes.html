@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Busca una sede de Restaurante Doña Marta y reserva tu mesa." />
+    <title>Restaurante Doña Marta | Sedes</title>
+    <link rel="stylesheet" href="/styles/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <nav class="container navigation" aria-label="Navegación principal">
+        <a class="brand" href="/html/">Restaurante Doña Marta</a>
+        <div class="nav-actions">
+          <span class="session-label" id="customer-session"></span>
+          <a class="navigation-link" href="/html/">Mi registro</a>
+          <div class="view-toggle" role="group" aria-label="Cambiar de vista">
+            <a class="view-toggle-link is-active" href="/html/sedes.html" aria-current="page">Sedes</a>
+            <a class="view-toggle-link" href="/html/admin.html">Admin</a>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container locations-page" id="contenido">
+      <section class="locations-heading" aria-labelledby="locations-title">
+        <p class="eyebrow">Área metropolitana de Bucaramanga</p>
+        <h1 id="locations-title">Encuentra tu sede favorita.</h1>
+        <p class="intro-copy">Filtra por ubicación o tipo de cocina y elige dónde vivir tu próxima experiencia.</p>
+      </section>
+
+      <section class="panel search-panel" aria-labelledby="search-title">
+        <h2 id="search-title">Buscar sedes</h2>
+        <form class="locations-search-form" id="locations-search-form">
+          <div>
+            <label for="location-filter">Ubicación</label>
+            <select id="location-filter" name="location">
+              <option value="">Todas las ubicaciones</option>
+              <option value="Bucaramanga">Bucaramanga</option>
+              <option value="Girón">Girón</option>
+              <option value="Floridablanca">Floridablanca</option>
+              <option value="Piedecuesta">Piedecuesta</option>
+            </select>
+          </div>
+          <div>
+            <label for="cuisine-filter">Tipo de cocina</label>
+            <select id="cuisine-filter" name="cuisine">
+              <option value="">Todas las cocinas</option>
+              <option value="Colombiana">Colombiana</option>
+              <option value="Santandereana">Santandereana</option>
+              <option value="Típica">Típica</option>
+              <option value="Fusión">Fusión</option>
+              <option value="Parrilla">Parrilla</option>
+              <option value="Vegetariana">Vegetariana</option>
+            </select>
+          </div>
+        </form>
+        <p class="status" id="locations-status" aria-live="polite"></p>
+      </section>
+
+      <section aria-labelledby="results-title">
+        <div class="results-heading">
+          <h2 id="results-title">Sedes disponibles</h2>
+          <span id="results-count"></span>
+        </div>
+        <div class="location-results" id="location-results"></div>
+        <nav class="pagination" id="pagination" aria-label="Paginación de sedes"></nav>
+      </section>
+
+      <section class="panel reservation-panel" id="reservation-panel" aria-labelledby="reservation-title" hidden>
+        <p class="eyebrow">Reserva en tres pasos</p>
+        <h2 id="reservation-title">Elige fecha y horario</h2>
+        <p class="booking-copy" id="selected-location"></p>
+        <form class="availability-form" id="availability-form">
+          <div>
+            <label for="reservation-date">Fecha</label>
+            <input id="reservation-date" type="date" required />
+          </div>
+          <button class="button" type="submit">Consultar horarios</button>
+        </form>
+        <div class="slot-list" id="slot-list"></div>
+
+        <form class="reservation-confirm" id="reservation-form" hidden>
+          <p class="eyebrow">Último paso</p>
+          <h3>Confirma tu reserva</h3>
+          <p class="booking-copy" id="selected-slot"></p>
+          <label for="reservation-event">Evento de la reserva</label>
+          <select id="reservation-event" required>
+            <option value="ninguno">Ninguno</option>
+            <option value="cena romantica">Cena romántica</option>
+            <option value="cumpleaños">Cumpleaños</option>
+            <option value="grados">Grados</option>
+            <option value="boda">Boda</option>
+          </select>
+          <label for="party-size">Número de personas</label>
+          <input id="party-size" type="number" min="1" max="50" value="2" required />
+          <p class="deposit-note" id="deposit-note">Abono requerido: $50.000 COP</p>
+          <button class="button" type="submit">Confirmar reserva</button>
+          <p class="status" id="reservation-status" aria-live="polite"></p>
+        </form>
+        <article class="reservation-ticket" id="reservation-ticket" hidden aria-labelledby="ticket-title">
+          <p class="eyebrow">Reserva confirmada</p>
+          <h3 id="ticket-title">Ticket de reserva</h3>
+          <div id="ticket-content"></div>
+        </article>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container"><small>&copy; 2026 Restaurante Doña Marta</small></div>
+    </footer>
+
+    <script src="/js/sedes.js" defer></script>
+  </body>
+</html>

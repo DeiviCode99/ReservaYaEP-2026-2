@@ -28,6 +28,9 @@ public class SecurityConfig {
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.GET, "/api/restaurants/**").permitAll()
+                // Sin esto, cualquier excepcion interna se reenvia a /error, la cadena
+                // de seguridad lo deniega y el cliente recibe un 403 vacio y enganoso.
+                .requestMatchers("/error").permitAll()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

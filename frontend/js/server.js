@@ -32,8 +32,7 @@ function sendJson(response, statusCode, body) {
 }
 
 function serveStaticFile(response, pathname) {
-  const requestedPath = pathname === "/" ? "/html/index.html" : pathname;
-  let filePath = path.resolve(publicDirectory, `.${requestedPath}`);
+  let filePath = path.resolve(publicDirectory, `.${pathname}`);
 
   if (!filePath.startsWith(publicDirectory) || !fs.existsSync(filePath)) {
     sendJson(response, 404, { message: "Recurso no encontrado." });
@@ -59,6 +58,13 @@ function serveStaticFile(response, pathname) {
 
 const server = http.createServer((request, response) => {
   const url = new URL(request.url, `http://${request.headers.host || "localhost"}`);
+
+  // Las paginas se enlazan con rutas relativas ("login.html"): la URL debe quedar bajo /html/.
+  if (url.pathname === "/") {
+    response.writeHead(302, { Location: "/html/index.html" });
+    response.end();
+    return;
+  }
 
   if (request.method === "GET") {
     serveStaticFile(response, url.pathname);

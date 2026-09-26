@@ -54,7 +54,19 @@ $env:JWT_SECRET           = "..."
 .\mvnw spring-boot:run
 ```
 
-### 3. Orden de arranque
+### 3. Arranque rapido (PowerShell)
+
+`run-dev.ps1` carga el `.env` y abre una ventana por servicio:
+
+```powershell
+.\run-dev.ps1                                            # los cuatro servicios
+.\run-dev.ps1 -Services auth-service, api-gateway -Frontend   # solo registro/login + frontend
+```
+
+Omite los servicios cuyo puerto ya este ocupado. Si PowerShell bloquea el
+script: `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass`.
+
+### 4. Orden de arranque
 
 `auth-service` → `restaurant-service` → `reservation-service` → `api-gateway`.
 

@@ -1,0 +1,11 @@
+# Caddy obtiene el certificado HTTPS de Let's Encrypt solo con el dominio.
+{$DOMAIN} {
+	handle /api/* {
+		reverse_proxy api-gateway:8080
+	}
+	handle {
+		root * /srv
+		rewrite / /html/index.html
+		file_server
+	}
+}

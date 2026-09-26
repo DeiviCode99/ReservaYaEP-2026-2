@@ -1,0 +1,47 @@
+# =====================================================================
+# ReservaYa - Despliegue en produccion (una sola VM)
+# Uso: docker compose up -d --build   (desde backend/, con backend/.env)
+# Solo Caddy expone puertos (80/443); los microservicios hablan por la
+# red interna de Docker usando el nombre del servicio como host.
+# =====================================================================
+x-service: &service
+  env_file: .env
+  restart: unless-stopped
+  environment:
+    TZ: America/Bogota
+    JAVA_TOOL_OPTIONS: -Xmx512m
+    AUTH_SERVICE_URI: http://auth-service:8081
+    RESTAURANT_SERVICE_URI: http://restaurant-service:8082
+    RESERVATION_SERVICE_URI: http://reservation-service:8083
+
+services:
+  auth-service:
+    <<: *service
+    build: { context: ., args: { SERVICE: auth-service } }
+
+  restaurant-service:
+    <<: *service
+    build: { context: ., args: { SERVICE: restaurant-service } }
+
+  reservation-service:
+    <<: *service
+    build: { context: ., args: { SERVICE: reservation-service } }
+
+  api-gateway:
+    <<: *service
+    build: { context: ., args: { SERVICE: api-gateway } }
+
+  # Sirve el frontend estatico y reenvia /api/* al gateway, con HTTPS automatico.
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ../frontend:/srv:ro
+      - caddy_data:/data
+
+volumes:
+  caddy_data:

@@ -5,7 +5,9 @@
 	}
 	handle {
 		root * /srv
-		rewrite / /html/index.html
+		# Redireccion (no rewrite): las paginas se enlazan con rutas relativas
+		# ("login.html"), que solo funcionan si la URL real esta bajo /html/.
+		redir / /html/index.html
 		file_server
 	}
 }

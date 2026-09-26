@@ -3,7 +3,9 @@
    Manejo de sesión JWT, redirección por rol y utilidades comunes.
    ===================================================================== */
 
-const API_BASE = "http://localhost:8080";
+// En desarrollo (server.js en el 3000) se llama al gateway directo; en
+// produccion Caddy sirve el frontend y la API en el mismo dominio.
+const API_BASE = location.port === "3000" ? "http://localhost:8080" : "";
 const SESSION_KEY = "reservaya.session";
 
 function getSession() {

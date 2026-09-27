@@ -39,7 +39,9 @@ services:
     environment:
       DOMAIN: ${DOMAIN}
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # Carpeta y no archivo suelto: con un archivo, "git pull" crea uno nuevo
+      # y el contenedor seguiria leyendo el viejo.
+      - ./caddy:/etc/caddy:ro
       - ../frontend:/srv:ro
       - caddy_data:/data
 

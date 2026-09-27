@@ -30,12 +30,27 @@ public class BranchService {
         this.restaurantService = restaurantService;
     }
 
+    // readOnly: horarios y marca son LAZY y con open-in-view=false solo
+    // se pueden leer dentro de una transacción.
+    @Transactional(readOnly = true)
     public List<BranchResponse> getByRestaurant(Long restaurantId) {
         return branchRepository.findByRestaurantId(restaurantId).stream()
                 .map(BranchResponse::from)
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<BranchResponse> search(String name, String city, String cuisine) {
+        return branchRepository.search(blankToNull(name), blankToNull(city), blankToNull(cuisine)).stream()
+                .map(BranchResponse::from)
+                .toList();
+    }
+
+    private static String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
+    }
+
+    @Transactional(readOnly = true)
     public BranchResponse getById(Long branchId) {
         Branch branch = branchRepository.findById(branchId)
                 .orElseThrow(() -> new ResourceNotFoundException("Sede no encontrada."));

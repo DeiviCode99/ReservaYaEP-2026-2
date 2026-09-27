@@ -53,6 +53,14 @@ public class ReservationController {
         return ResponseEntity.ok(reservationService.getMyReservations(user));
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<ReservationResponse> update(
+            @PathVariable Long id,
+            @Valid @RequestBody ReservationRequest request,
+            @AuthenticationPrincipal AuthenticatedUser user) {
+        return ResponseEntity.ok(reservationService.update(id, request, user));
+    }
+
     @PatchMapping("/{id}")
     public ResponseEntity<ReservationResponse> cancel(
             @PathVariable Long id,

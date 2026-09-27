@@ -105,3 +105,8 @@ loginForm.addEventListener("submit", async function (event) {
     setStatus("No se pudo conectar con el servidor.", "error");
   }
 });
+
+setupGoogleButton(document.querySelector("#google-login"), {
+  onStatus: setStatus,
+  text: "signin_with",
+});

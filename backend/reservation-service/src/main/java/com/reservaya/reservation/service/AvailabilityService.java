@@ -9,11 +9,14 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class AvailabilityService {
+
+    private static final ZoneId ZONE = ZoneId.of("America/Bogota");
 
     private static final List<ReservationStatus> ACTIVE_STATUSES =
             List.of(ReservationStatus.PENDING, ReservationStatus.CONFIRMED);
@@ -40,15 +43,22 @@ public class AvailabilityService {
                 .findFirst()
                 .orElse(null);
 
-        if (schedule == null || schedule.getIsClosed()) {
+        LocalDate today = LocalDate.now(ZONE);
+        if (schedule == null || schedule.getIsClosed() || date.isBefore(today)) {
             return new AvailabilityResponse(branchId, date, branch.getCapacity(), List.of());
         }
 
         List<TimeSlot> slots = new ArrayList<>();
         LocalTime current = schedule.getOpenTime();
         LocalTime close = schedule.getCloseTime();
+        LocalTime now = LocalTime.now(ZONE);
 
         while (current.isBefore(close)) {
+            // Hoy solo se ofrecen las franjas que aún no empiezan.
+            if (date.equals(today) && !current.isAfter(now)) {
+                current = current.plusHours(1);
+                continue;
+            }
             int occupied = reservationRepository.sumPartySizeBySlot(
                     branchId, date, current, ACTIVE_STATUSES);
             int available = branch.getCapacity() - occupied;

@@ -27,6 +27,14 @@ public class BranchController {
         return ResponseEntity.ok(branchService.getByRestaurant(restaurantId));
     }
 
+    @GetMapping("/branches")
+    public ResponseEntity<List<BranchResponse>> search(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String city,
+            @RequestParam(required = false) String cuisine) {
+        return ResponseEntity.ok(branchService.search(name, city, cuisine));
+    }
+
     @GetMapping("/branches/{branchId}")
     public ResponseEntity<BranchResponse> getById(@PathVariable Long branchId) {
         return ResponseEntity.ok(branchService.getById(branchId));

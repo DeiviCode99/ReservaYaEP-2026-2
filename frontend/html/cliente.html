@@ -50,6 +50,66 @@
         </div>
       </section>
 
+      <section class="panel booking" aria-labelledby="reservar-titulo">
+        <h2 id="reservar-titulo">Reservar una mesa</h2>
+        <p class="panel-note">
+          Dos pasos: elige la sede y luego el día, la hora y cuántos van.
+        </p>
+
+        <div class="booking-step-first">
+          <h3 class="step-title"><span class="step-number">1</span> Elige la sede</h3>
+          <form class="search-form" id="search-form" novalidate>
+            <div>
+              <label for="search-name">Restaurante</label>
+              <input id="search-name" type="search" placeholder="Ej. Doña Marta" />
+            </div>
+            <div>
+              <label for="search-city">Ubicación</label>
+              <select id="search-city">
+                <option value="">Todo el área metropolitana</option>
+                <option>Bucaramanga</option>
+                <option>Floridablanca</option>
+                <option>Girón</option>
+                <option>Piedecuesta</option>
+              </select>
+            </div>
+            <div>
+              <label for="search-cuisine">Tipo de cocina</label>
+              <input id="search-cuisine" type="search" placeholder="Ej. Santandereana" />
+            </div>
+            <button class="button" type="submit">Buscar</button>
+          </form>
+          <p class="status" id="search-status" aria-live="polite"></p>
+          <ul class="restaurant-list result-grid" id="branch-results"></ul>
+        </div>
+
+        <form class="booking-step" id="reservation-form" hidden>
+          <h3 class="step-title"><span class="step-number">2</span> <span id="step2-title">Día, hora y personas</span></h3>
+          <p class="restaurant-meta" id="selected-branch"></p>
+          <div class="booking-fields">
+            <div>
+              <label for="reservation-date">Fecha</label>
+              <input id="reservation-date" type="date" required />
+            </div>
+            <div>
+              <label for="party-size">Personas</label>
+              <input id="party-size" type="number" min="1" max="50" value="2" required />
+            </div>
+          </div>
+          <p class="field-hint" id="deposit-note"></p>
+          <p class="step-label" id="slot-label">Horarios con cupo</p>
+          <div class="slot-list" id="slot-list" role="group" aria-labelledby="slot-label"></div>
+          <p class="status" id="slot-status" aria-live="polite"></p>
+          <div class="form-actions">
+            <button class="button" type="submit" disabled>Confirmar reserva</button>
+            <button class="button button-outline" id="cancel-edit" type="button" hidden>
+              No modificar
+            </button>
+          </div>
+          <p class="status" id="reservation-status" aria-live="polite"></p>
+        </form>
+      </section>
+
       <div class="dashboard-grid">
         <section class="panel" aria-labelledby="reservas-titulo">
           <h2 id="reservas-titulo">Reservas activas</h2>
@@ -81,5 +141,6 @@
 
     <script src="../js/auth.js" defer></script>
     <script src="../js/cliente.js" defer></script>
+    <script src="../js/reservar.js" defer></script>
   </body>
 </html>

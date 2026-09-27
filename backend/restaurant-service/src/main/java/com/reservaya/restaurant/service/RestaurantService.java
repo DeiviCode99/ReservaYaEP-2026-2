@@ -34,6 +34,14 @@ public class RestaurantService {
                 .toList();
     }
 
+    /** Restaurantes que administra el usuario (panel del administrador). */
+    @Transactional(readOnly = true)
+    public List<RestaurantResponse> getMine(AuthenticatedUser user) {
+        return adminRepository.findByIdUserId(user.id()).stream()
+                .map(admin -> RestaurantResponse.from(admin.getRestaurant()))
+                .toList();
+    }
+
     @Transactional
     public RestaurantResponse create(RestaurantRequest request, AuthenticatedUser user) {
         if (restaurantRepository.existsByName(request.getName().trim())) {

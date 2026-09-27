@@ -29,7 +29,9 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login",
+                        "/api/auth/google", "/api/auth/forgot-password", "/api/auth/reset-password").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/auth/config").permitAll()
                 // Sin esto, cualquier excepcion interna se reenvia a /error, la cadena
                 // de seguridad lo deniega y el cliente recibe un 403 vacio y enganoso.
                 .requestMatchers("/error").permitAll()

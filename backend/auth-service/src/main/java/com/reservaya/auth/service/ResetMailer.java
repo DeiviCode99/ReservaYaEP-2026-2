@@ -40,7 +40,7 @@ public class ResetMailer {
     }
 
     public void send(User user, String token) {
-        String link = frontendUrl + "/html/recuperar.html?token=" + token;
+        String link = frontendUrl + "/recuperar.html?token=" + token;
         JavaMailSender sender = smtpConfigured ? mailSender.getIfAvailable() : null;
         if (sender == null) {
             log.warn("SMTP sin configurar. Enlace de recuperación para {}: {}", user.getEmail(), link);

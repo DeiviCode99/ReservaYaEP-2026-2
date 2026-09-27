@@ -9,15 +9,22 @@ const registrationForm = document.querySelector("#registration-form");
 const nameInput = document.querySelector("#name");
 const emailInput = document.querySelector("#email");
 const passwordInput = document.querySelector("#password");
+const passwordConfirmInput = document.querySelector("#password-confirm");
 const passwordToggle = document.querySelector(".password-toggle");
 const statusMessage = document.querySelector("#status");
 
-const inputs = { name: nameInput, email: emailInput, password: passwordInput };
+const inputs = {
+  name: nameInput,
+  email: emailInput,
+  password: passwordInput,
+  passwordConfirm: passwordConfirmInput,
+};
 
 const errors = {
   name: document.querySelector("#name-error"),
   email: document.querySelector("#email-error"),
   password: document.querySelector("#password-error"),
+  passwordConfirm: document.querySelector("#password-confirm-error"),
 };
 
 function setStatus(message, tone) {
@@ -99,6 +106,11 @@ if (registrationForm) {
 
     if (password.length < 8) {
       showError("password", "La contraseña debe tener al menos 8 caracteres.");
+      isValid = false;
+    }
+
+    if (passwordConfirmInput.value !== password) {
+      showError("passwordConfirm", "Las contraseñas no coinciden.");
       isValid = false;
     }
 

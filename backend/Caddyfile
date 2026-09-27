@@ -5,13 +5,15 @@
 	}
 	handle {
 		root * /srv
-		# Redireccion (no rewrite): las paginas se enlazan con rutas relativas
-		# ("login.html"), que solo funcionan si la URL real esta bajo /html/.
-		redir / /html/index.html
-		# Una pagina pedida en la raiz (/login.html, marcador viejo o enlace
-		# mal formado) se manda a su lugar real en vez de dar 404.
-		@paginaSuelta path_regexp pagina ^/([^/]+\.html)$
-		redir @paginaSuelta /html/{re.pagina.1}
+		# URLs limpias: /login.html se sirve desde html/login.html sin redirigir.
+		# Los enlaces de las paginas siguen funcionando: "login.html" queda en
+		# la raiz y "../styles/..." desde la raiz apunta a /styles/.
+		# Las URLs viejas con /html/ (marcadores, correos ya enviados) redirigen.
+		@conCarpeta path_regexp vieja ^/html/([^/]+\.html)$
+		redir @conCarpeta /{re.vieja.1}{?query}
+		redir /html/ /
+		rewrite / /html/index.html
+		try_files {path} /html{path}
 		file_server
 	}
 }

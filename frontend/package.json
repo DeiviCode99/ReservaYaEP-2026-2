@@ -1,12 +1,9 @@
 {
-  "name": "proyecto-base-registro",
+  "name": "reservaya-frontend",
   "version": "1.0.0",
   "private": true,
-  "description": "Proyecto HTML base con registro seguro mediante BCrypt.",
+  "description": "Frontend de ReservaYa: paginas estaticas servidas con node:http. La API la expone el backend.",
   "scripts": {
     "start": "node js/server.js"
-  },
-  "dependencies": {
-    "bcrypt": "^6.0.0"
   }
 }

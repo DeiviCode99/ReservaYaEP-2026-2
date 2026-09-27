@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Panel del cliente ReservaYa: consulta y gestiona tus reservas." />
+    <title>ReservaYa | Mis reservas</title>
+    <link rel="icon" href="../images/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="../styles/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <nav class="container navigation" aria-label="Navegación principal">
+        <a class="brand" href="cliente.html">
+          <img class="brand-mark" src="../images/logo-reservaya.svg" alt="" />
+          <span>ReservaYa</span>
+        </a>
+        <div class="nav-actions">
+          <span class="session-label" id="session-label"></span>
+          <button class="button button-small button-outline" id="logout-button" type="button">
+            Cerrar sesión
+          </button>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container page" id="contenido">
+      <div class="page-head">
+        <h1>Mis reservas</h1>
+        <p class="page-lead">
+          Revisa lo que tienes reservado, cancela si cambian tus planes y
+          consulta las mesas en las que ya estuviste.
+        </p>
+      </div>
+
+      <section class="summary" aria-label="Resumen de tus reservas">
+        <div class="summary-item">
+          <span class="summary-value" id="count-active">0</span>
+          <span class="summary-label">Reservas activas</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-value" id="next-date">—</span>
+          <span class="summary-label">Tu próxima reserva</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-value" id="count-history">0</span>
+          <span class="summary-label">Reservas en el historial</span>
+        </div>
+      </section>
+
+      <section class="panel booking" aria-labelledby="reservar-titulo">
+        <h2 id="reservar-titulo">Reservar una mesa</h2>
+        <p class="panel-note">
+          Dos pasos: elige la sede y luego el día, la hora y cuántos van.
+        </p>
+
+        <div class="booking-step-first">
+          <h3 class="step-title"><span class="step-number">1</span> Elige la sede</h3>
+          <form class="search-form" id="search-form" novalidate>
+            <div>
+              <label for="search-name">Restaurante</label>
+              <input id="search-name" type="search" placeholder="Ej. Doña Marta" />
+            </div>
+            <div>
+              <label for="search-city">Ubicación</label>
+              <select id="search-city">
+                <option value="">Todo el área metropolitana</option>
+                <option>Bucaramanga</option>
+                <option>Floridablanca</option>
+                <option>Girón</option>
+                <option>Piedecuesta</option>
+              </select>
+            </div>
+            <div>
+              <label for="search-cuisine">Tipo de cocina</label>
+              <input id="search-cuisine" type="search" placeholder="Ej. Santandereana" />
+            </div>
+            <button class="button" type="submit">Buscar</button>
+          </form>
+          <p class="status" id="search-status" aria-live="polite"></p>
+          <ul class="restaurant-list result-grid" id="branch-results"></ul>
+        </div>
+
+        <form class="booking-step" id="reservation-form" hidden>
+          <h3 class="step-title"><span class="step-number">2</span> <span id="step2-title">Día, hora y personas</span></h3>
+          <p class="restaurant-meta" id="selected-branch"></p>
+          <div class="booking-fields">
+            <div>
+              <label for="reservation-date">Fecha</label>
+              <input id="reservation-date" type="date" required />
+            </div>
+            <div>
+              <label for="party-size">Personas</label>
+              <input id="party-size" type="number" min="1" max="50" value="2" required />
+            </div>
+          </div>
+          <p class="field-hint" id="deposit-note"></p>
+          <p class="step-label" id="slot-label">Horarios con cupo</p>
+          <div class="slot-list" id="slot-list" role="group" aria-labelledby="slot-label"></div>
+          <p class="status" id="slot-status" aria-live="polite"></p>
+          <div class="form-actions">
+            <button class="button" type="submit" disabled>Confirmar reserva</button>
+            <button class="button button-outline" id="cancel-edit" type="button" hidden>
+              No modificar
+            </button>
+          </div>
+          <p class="status" id="reservation-status" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <div class="dashboard-grid">
+        <section class="panel" aria-labelledby="reservas-titulo">
+          <h2 id="reservas-titulo">Reservas activas</h2>
+          <div class="empty-state" id="reservations-empty">
+            <img class="empty-art" src="../images/vacio-reservas.svg" alt="" />
+            <p class="empty-text">
+              Todavía no tienes reservas. Busca un restaurante y aparta tu mesa.
+            </p>
+          </div>
+          <ul class="restaurant-list" id="reservations-list"></ul>
+        </section>
+
+        <section class="panel" aria-labelledby="historial-titulo">
+          <h2 id="historial-titulo">Historial</h2>
+          <div class="empty-state" id="history-empty">
+            <img class="empty-art" src="../images/vacio-restaurantes.svg" alt="" />
+            <p class="empty-text">
+              Aquí quedarán tus reservas completadas, canceladas o rechazadas.
+            </p>
+          </div>
+          <ul class="restaurant-list" id="history-list"></ul>
+        </section>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">ReservaYa, plataforma de reservas. Proyecto de Entornos de Programación, UIS 2026.</div>
+    </footer>
+
+    <script src="../js/auth.js" defer></script>
+    <script src="../js/cliente.js" defer></script>
+    <script src="../js/reservar.js" defer></script>
+  </body>
+</html>

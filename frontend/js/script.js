@@ -1,7 +1,18 @@
+<<<<<<< HEAD
+=======
+/* =====================================================================
+   ReservaYa - Registro de usuario
+   POST /api/auth/register → redirección a login tras registro exitoso
+   ===================================================================== */
+
+redirectIfLoggedIn();
+
+>>>>>>> backend
 const registrationForm = document.querySelector("#registration-form");
 const nameInput = document.querySelector("#name");
 const emailInput = document.querySelector("#email");
 const passwordInput = document.querySelector("#password");
+<<<<<<< HEAD
 const passwordToggle = document.querySelector(".password-toggle");
 const statusMessage = document.querySelector("#status");
 const bookingPanel = document.querySelector("#booking-panel");
@@ -23,11 +34,27 @@ let selectedRestaurantId = null;
 let selectedReservationSlot = null;
 
 const inputs = { name: nameInput, email: emailInput, password: passwordInput };
+=======
+const passwordConfirmInput = document.querySelector("#password-confirm");
+const passwordToggle = document.querySelector(".password-toggle");
+const statusMessage = document.querySelector("#status");
+
+const inputs = {
+  name: nameInput,
+  email: emailInput,
+  password: passwordInput,
+  passwordConfirm: passwordConfirmInput,
+};
+>>>>>>> backend
 
 const errors = {
   name: document.querySelector("#name-error"),
   email: document.querySelector("#email-error"),
   password: document.querySelector("#password-error"),
+<<<<<<< HEAD
+=======
+  passwordConfirm: document.querySelector("#password-confirm-error"),
+>>>>>>> backend
 };
 
 function setStatus(message, tone) {
@@ -42,12 +69,17 @@ function showError(field, message) {
 }
 
 function clearErrors() {
+<<<<<<< HEAD
   Object.values(errors).forEach((error) => {
     error.textContent = "";
   });
   Object.values(inputs).forEach((input) => {
     input.removeAttribute("aria-invalid");
   });
+=======
+  Object.values(errors).forEach(function (error) { error.textContent = ""; });
+  Object.values(inputs).forEach(function (input) { input.removeAttribute("aria-invalid"); });
+>>>>>>> backend
   setStatus("");
 }
 
@@ -66,23 +98,39 @@ function hidePassword() {
 }
 
 if (passwordToggle) {
+<<<<<<< HEAD
   passwordToggle.addEventListener("pointerdown", (event) => {
+=======
+  passwordToggle.addEventListener("pointerdown", function (event) {
+>>>>>>> backend
     event.preventDefault();
     showPassword();
   });
 
+<<<<<<< HEAD
   ["pointerup", "pointerleave", "pointercancel", "blur"].forEach((type) => {
     passwordToggle.addEventListener(type, hidePassword);
   });
 
   passwordToggle.addEventListener("keydown", (event) => {
+=======
+  ["pointerup", "pointerleave", "pointercancel", "blur"].forEach(function (type) {
+    passwordToggle.addEventListener(type, hidePassword);
+  });
+
+  passwordToggle.addEventListener("keydown", function (event) {
+>>>>>>> backend
     if (event.key === " " || event.key === "Enter") {
       event.preventDefault();
       showPassword();
     }
   });
 
+<<<<<<< HEAD
   passwordToggle.addEventListener("keyup", (event) => {
+=======
+  passwordToggle.addEventListener("keyup", function (event) {
+>>>>>>> backend
     if (event.key === " " || event.key === "Enter") {
       hidePassword();
     }
@@ -90,13 +138,18 @@ if (passwordToggle) {
 }
 
 if (registrationForm) {
+<<<<<<< HEAD
   registrationForm.addEventListener("submit", async (event) => {
+=======
+  registrationForm.addEventListener("submit", async function (event) {
+>>>>>>> backend
     event.preventDefault();
     clearErrors();
 
     const name = nameInput.value.trim();
     const email = emailInput.value.trim();
     const password = passwordInput.value;
+<<<<<<< HEAD
     let isValid = true;
 
     if (name.length < 2) {
@@ -105,6 +158,18 @@ if (registrationForm) {
     }
 
     if (!emailInput.validity.valid) {
+=======
+    const roleInput = document.querySelector('input[name="role"]:checked');
+    const role = roleInput ? roleInput.value : "CLIENT";
+    let isValid = true;
+
+    if (name.length < 2) {
+      showError("name", "Escribe un nombre válido (mínimo 2 caracteres).");
+      isValid = false;
+    }
+
+    if (!emailInput.validity.valid || email.length === 0) {
+>>>>>>> backend
       showError("email", "Introduce un correo electrónico válido.");
       isValid = false;
     }
@@ -114,6 +179,7 @@ if (registrationForm) {
       isValid = false;
     }
 
+<<<<<<< HEAD
     if (!isValid) {
       return;
     }
@@ -127,21 +193,53 @@ if (registrationForm) {
       const result = await response.json();
 
       if (!response.ok) {
+=======
+    if (passwordConfirmInput.value !== password) {
+      showError("passwordConfirm", "Las contraseñas no coinciden.");
+      isValid = false;
+    }
+
+    if (!isValid) return;
+
+    try {
+      const response = await fetch(API_BASE + "/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password, role }),
+      });
+
+      if (response.status === 409) {
+        setStatus("Ya existe una cuenta con ese correo electrónico.", "error");
+        return;
+      }
+
+      if (!response.ok) {
+        const result = await response.json().catch(function () { return {}; });
+>>>>>>> backend
         setStatus(result.message || "No se pudo completar el registro.", "error");
         return;
       }
 
+<<<<<<< HEAD
       registrationForm.reset();
       setStatus(`Cuenta creada para ${result.user.name}.`, "success");
       registeredUser = result.user;
       localStorage.setItem("reservaya.user", JSON.stringify(result.user));
       window.location.href = "/html/sedes.html";
+=======
+      const data = await response.json();
+
+      /* Auto-login: guardar sesión y redirigir según rol */
+      saveSession(data.token, data.user);
+      redirectByRole(data.user);
+>>>>>>> backend
     } catch {
       setStatus("No se pudo conectar con el servidor.", "error");
     }
   });
 }
 
+<<<<<<< HEAD
 function escapeHtml(value) {
   return String(value).replace(/[&<>"']/g, (character) => ({
     "&": "&amp;",
@@ -268,3 +366,13 @@ reservationForm?.addEventListener("submit", async (event) => {
 });
 
 searchForm?.addEventListener("submit", searchRestaurants);
+=======
+setupGoogleButton(document.querySelector("#google-login"), {
+  onStatus: setStatus,
+  text: "signup_with",
+  getRole: function () {
+    const roleInput = document.querySelector('input[name="role"]:checked');
+    return roleInput ? roleInput.value : "CLIENT";
+  },
+});
+>>>>>>> backend

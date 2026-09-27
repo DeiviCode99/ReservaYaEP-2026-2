@@ -3,6 +3,7 @@ package com.reservaya.reservation.controller;
 import com.reservaya.reservation.dto.*;
 import com.reservaya.reservation.security.AuthenticatedUser;
 import com.reservaya.reservation.service.AvailabilityService;
+import com.reservaya.reservation.service.BranchReservationService;
 import com.reservaya.reservation.service.ReservationService;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -20,11 +21,14 @@ public class ReservationController {
 
     private final ReservationService reservationService;
     private final AvailabilityService availabilityService;
+    private final BranchReservationService branchReservationService;
 
     public ReservationController(ReservationService reservationService,
-                                  AvailabilityService availabilityService) {
+                                  AvailabilityService availabilityService,
+                                  BranchReservationService branchReservationService) {
         this.reservationService = reservationService;
         this.availabilityService = availabilityService;
+        this.branchReservationService = branchReservationService;
     }
 
     @GetMapping("/availability")
@@ -48,7 +52,7 @@ public class ReservationController {
             @RequestParam(required = false) String status,
             @AuthenticationPrincipal AuthenticatedUser user) {
         if (branchId != null && date != null) {
-            return ResponseEntity.ok(reservationService.getByBranch(branchId, date, status));
+            return ResponseEntity.ok(branchReservationService.getByBranch(branchId, date, status, user));
         }
         return ResponseEntity.ok(reservationService.getMyReservations(user));
     }
@@ -75,6 +79,6 @@ public class ReservationController {
             @PathVariable Long id,
             @Valid @RequestBody StatusUpdateRequest request,
             @AuthenticationPrincipal AuthenticatedUser user) {
-        return ResponseEntity.ok(reservationService.updateStatus(id, request, user));
+        return ResponseEntity.ok(branchReservationService.updateStatus(id, request, user));
     }
 }

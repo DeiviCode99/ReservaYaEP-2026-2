@@ -7,6 +7,7 @@ Bucaramanga. Proyecto de la materia Entornos de Programación, UIS 2026.
 - **Enunciado y requisitos:** [`Entrega 1 - Proyecto EP.pdf`](./Entrega%201%20-%20Proyecto%20EP.pdf)
 - **Detalle técnico del backend:** [`backend/README.md`](./backend/README.md)
 - **Guía visual del frontend:** [`frontend/README.md`](./frontend/README.md)
+- **Análisis de arquitectura, POO y SOLID:** [`docs/analisis-poo-solid.md`](./docs/analisis-poo-solid.md)
 
 > El código más reciente está en la rama **`backend`**. Trabaja sobre esa rama
 > hasta que se fusione con `main`.
@@ -189,7 +190,8 @@ No necesitan base de datos:
 
 ```bash
 cd backend/auth-service        && ./mvnw test -Dtest=AccountFlowTest
-cd backend/reservation-service && ./mvnw test -Dtest=ReservationFlowTest
+cd backend/reservation-service && ./mvnw test -Dtest="ReservationFlowTest,BranchReservationFlowTest"
+cd backend/restaurant-service  && ./mvnw test -Dtest=BranchUpdateTest
 ```
 
 (Las pruebas `*ApplicationTests` sí necesitan la base de datos configurada.)
@@ -265,17 +267,34 @@ cambios**. Vuelve a quedar Pendiente.
 
 ### 4.5 Panel del administrador — `/admin.html`
 
-1. **Registra tu restaurante:** nombre, tipo de cocina y demás datos, y pulsa
-   **Guardar restaurante**. Aparece en *Mis restaurantes*.
-2. **Selecciónalo** en la lista para gestionar sus sedes.
-3. **Agrega una sede:** nombre, dirección, ciudad, teléfono, **capacidad por
-   franja horaria** y el horario de cada día de la semana (marca los días que
-   cierra). Pulsa **Guardar sede**.
-4. Para editar un restaurante o una sede, elígelo en su lista, cambia los
-   datos y guarda.
+**Primera vez: registra tu restaurante y sus sedes**
 
-Los clientes solo ven las sedes activas, y solo pueden reservar dentro del
-horario que definas.
+1. En *Datos del restaurante* escribe el nombre, el tipo de cocina y, si
+   quieres, una descripción. Pulsa **Guardar restaurante**.
+2. En *Mis restaurantes*, pulsa **Gestionar sedes**.
+3. Llena la sede: nombre, dirección, **ciudad** (de la lista), teléfono,
+   **capacidad por franja horaria** y el horario de cada día (marca
+   **Cerrado** los días que no atiende). Pulsa **Guardar sede**.
+
+La dirección, el horario y el aforo son de cada sede, no del restaurante:
+una marca puede tener varias sedes con horarios distintos.
+
+**Día a día: responder las reservas** — sección *Reservas de tus sedes*
+
+1. Elige la **sede** y la **fecha** (por defecto, hoy). Las reservas salen
+   ordenadas por hora, con el nombre y el correo de quien reservó.
+2. Arriba ves cuántas hay **por responder**, cuántas están **confirmadas** y
+   cuántas **personas** esperas ese día.
+3. En cada reserva pendiente pulsa **Confirmar** o **Rechazar**. Al rechazar
+   puedes escribir un motivo, que el cliente verá en su panel.
+4. Cuando el cliente ya vino, pulsa **Marcar completada**.
+5. El filtro **Estado** muestra solo un tipo de reserva (por ejemplo, solo
+   las pendientes).
+
+**Desactivar una sede:** edítala y desmarca **Sede activa**. Deja de aparecer
+en las búsquedas de los clientes; las reservas que ya tenía siguen en tu panel.
+
+Solo ves y gestionas las reservas de las sedes de **tus** restaurantes.
 
 ---
 
@@ -293,13 +312,12 @@ horario que definas.
 - Historial y estados de las reservas del cliente (RF-08)
 - Modificar y cancelar con 2 horas de anticipación (RF-09)
 - Acceso por rol: cliente o administrador (RF-14)
+- Panel del administrador: reservas de sus sedes por fecha y estado, con
+  confirmar, rechazar (con motivo) y completar (RF-10, RF-11)
+- Activar y desactivar sedes
 
 **Pendiente**
 
-- **Panel del administrador: ver las reservas de sus sedes por fecha y
-  aceptarlas, rechazarlas o completarlas (RF-10, RF-11).** El backend ya tiene
-  los endpoints (`GET /api/reservations?branchId=&date=` y
-  `PATCH /api/reservations/{id}/status`); falta la pantalla.
 - Correo de confirmación al crear, modificar o cancelar una reserva (RF-12):
   hoy la confirmación es solo en pantalla.
 - El abono y el tipo de evento (cumpleaños, boda…) no se guardan en la base.

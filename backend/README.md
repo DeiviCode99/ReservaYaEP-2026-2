@@ -127,6 +127,7 @@ El registro solo acepta los tipos de cuenta `CLIENT` y `RESTAURANT_ADMIN`;
 | `POST` | `/api/auth/google` | Entrar o registrarse con Google (RF-15) |
 | `POST` | `/api/auth/forgot-password` | Envía el enlace de recuperación por correo (RF-16) |
 | `POST` | `/api/auth/reset-password` | Nueva contraseña con el enlace; devuelve sesión (RF-16) |
+| `GET` | `/internal/users?ids=` | Nombre y correo de clientes para el panel del restaurante. Solo entre servicios: el gateway no la expone y exige token de administrador |
 
 **restaurant-service**
 
@@ -148,7 +149,7 @@ El registro solo acepta los tipos de cuenta `CLIENT` y `RESTAURANT_ADMIN`;
 | `GET` | `/api/reservations/availability?branchId=&date=` | Franjas con cupo (RF-05) |
 | `POST` | `/api/reservations` | Crear reserva, valida aforo (RF-06, RF-07) |
 | `GET` | `/api/reservations` | Reservas del cliente autenticado (RF-08) |
-| `GET` | `/api/reservations?branchId=&date=&status=` | Reservas de la sede (RF-10, admin) |
+| `GET` | `/api/reservations?branchId=&date=&status=` | Reservas de la sede con nombre y correo del cliente (RF-10); solo el administrador de esa sede |
 | `PUT` | `/api/reservations/{id}` | Modificar sede, fecha, hora o personas; vuelve a PENDING (RF-09) |
 | `PATCH` | `/api/reservations/{id}` | Cancelar (RF-09) |
-| `PATCH` | `/api/reservations/{id}/status` | Aceptar / rechazar / completar (RF-11, admin) |
+| `PATCH` | `/api/reservations/{id}/status` | Aceptar / rechazar / completar (RF-11); solo el administrador de esa sede |

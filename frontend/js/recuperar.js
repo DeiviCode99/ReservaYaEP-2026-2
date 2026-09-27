@@ -13,27 +13,10 @@ const resetSection = document.querySelector("#reset-section");
 requestSection.hidden = Boolean(token);
 resetSection.hidden = !token;
 
-function setStatus(element, message, tone) {
-  element.textContent = message || "";
-  element.classList.toggle("is-success", tone === "success");
-  element.classList.toggle("is-error", tone === "error");
-}
-
 function fieldError(input, errorElement, message) {
   errorElement.textContent = message;
   if (message) input.setAttribute("aria-invalid", "true");
   else input.removeAttribute("aria-invalid");
-}
-
-async function postJson(path, body) {
-  const response = await fetch(API_BASE + path, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  const data = await response.json().catch(function () { return {}; });
-  if (!response.ok) throw new Error(data.message || "No se pudo completar la solicitud.");
-  return data;
 }
 
 /* -- 1. Pedir el enlace --------------------------------------------- */
@@ -54,13 +37,12 @@ requestForm.addEventListener("submit", async function (event) {
 
   const button = requestForm.querySelector("button");
   button.disabled = true;
-  setStatus(requestStatus, "Enviando...");
+  showStatus(requestStatus, "Enviando...");
   try {
-    const data = await postJson("/api/auth/forgot-password", { email: email });
-    setStatus(requestStatus, data.message + " Revisa también la carpeta de spam.", "success");
+    const data = await apiFetch("/api/auth/forgot-password", { method: "POST", body: JSON.stringify({ email: email }) });
+    showStatus(requestStatus, data.message + " Revisa también la carpeta de spam.", "success");
   } catch (error) {
-    setStatus(requestStatus, error instanceof TypeError
-      ? "No se pudo conectar con el servidor." : error.message, "error");
+    showStatus(requestStatus, errorText(error), "error");
   } finally {
     button.disabled = false;
   }
@@ -87,16 +69,15 @@ resetForm.addEventListener("submit", async function (event) {
 
   const button = resetForm.querySelector("button");
   button.disabled = true;
-  setStatus(resetStatus, "Guardando...");
+  showStatus(resetStatus, "Guardando...");
   try {
-    const data = await postJson("/api/auth/reset-password", { token: token, password: password });
+    const data = await apiFetch("/api/auth/reset-password", { method: "POST", body: JSON.stringify({ token: token, password: password }) });
     saveSession(data.token, data.user);
     redirectByRole(data.user);
   } catch (error) {
     button.disabled = false;
     resetStatus.classList.add("is-error");
-    resetStatus.innerHTML = escapeHtml(error instanceof TypeError
-      ? "No se pudo conectar con el servidor." : error.message) +
+    resetStatus.innerHTML = escapeHtml(errorText(error)) +
       ' <a href="recuperar.html">Pedir un enlace nuevo</a>';
   }
 });

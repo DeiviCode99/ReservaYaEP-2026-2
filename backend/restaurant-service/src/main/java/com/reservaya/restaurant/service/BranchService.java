@@ -13,7 +13,12 @@ import com.reservaya.restaurant.security.AuthenticatedUser;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class BranchService {
@@ -87,14 +92,32 @@ public class BranchService {
         applyFields(branch, request);
 
         if (request.getSchedules() != null) {
-            branch.getSchedules().clear();
-            for (ScheduleRequest sr : request.getSchedules()) {
-                Schedule schedule = toScheduleEntity(sr, branch);
-                branch.getSchedules().add(schedule);
-            }
+            replaceSchedules(branch, request.getSchedules());
         }
 
         return BranchResponse.from(branchRepository.save(branch));
+    }
+
+    /**
+     * Actualiza en su sitio el horario de cada día que ya existe. Borrar todos y
+     * volver a crearlos falla: Hibernate inserta antes de borrar y choca con
+     * la restricción única (branch_id, day_of_week).
+     */
+    private void replaceSchedules(Branch branch, List<ScheduleRequest> requested) {
+        Map<Short, Schedule> current = branch.getSchedules().stream()
+                .collect(Collectors.toMap(Schedule::getDayOfWeek, Function.identity()));
+        Set<Short> requestedDays = new HashSet<>();
+
+        for (ScheduleRequest sr : requested) {
+            requestedDays.add(sr.getDayOfWeek());
+            Schedule existing = current.get(sr.getDayOfWeek());
+            if (existing == null) {
+                branch.getSchedules().add(toScheduleEntity(sr, branch));
+            } else {
+                applyScheduleFields(existing, sr);
+            }
+        }
+        branch.getSchedules().removeIf(s -> !requestedDays.contains(s.getDayOfWeek()));
     }
 
     private void applyFields(Branch branch, BranchRequest request) {
@@ -114,9 +137,13 @@ public class BranchService {
         Schedule s = new Schedule();
         s.setBranch(branch);
         s.setDayOfWeek(sr.getDayOfWeek());
+        applyScheduleFields(s, sr);
+        return s;
+    }
+
+    private static void applyScheduleFields(Schedule s, ScheduleRequest sr) {
         s.setOpenTime(sr.getOpenTime());
         s.setCloseTime(sr.getCloseTime());
         s.setIsClosed(sr.getIsClosed() != null && sr.getIsClosed());
-        return s;
     }
 }

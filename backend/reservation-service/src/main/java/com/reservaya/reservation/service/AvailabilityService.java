@@ -18,8 +18,6 @@ public class AvailabilityService {
 
     private static final ZoneId ZONE = ZoneId.of("America/Bogota");
 
-    private static final List<ReservationStatus> ACTIVE_STATUSES =
-            List.of(ReservationStatus.PENDING, ReservationStatus.CONFIRMED);
 
     private final RestaurantClient restaurantClient;
     private final ReservationRepository reservationRepository;
@@ -60,7 +58,7 @@ public class AvailabilityService {
                 continue;
             }
             int occupied = reservationRepository.sumPartySizeBySlot(
-                    branchId, date, current, ACTIVE_STATUSES);
+                    branchId, date, current, ReservationStatus.activeStatuses());
             int available = branch.getCapacity() - occupied;
             slots.add(new TimeSlot(current, Math.max(available, 0)));
             current = current.plusHours(1);

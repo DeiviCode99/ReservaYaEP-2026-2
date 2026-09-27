@@ -273,7 +273,8 @@ label {
 }
 
 input,
-select {
+select,
+textarea {
   width: 100%;
   border: 1px solid var(--linea-fuerte);
   border-radius: var(--radio-chico);
@@ -290,7 +291,8 @@ input::placeholder {
 }
 
 input:focus,
-select:focus {
+select:focus,
+textarea:focus {
   border-color: var(--vino);
   box-shadow: 0 0 0 3px rgb(233 178 60 / 35%);
   outline: none;
@@ -888,6 +890,35 @@ input::-ms-clear {
 
 .slot-button[aria-pressed="true"] small {
   color: var(--mostaza-suave);
+}
+
+/* -- 08c. Panel del administrador ----------------------------------- */
+
+.admin-reservations {
+  margin-bottom: 2rem;
+}
+
+.admin-reservations .summary {
+  margin: 1.25rem 0 0;
+}
+
+.restaurant-card a {
+  color: var(--vino);
+  font-weight: 600;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 4.5rem;
+}
+
+/* Casilla con su texto al lado (ej. "Sede activa"). */
+.checkbox-field {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 1.1rem;
+  font-weight: 500;
 }
 
 /* -- 09. Horarios de atención --------------------------------------- */

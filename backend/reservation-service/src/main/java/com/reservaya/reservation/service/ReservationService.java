@@ -13,12 +13,16 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
+/**
+ * Casos de uso del cliente sobre sus propias reservas (RF-06 a RF-09).
+ * Lo que hace el restaurante con las reservas de sus sedes vive en
+ * {@link BranchReservationService}.
+ */
 @Service
 @EnableConfigurationProperties(ReservationProperties.class)
 public class ReservationService {
@@ -101,18 +105,6 @@ public class ReservationService {
                 .stream().map(ReservationResponse::from).toList();
     }
 
-    public List<ReservationResponse> getByBranch(Long branchId, LocalDate date, String status) {
-        if (status != null && !status.isBlank()) {
-            ReservationStatus rs = ReservationStatus.valueOf(status.toUpperCase());
-            return reservationRepository
-                    .findByBranchIdAndReservationDateAndStatusIn(branchId, date, List.of(rs))
-                    .stream().map(ReservationResponse::from).toList();
-        }
-        return reservationRepository
-                .findByBranchIdAndReservationDate(branchId, date)
-                .stream().map(ReservationResponse::from).toList();
-    }
-
     @Transactional
     public ReservationResponse cancel(Long id, String reason, AuthenticatedUser user) {
         Reservation reservation = findChangeable(id, user, "cancelar");
@@ -130,8 +122,7 @@ public class ReservationService {
             throw new InvalidOperationException("No puedes " + action + " una reserva que no es tuya.");
         }
 
-        if (reservation.getStatus() != ReservationStatus.PENDING
-                && reservation.getStatus() != ReservationStatus.CONFIRMED) {
+        if (!reservation.getStatus().isActive()) {
             throw new InvalidOperationException("Solo se pueden " + action + " reservas pendientes o confirmadas.");
         }
 
@@ -146,31 +137,5 @@ public class ReservationService {
                             + " horas de anticipación.");
         }
         return reservation;
-    }
-
-    @Transactional
-    public ReservationResponse updateStatus(Long id, StatusUpdateRequest request, AuthenticatedUser user) {
-        Reservation reservation = reservationRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Reserva no encontrada."));
-
-        ReservationStatus newStatus = ReservationStatus.valueOf(request.getStatus().toUpperCase());
-        ReservationStatus current = reservation.getStatus();
-
-        boolean validTransition =
-                (current == ReservationStatus.PENDING &&
-                        (newStatus == ReservationStatus.CONFIRMED || newStatus == ReservationStatus.REJECTED))
-                || (current == ReservationStatus.CONFIRMED && newStatus == ReservationStatus.COMPLETED);
-
-        if (!validTransition) {
-            throw new InvalidOperationException(
-                    "Transición de estado inválida: " + current + " → " + newStatus);
-        }
-
-        reservation.setStatus(newStatus);
-        if (request.getCancellationReason() != null) {
-            reservation.setCancellationReason(request.getCancellationReason());
-        }
-
-        return ReservationResponse.from(reservationRepository.save(reservation));
     }
 }

@@ -1,12 +1,14 @@
 package com.reservaya.reservation.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 public class StatusUpdateRequest {
 
     @NotBlank
     private String status;
 
+    @Size(max = 255)
     private String cancellationReason;
 
     public String getStatus() { return status; }

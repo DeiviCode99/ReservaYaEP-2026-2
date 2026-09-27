@@ -4,8 +4,8 @@
      1. Buscar y elegir sede (RF-04 / HU-03).
      2. Fecha, hora con cupo y personas, y confirmar (RF-05, RF-06).
    RF-09: "Modificar" en una reserva activa reabre el paso 2 con sus datos.
-   Usa auth.js (API_BASE, authHeaders, escapeHtml, handleUnauthorized) y
-   cliente.js (formatDate, loadReservations).
+   Usa auth.js (apiFetch, showStatus, formatDate, todayIso, CITIES) y
+   cliente.js (loadReservations).
    ===================================================================== */
 
 const searchForm = document.querySelector("#search-form");
@@ -30,30 +30,10 @@ let editing = null; // reserva que se está modificando (RF-09), o null
 let searchRequest = 0;
 let slotsRequest = 0;
 
-/* Fecha local (no UTC) para que "hoy" no salte de día en la noche. */
-function todayIso() {
-  const now = new Date();
-  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-  return now.toISOString().slice(0, 10);
-}
-
-function setStatus(element, message, tone) {
-  element.textContent = message;
-  element.classList.toggle("is-success", tone === "success");
-  element.classList.toggle("is-error", tone === "error");
-}
-
-/* Petición al gateway; lanza Error con el mensaje que manda el backend. */
-async function api(path, options) {
-  const response = await fetch(API_BASE + path, Object.assign({ headers: authHeaders() }, options));
-  if (response.status === 401) {
-    handleUnauthorized();
-    throw new Error("Tu sesión expiró.");
-  }
-  const data = await response.json().catch(function () { return {}; });
-  if (!response.ok) throw new Error(data.message || "No se pudo completar la solicitud.");
-  return data;
-}
+// Las ciudades del filtro salen de la misma lista que usa el administrador.
+CITIES.forEach(function (city) {
+  document.querySelector("#search-city").add(new Option(city, city));
+});
 
 /* -- Paso 1: buscar y elegir sede ----------------------------------- */
 
@@ -98,20 +78,20 @@ async function searchBranches() {
   });
 
   const request = ++searchRequest;
-  setStatus(searchStatus, "Buscando sedes...");
+  showStatus(searchStatus, "Buscando sedes...");
   try {
     // Una sola consulta: sedes activas con su restaurante y tipo de cocina.
-    const branches = await api("/api/restaurants/branches?" + params);
+    const branches = await apiFetch("/api/restaurants/branches?" + params);
     if (request !== searchRequest) return;
 
     if (branches.length === 0) {
-      setStatus(searchStatus, "No encontramos sedes con esos filtros. Prueba con otros.", "error");
+      showStatus(searchStatus, "No encontramos sedes con esos filtros. Prueba con otros.", "error");
       return;
     }
-    setStatus(searchStatus, branches.length + (branches.length === 1 ? " sede encontrada." : " sedes encontradas."), "success");
+    showStatus(searchStatus, branches.length + (branches.length === 1 ? " sede encontrada." : " sedes encontradas."), "success");
     branches.forEach(function (branch) { branchResults.appendChild(branchCard(branch)); });
   } catch (error) {
-    if (request === searchRequest) setStatus(searchStatus, error.message, "error");
+    if (request === searchRequest) showStatus(searchStatus, errorText(error), "error");
   }
 }
 
@@ -125,7 +105,7 @@ function chooseBranch(branch) {
   chosenBranch = branch;
   selectedBranchText.textContent = branch.restaurantName + " · " + branch.name + " (" +
     branch.address + ", " + branch.city + ")";
-  setStatus(reservationStatus, "");
+  showStatus(reservationStatus, "");
   reservationForm.hidden = false;
   reservationForm.scrollIntoView({ behavior: "smooth", block: "start" });
   loadSlots();
@@ -138,14 +118,14 @@ async function loadSlots() {
   confirmButton.disabled = true;
   slotList.innerHTML = "";
   if (!reservationDate.value || reservationDate.value < todayIso()) {
-    setStatus(slotStatus, "Elige una fecha de hoy en adelante.", "error");
+    showStatus(slotStatus, "Elige una fecha de hoy en adelante.", "error");
     return;
   }
 
   const request = ++slotsRequest;
-  setStatus(slotStatus, "Consultando disponibilidad...");
+  showStatus(slotStatus, "Consultando disponibilidad...");
   try {
-    const data = await api("/api/reservations/availability?branchId=" + chosenBranch.id +
+    const data = await apiFetch("/api/reservations/availability?branchId=" + chosenBranch.id +
       "&date=" + reservationDate.value);
     if (request !== slotsRequest) return;
 
@@ -159,12 +139,12 @@ async function loadSlots() {
     // HU-04: solo se muestran las franjas con cupo.
     const open = data.slots.filter(function (slot) { return slot.available > 0; });
     if (open.length === 0) {
-      setStatus(slotStatus, data.slots.length === 0
+      showStatus(slotStatus, data.slots.length === 0
         ? "La sede no atiende ese día (o ya pasaron sus horarios). Prueba con otra fecha."
         : "No hay disponibilidad ese día: todas las franjas están llenas.", "error");
       return;
     }
-    setStatus(slotStatus, "");
+    showStatus(slotStatus, "");
     open.forEach(function (slot) {
       const button = document.createElement("button");
       button.type = "button";
@@ -179,7 +159,7 @@ async function loadSlots() {
       }
     });
   } catch (error) {
-    if (request === slotsRequest) setStatus(slotStatus, error.message, "error");
+    if (request === slotsRequest) showStatus(slotStatus, errorText(error), "error");
   }
 }
 
@@ -192,7 +172,7 @@ function chooseSlot(slot, button) {
   if (Number(partySize.value) > slot.available) partySize.value = String(slot.available);
   updateDepositNote();
   confirmButton.disabled = false;
-  setStatus(reservationStatus, formatDate(reservationDate.value) + " a las " +
+  showStatus(reservationStatus, formatDate(reservationDate.value) + " a las " +
     slot.time.substring(0, 5) + " en " + chosenBranch.name + ".");
 }
 
@@ -216,7 +196,7 @@ updateDepositNote();
 /* Lo llama el botón "Modificar" de cliente.js. */
 async function editReservation(reservation) {
   try {
-    const branch = await api("/api/restaurants/branches/" + reservation.branchId);
+    const branch = await apiFetch("/api/restaurants/branches/" + reservation.branchId);
     editing = reservation;
     step2Title.textContent = "Modificar reserva #" + reservation.id;
     confirmButton.textContent = "Guardar cambios";
@@ -225,7 +205,7 @@ async function editReservation(reservation) {
     partySize.value = String(reservation.partySize);
     chooseBranch(branch);
   } catch (error) {
-    alert(error.message);
+    alert(errorText(error));
   }
 }
 
@@ -244,19 +224,19 @@ cancelEditButton.addEventListener("click", function () {
 reservationForm.addEventListener("submit", async function (event) {
   event.preventDefault();
   if (!chosenSlot) {
-    setStatus(reservationStatus, "Elige un horario con cupo.", "error");
+    showStatus(reservationStatus, "Elige un horario con cupo.", "error");
     return;
   }
   const people = Number(partySize.value);
   if (!Number.isInteger(people) || people < 1 || people > chosenSlot.available) {
-    setStatus(reservationStatus, "Este horario admite entre 1 y " + chosenSlot.available + " personas.", "error");
+    showStatus(reservationStatus, "Este horario admite entre 1 y " + chosenSlot.available + " personas.", "error");
     return;
   }
 
   confirmButton.disabled = true;
-  setStatus(reservationStatus, editing ? "Guardando cambios..." : "Confirmando reserva...");
+  showStatus(reservationStatus, editing ? "Guardando cambios..." : "Confirmando reserva...");
   try {
-    const reservation = await api(editing ? "/api/reservations/" + editing.id : "/api/reservations", {
+    const reservation = await apiFetch(editing ? "/api/reservations/" + editing.id : "/api/reservations", {
       method: editing ? "PUT" : "POST",
       body: JSON.stringify({
         branchId: chosenBranch.id,
@@ -265,19 +245,19 @@ reservationForm.addEventListener("submit", async function (event) {
         partySize: people,
       }),
     });
-    setStatus(reservationStatus,
+    showStatus(reservationStatus,
       "Reserva #" + reservation.id + (editing ? " modificada" : " creada") + " para " + people +
       " persona(s). Queda pendiente hasta que el restaurante la confirme.", "success");
     stopEditing();
     loadReservations();
   } catch (error) {
-    setStatus(reservationStatus, error.message, "error");
+    showStatus(reservationStatus, errorText(error), "error");
   } finally {
     // Los cupos cambiaron (por esta reserva o por otra): se vuelven a pedir.
     const message = reservationStatus.textContent;
     const ok = reservationStatus.classList.contains("is-success");
     await loadSlots();
-    setStatus(reservationStatus, message, ok ? "success" : "error");
+    showStatus(reservationStatus, message, ok ? "success" : "error");
   }
 });
 

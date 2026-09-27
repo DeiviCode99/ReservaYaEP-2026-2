@@ -59,15 +59,20 @@ function serveStaticFile(response, pathname) {
 const server = http.createServer((request, response) => {
   const url = new URL(request.url, `http://${request.headers.host || "localhost"}`);
 
-  // Las paginas se enlazan con rutas relativas ("login.html"): la URL debe quedar bajo /html/.
-  if (url.pathname === "/") {
-    response.writeHead(302, { Location: "/html/index.html" });
+  // Mismas URLs limpias que Caddy en produccion: /login.html se sirve desde
+  // html/login.html y las URLs viejas con /html/ redirigen a la raiz.
+  const oldPage = url.pathname.match(/^\/html\/([^/]*\.html)?$/);
+  if (oldPage) {
+    response.writeHead(302, { Location: "/" + (oldPage[1] || "") + url.search });
     response.end();
     return;
   }
 
   if (request.method === "GET") {
-    serveStaticFile(response, url.pathname);
+    const pathname = url.pathname === "/" ? "/html/index.html" : url.pathname;
+    const inRoot = path.resolve(publicDirectory, `.${pathname}`);
+    const exists = inRoot.startsWith(publicDirectory) && fs.existsSync(inRoot);
+    serveStaticFile(response, exists ? pathname : `/html${pathname}`);
     return;
   }
 

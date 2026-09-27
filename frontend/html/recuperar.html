@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- El enlace lleva el token en la URL: que no viaje como Referer. -->
+    <meta name="referrer" content="no-referrer" />
+    <meta name="description" content="Recupera el acceso a tu cuenta de ReservaYa." />
+    <title>ReservaYa | Recuperar cuenta</title>
+    <link rel="icon" href="../images/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="../styles/styles.css" />
+  </head>
+  <body>
+    <div class="auth-layout">
+      <aside class="auth-aside">
+        <a class="brand" href="index.html">
+          <img class="brand-mark" src="../images/logo-reservaya.svg" alt="" />
+          <span>ReservaYa</span>
+        </a>
+
+        <div>
+          <h1 class="hero-title">Nadie se queda sin mesa.</h1>
+          <p class="hero-lead">
+            Te enviamos un enlace a tu correo para que elijas una contraseña
+            nueva. Tus reservas siguen donde las dejaste.
+          </p>
+        </div>
+
+        <p class="auth-aside-foot">
+          Proyecto de Entornos de Programación, UIS 2026
+        </p>
+      </aside>
+
+      <main class="auth-main" id="contenido">
+        <nav class="auth-switch" aria-label="Volver al ingreso">
+          <span>¿Ya la recordaste?</span>
+          <a href="login.html">Inicia sesión</a>
+        </nav>
+
+        <section class="auth-card" id="request-section" aria-labelledby="request-titulo">
+          <h2 id="request-titulo">Recuperar cuenta</h2>
+          <p class="auth-card-lead">
+            Escribe el correo de tu cuenta y te enviaremos un enlace para crear
+            una contraseña nueva. Vence en 30 minutos.
+          </p>
+
+          <form id="request-form" novalidate>
+            <label for="email">Correo electrónico</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              placeholder="tucorreo@ejemplo.com"
+              required
+            />
+            <p class="field-error" id="email-error"></p>
+
+            <div class="form-actions">
+              <button class="button" type="submit">Enviar enlace</button>
+            </div>
+            <p class="status" id="request-status" aria-live="polite"></p>
+          </form>
+        </section>
+
+        <section class="auth-card" id="reset-section" aria-labelledby="reset-titulo" hidden>
+          <h2 id="reset-titulo">Nueva contraseña</h2>
+          <p class="auth-card-lead">
+            Elige una contraseña de al menos 8 caracteres. Al guardarla entrarás
+            directo a tu cuenta.
+          </p>
+
+          <form id="reset-form" novalidate>
+            <label for="password">Contraseña nueva</label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autocomplete="new-password"
+              minlength="8"
+              maxlength="72"
+              required
+            />
+            <p class="field-error" id="password-error"></p>
+
+            <label for="password-confirm">Repite la contraseña</label>
+            <input
+              id="password-confirm"
+              name="password-confirm"
+              type="password"
+              autocomplete="new-password"
+              required
+            />
+            <p class="field-error" id="confirm-error"></p>
+
+            <div class="form-actions">
+              <button class="button" type="submit">Guardar y entrar</button>
+            </div>
+            <p class="status" id="reset-status" aria-live="polite"></p>
+          </form>
+        </section>
+      </main>
+    </div>
+
+    <script src="../js/auth.js" defer></script>
+    <script src="../js/recuperar.js" defer></script>
+  </body>
+</html>

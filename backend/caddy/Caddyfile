@@ -1,0 +1,19 @@
+# Caddy obtiene el certificado HTTPS de Let's Encrypt solo con el dominio.
+{$DOMAIN} {
+	handle /api/* {
+		reverse_proxy api-gateway:8080
+	}
+	handle {
+		root * /srv
+		# URLs limpias: /login.html se sirve desde html/login.html sin redirigir.
+		# Los enlaces de las paginas siguen funcionando: "login.html" queda en
+		# la raiz y "../styles/..." desde la raiz apunta a /styles/.
+		# Las URLs viejas con /html/ (marcadores, correos ya enviados) redirigen.
+		@conCarpeta path_regexp vieja ^/html/([^/]+\.html)$
+		redir @conCarpeta /{re.vieja.1}{?query}
+		redir /html/ /
+		rewrite / /html/index.html
+		try_files {path} /html{path}
+		file_server
+	}
+}

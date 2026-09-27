@@ -72,6 +72,12 @@ function renderReservationCard(reservation) {
   if (reservation.status === "PENDING" || reservation.status === "CONFIRMED") {
     const actions = document.createElement("div");
     actions.className = "restaurant-actions";
+    const editBtn = document.createElement("button");
+    editBtn.className = "button button-small button-outline";
+    editBtn.type = "button";
+    editBtn.textContent = "Modificar";
+    editBtn.addEventListener("click", function () { editReservation(reservation); });
+    actions.appendChild(editBtn);
     const cancelBtn = document.createElement("button");
     cancelBtn.className = "button button-small button-danger";
     cancelBtn.type = "button";
@@ -82,6 +88,26 @@ function renderReservationCard(reservation) {
   }
 
   return li;
+}
+
+/* La reserva solo trae branchId: "Restaurante · Sede" se pide una vez por sede. */
+const branchNames = {};
+
+async function addBranchNames(reservations) {
+  const missing = [...new Set(reservations.map(function (r) { return r.branchId; }))]
+    .filter(function (id) { return !(id in branchNames); });
+
+  await Promise.all(missing.map(async function (id) {
+    try {
+      const response = await fetch(API_BASE + "/api/restaurants/branches/" + id);
+      const branch = response.ok ? await response.json() : null;
+      branchNames[id] = branch ? branch.restaurantName + " · " + branch.name : null;
+    } catch {
+      branchNames[id] = null;
+    }
+  }));
+
+  reservations.forEach(function (r) { r.branchName = branchNames[r.branchId]; });
 }
 
 async function loadReservations() {
@@ -97,6 +123,7 @@ async function loadReservations() {
 
     const data = await response.json();
     const reservations = Array.isArray(data) ? data : [];
+    await addBranchNames(reservations);
 
     const active = reservations.filter(function (r) {
       return r.status === "PENDING" || r.status === "CONFIRMED";

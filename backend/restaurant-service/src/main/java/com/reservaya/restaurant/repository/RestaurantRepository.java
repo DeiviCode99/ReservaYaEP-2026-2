@@ -12,7 +12,7 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
     @Query("SELECT DISTINCT r FROM Restaurant r LEFT JOIN r.branches b " +
            "WHERE (:name IS NULL OR LOWER(r.name) LIKE LOWER(CONCAT('%', :name, '%'))) " +
            "AND (:city IS NULL OR LOWER(b.city) = LOWER(:city)) " +
-           "AND (:cuisine IS NULL OR LOWER(r.cuisineType) = LOWER(:cuisine))")
+           "AND (:cuisine IS NULL OR LOWER(r.cuisineType) LIKE LOWER(CONCAT('%', :cuisine, '%')))")
     List<Restaurant> search(@Param("name") String name,
                             @Param("city") String city,
                             @Param("cuisine") String cuisine);

@@ -2,6 +2,7 @@ package com.reservaya.restaurant.controller;
 
 import com.reservaya.restaurant.dto.RestaurantRequest;
 import com.reservaya.restaurant.dto.RestaurantResponse;
+import com.reservaya.restaurant.exception.AccessDeniedException;
 import com.reservaya.restaurant.security.AuthenticatedUser;
 import com.reservaya.restaurant.service.RestaurantService;
 import jakarta.validation.Valid;
@@ -27,7 +28,14 @@ public class RestaurantController {
     public ResponseEntity<List<RestaurantResponse>> search(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String city,
-            @RequestParam(required = false) String cuisine) {
+            @RequestParam(required = false) String cuisine,
+            @RequestParam(defaultValue = "false") boolean mine,
+            @AuthenticationPrincipal AuthenticatedUser user) {
+        // ?mine=true: solo los restaurantes del administrador autenticado.
+        if (mine) {
+            if (user == null) throw new AccessDeniedException("Inicia sesión para ver tus restaurantes.");
+            return ResponseEntity.ok(restaurantService.getMine(user));
+        }
         return ResponseEntity.ok(restaurantService.search(name, city, cuisine));
     }
 

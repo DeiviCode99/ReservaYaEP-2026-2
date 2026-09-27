@@ -8,6 +8,10 @@
 		# Redireccion (no rewrite): las paginas se enlazan con rutas relativas
 		# ("login.html"), que solo funcionan si la URL real esta bajo /html/.
 		redir / /html/index.html
+		# Una pagina pedida en la raiz (/login.html, marcador viejo o enlace
+		# mal formado) se manda a su lugar real en vez de dar 404.
+		@paginaSuelta path_regexp pagina ^/([^/]+\.html)$
+		redir @paginaSuelta /html/{re.pagina.1}
 		file_server
 	}
 }

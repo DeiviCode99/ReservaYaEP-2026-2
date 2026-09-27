@@ -132,3 +132,12 @@ if (registrationForm) {
     }
   });
 }
+
+setupGoogleButton(document.querySelector("#google-login"), {
+  onStatus: setStatus,
+  text: "signup_with",
+  getRole: function () {
+    const roleInput = document.querySelector('input[name="role"]:checked');
+    return roleInput ? roleInput.value : "CLIENT";
+  },
+});

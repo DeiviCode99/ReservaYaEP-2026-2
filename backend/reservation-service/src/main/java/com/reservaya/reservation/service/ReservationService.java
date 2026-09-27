@@ -1,6 +1,5 @@
 package com.reservaya.reservation.service;
 
-import com.reservaya.reservation.client.RestaurantClient;
 import com.reservaya.reservation.config.ReservationProperties;
 import com.reservaya.reservation.dto.*;
 import com.reservaya.reservation.entity.Reservation;
@@ -25,47 +24,75 @@ import java.util.List;
 public class ReservationService {
 
     private static final ZoneId ZONE = ZoneId.of("America/Bogota");
-    private static final List<ReservationStatus> ACTIVE_STATUSES =
-            List.of(ReservationStatus.PENDING, ReservationStatus.CONFIRMED);
 
     private final ReservationRepository reservationRepository;
-    private final RestaurantClient restaurantClient;
+    private final AvailabilityService availabilityService;
     private final ReservationProperties reservationProperties;
 
     public ReservationService(ReservationRepository reservationRepository,
-                              RestaurantClient restaurantClient,
+                              AvailabilityService availabilityService,
                               ReservationProperties reservationProperties) {
         this.reservationRepository = reservationRepository;
-        this.restaurantClient = restaurantClient;
+        this.availabilityService = availabilityService;
         this.reservationProperties = reservationProperties;
     }
 
     @Transactional
     public ReservationResponse create(ReservationRequest request, AuthenticatedUser user) {
-        BranchInfoDto branch = restaurantClient.getBranch(request.getBranchId());
-        if (!branch.getActive()) {
-            throw new InvalidOperationException("La sede no está activa.");
-        }
+        requireSeats(request, availableSeats(request));
 
-        int occupied = reservationRepository.sumPartySizeBySlot(
-                request.getBranchId(), request.getReservationDate(),
-                request.getReservationTime(), ACTIVE_STATUSES);
-        int available = branch.getCapacity() - occupied;
+        Reservation reservation = new Reservation();
+        reservation.setUserId(user.id());
+        apply(reservation, request);
+        return ReservationResponse.from(reservationRepository.save(reservation));
+    }
 
+    /**
+     * RF-09: cambia sede, fecha, hora o personas de una reserva propia. Vuelve
+     * a PENDING porque el restaurante debe aceptar el nuevo horario.
+     */
+    @Transactional
+    public ReservationResponse update(Long id, ReservationRequest request, AuthenticatedUser user) {
+        Reservation reservation = findChangeable(id, user, "modificar");
+
+        // Si se queda en la misma franja, sus propios puestos cuentan como libres.
+        boolean sameSlot = reservation.getBranchId().equals(request.getBranchId())
+                && reservation.getReservationDate().equals(request.getReservationDate())
+                && reservation.getReservationTime().equals(request.getReservationTime());
+        requireSeats(request, availableSeats(request) + (sameSlot ? reservation.getPartySize() : 0));
+
+        apply(reservation, request);
+        return ReservationResponse.from(reservationRepository.save(reservation));
+    }
+
+    /**
+     * Cupo de la franja pedida. Usa las mismas franjas que ve el cliente:
+     * dentro del horario de la sede y aún no iniciadas.
+     */
+    private int availableSeats(ReservationRequest request) {
+        return availabilityService
+                .getAvailability(request.getBranchId(), request.getReservationDate())
+                .slots().stream()
+                .filter(slot -> slot.time().equals(request.getReservationTime()))
+                .findFirst()
+                .orElseThrow(() -> new InvalidOperationException(
+                        "La sede no atiende a esa hora o la franja ya pasó."))
+                .available();
+    }
+
+    private static void requireSeats(ReservationRequest request, int available) {
         if (available < request.getPartySize()) {
             throw new InsufficientCapacityException(
                     "No hay cupo suficiente. Disponible: " + available + " personas.");
         }
+    }
 
-        Reservation reservation = new Reservation();
-        reservation.setUserId(user.id());
+    private static void apply(Reservation reservation, ReservationRequest request) {
         reservation.setBranchId(request.getBranchId());
         reservation.setReservationDate(request.getReservationDate());
         reservation.setReservationTime(request.getReservationTime());
         reservation.setPartySize(request.getPartySize());
         reservation.setStatus(ReservationStatus.PENDING);
-
-        return ReservationResponse.from(reservationRepository.save(reservation));
     }
 
     public List<ReservationResponse> getMyReservations(AuthenticatedUser user) {
@@ -88,16 +115,24 @@ public class ReservationService {
 
     @Transactional
     public ReservationResponse cancel(Long id, String reason, AuthenticatedUser user) {
+        Reservation reservation = findChangeable(id, user, "cancelar");
+        reservation.setStatus(ReservationStatus.CANCELLED);
+        reservation.setCancellationReason(reason);
+        return ReservationResponse.from(reservationRepository.save(reservation));
+    }
+
+    /** Reglas comunes de RF-09: reserva propia, activa y con la anticipación mínima. */
+    private Reservation findChangeable(Long id, AuthenticatedUser user, String action) {
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Reserva no encontrada."));
 
         if (!reservation.getUserId().equals(user.id())) {
-            throw new InvalidOperationException("No puedes cancelar una reserva que no es tuya.");
+            throw new InvalidOperationException("No puedes " + action + " una reserva que no es tuya.");
         }
 
         if (reservation.getStatus() != ReservationStatus.PENDING
                 && reservation.getStatus() != ReservationStatus.CONFIRMED) {
-            throw new InvalidOperationException("Solo se pueden cancelar reservas pendientes o confirmadas.");
+            throw new InvalidOperationException("Solo se pueden " + action + " reservas pendientes o confirmadas.");
         }
 
         LocalDateTime reservationDateTime = LocalDateTime.of(
@@ -107,13 +142,10 @@ public class ReservationService {
 
         if (hoursUntil < reservationProperties.getMinHoursBeforeCancel()) {
             throw new InvalidOperationException(
-                    "No se puede cancelar con menos de " + reservationProperties.getMinHoursBeforeCancel()
+                    "No se puede " + action + " con menos de " + reservationProperties.getMinHoursBeforeCancel()
                             + " horas de anticipación.");
         }
-
-        reservation.setStatus(ReservationStatus.CANCELLED);
-        reservation.setCancellationReason(reason);
-        return ReservationResponse.from(reservationRepository.save(reservation));
+        return reservation;
     }
 
     @Transactional

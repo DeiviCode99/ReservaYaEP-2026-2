@@ -33,16 +33,76 @@
       <div class="page-head">
         <h1 id="dashboard-titulo">Tu restaurante en ReservaYa</h1>
         <p class="page-lead">
-          Registra tu marca, agrega las sedes y define horarios y aforo. Con eso
-          tus clientes ya pueden reservar mesa.
+          Responde las reservas de tus sedes, registra tu marca y define
+          horarios y aforo. Con eso tus clientes ya pueden reservar mesa.
         </p>
       </div>
+
+      <!-- RF-10 y RF-11: reservas de las sedes por fecha/rango y estado -->
+      <section class="panel admin-reservations" aria-labelledby="reservas-titulo">
+        <h2 id="reservas-titulo">Reservas de tus sedes</h2>
+        <p class="panel-note">
+          Confirma o rechaza las reservas pendientes y marca como completadas
+          las que ya atendiste.
+        </p>
+
+        <form class="search-form" id="reservation-filters" novalidate>
+          <div>
+            <label for="filter-branch">Sede</label>
+            <select id="filter-branch" disabled>
+              <option value="">Cargando sedes...</option>
+            </select>
+          </div>
+          <div>
+            <label for="filter-from">Desde</label>
+            <input id="filter-from" type="date" required />
+          </div>
+          <div>
+            <label for="filter-to">Hasta</label>
+            <input id="filter-to" type="date" required />
+          </div>
+          <div>
+            <label for="filter-status">Estado</label>
+            <select id="filter-status">
+              <option value="">Todos</option>
+              <option value="PENDING">Pendientes</option>
+              <option value="CONFIRMED">Confirmadas</option>
+              <option value="COMPLETED">Completadas</option>
+              <option value="CANCELLED">Canceladas</option>
+              <option value="REJECTED">Rechazadas</option>
+            </select>
+          </div>
+        </form>
+
+        <section class="summary admin-summary" aria-label="Resumen del rango">
+          <div class="summary-item">
+            <span class="summary-value" id="count-pending">0</span>
+            <span class="summary-label">Por responder</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-value" id="count-confirmed">0</span>
+            <span class="summary-label">Confirmadas</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-value" id="count-people">0</span>
+            <span class="summary-label">Personas esperadas</span>
+          </div>
+        </section>
+
+        <p class="status" id="admin-reservations-status" aria-live="polite"></p>
+        <div class="empty-state" id="admin-reservations-empty" hidden>
+          <img class="empty-art" src="../images/vacio-reservas.svg" alt="" />
+          <p class="empty-text">No hay reservas para esta sede en este rango.</p>
+        </div>
+        <ul class="restaurant-list result-grid" id="admin-reservations-list"></ul>
+      </section>
 
       <div class="dashboard-grid">
         <section class="panel" aria-labelledby="formulario-titulo">
           <h2 id="formulario-titulo">Datos del restaurante</h2>
           <p class="panel-note">
-            Estos datos son los que verán tus clientes al buscar dónde comer.
+            La marca que verán tus clientes. La dirección, el horario y el
+            aforo van en cada sede.
           </p>
 
           <form id="restaurant-form" novalidate>
@@ -58,53 +118,26 @@
             />
             <p class="field-error" id="restaurant-name-error"></p>
 
-            <label for="restaurant-address">Dirección</label>
-            <input
-              id="restaurant-address"
-              name="restaurant-address"
-              type="text"
-              maxlength="150"
-              autocomplete="street-address"
-              placeholder="Ej. Calle 34 #21-15"
-              required
-            />
-            <p class="field-error" id="restaurant-address-error"></p>
-
-            <label for="restaurant-city">Ciudad</label>
-            <input
-              id="restaurant-city"
-              name="restaurant-city"
-              type="text"
-              maxlength="80"
-              placeholder="Ej. Bucaramanga"
-              required
-            />
-            <p class="field-error" id="restaurant-city-error"></p>
-
             <label for="restaurant-cuisine">Tipo de cocina</label>
             <input
               id="restaurant-cuisine"
               name="restaurant-cuisine"
               type="text"
               maxlength="60"
-              placeholder="Ej. Colombiana"
+              placeholder="Ej. Santandereana"
               required
             />
             <p class="field-error" id="restaurant-cuisine-error"></p>
 
-            <label for="restaurant-capacity">Capacidad máxima por franja horaria</label>
-            <input
-              id="restaurant-capacity"
-              name="restaurant-capacity"
-              type="number"
-              min="1"
-              max="500"
-              inputmode="numeric"
-              placeholder="60"
-              required
-            />
-            <p class="field-hint">Personas que puedes atender en una misma hora.</p>
-            <p class="field-error" id="restaurant-capacity-error"></p>
+            <label for="restaurant-description">Descripción</label>
+            <textarea
+              id="restaurant-description"
+              name="restaurant-description"
+              rows="3"
+              maxlength="500"
+              placeholder="Ej. Cocina típica santandereana desde 1985."
+            ></textarea>
+            <p class="field-hint">Opcional. Aparece en los resultados de búsqueda.</p>
 
             <div class="form-actions">
               <button class="button" type="submit">Guardar restaurante</button>
@@ -147,11 +180,20 @@
             <p class="field-error" id="branch-name-error"></p>
 
             <label for="branch-address">Dirección</label>
-            <input id="branch-address" name="branch-address" type="text" maxlength="150" required />
+            <input
+              id="branch-address"
+              name="branch-address"
+              type="text"
+              maxlength="150"
+              placeholder="Ej. Cra 33 #45-10"
+              required
+            />
             <p class="field-error" id="branch-address-error"></p>
 
             <label for="branch-city">Ciudad</label>
-            <input id="branch-city" name="branch-city" type="text" maxlength="80" required />
+            <select id="branch-city" name="branch-city" required>
+              <option value="">Elige la ciudad</option>
+            </select>
             <p class="field-error" id="branch-city-error"></p>
 
             <label for="branch-phone">Teléfono</label>
@@ -168,7 +210,13 @@
               inputmode="numeric"
               required
             />
+            <p class="field-hint">Personas que puedes atender en una misma hora.</p>
             <p class="field-error" id="branch-capacity-error"></p>
+
+            <label class="checkbox-field">
+              <input type="checkbox" id="branch-active" checked />
+              Sede activa: los clientes pueden encontrarla y reservar
+            </label>
 
             <fieldset class="schedule-group">
               <legend>Horarios de atención</legend>
@@ -200,41 +248,6 @@
         </section>
       </div>
 
-      <section class="panel booking" id="reservations-section" hidden aria-labelledby="reservations-admin-title">
-        <h2 id="reservations-admin-title">Reservas de la sede</h2>
-        <p class="panel-note" id="reservations-restaurant-label"></p>
-        <form class="search-form" id="reservation-filter-form">
-          <div>
-            <label for="reservation-branch">Sede</label>
-            <select id="reservation-branch" required></select>
-          </div>
-          <div>
-            <label for="reservation-from">Desde</label>
-            <input id="reservation-from" type="date" />
-          </div>
-          <div>
-            <label for="reservation-to">Hasta</label>
-            <input id="reservation-to" type="date" />
-          </div>
-          <div>
-            <label for="reservation-status-filter">Estado</label>
-            <select id="reservation-status-filter">
-              <option value="">Todos</option>
-              <option value="PENDING">Pendientes</option>
-              <option value="CONFIRMED">Aceptadas</option>
-              <option value="REJECTED">Rechazadas</option>
-              <option value="COMPLETED">Completadas</option>
-              <option value="CANCELLED">Canceladas</option>
-            </select>
-          </div>
-          <button class="button" type="submit">Filtrar</button>
-        </form>
-        <p class="status" id="reservations-admin-status" aria-live="polite"></p>
-        <div class="empty-state" id="reservations-admin-empty">
-          <p class="empty-text">No hay reservas para los filtros seleccionados.</p>
-        </div>
-        <ul class="restaurant-list" id="reservations-admin-list"></ul>
-      </section>
     </main>
 
     <footer class="site-footer">
@@ -243,5 +256,6 @@
 
     <script src="../js/auth.js" defer></script>
     <script src="../js/admin.js" defer></script>
+    <script src="../js/admin-reservas.js" defer></script>
   </body>
 </html>

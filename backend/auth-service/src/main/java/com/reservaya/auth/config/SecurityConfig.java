@@ -32,6 +32,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login",
                         "/api/auth/google", "/api/auth/forgot-password", "/api/auth/reset-password").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/auth/config").permitAll()
+                // Solo entre servicios, con el token del administrador reenviado.
+                .requestMatchers("/internal/**").hasAnyRole("RESTAURANT_ADMIN", "SYSTEM_ADMIN")
                 // Sin esto, cualquier excepcion interna se reenvia a /error, la cadena
                 // de seguridad lo deniega y el cliente recibe un 403 vacio y enganoso.
                 .requestMatchers("/error").permitAll()

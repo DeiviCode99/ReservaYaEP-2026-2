@@ -15,6 +15,7 @@ const reservationsEmpty = document.querySelector("#reservations-empty");
 const reservationsList = document.querySelector("#reservations-list");
 const historyEmpty = document.querySelector("#history-empty");
 const historyList = document.querySelector("#history-list");
+const reservationFeedback = document.querySelector("#reservation-feedback");
 
 const countActive = document.querySelector("#count-active");
 const nextDate = document.querySelector("#next-date");
@@ -197,8 +198,13 @@ async function cancelReservation(reservation) {
     }
 
     await loadReservations();
+    reservationFeedback.textContent = "La reserva #" + reservation.id + " fue cancelada correctamente.";
+    reservationFeedback.classList.remove("is-error");
+    reservationFeedback.classList.add("is-success");
   } catch {
-    alert("No se pudo conectar con el servidor.");
+    reservationFeedback.textContent = "No se pudo conectar con el servidor.";
+    reservationFeedback.classList.remove("is-success");
+    reservationFeedback.classList.add("is-error");
   }
 }
 

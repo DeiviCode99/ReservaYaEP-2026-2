@@ -199,6 +199,42 @@
           <ul class="restaurant-list" id="branch-list"></ul>
         </section>
       </div>
+
+      <section class="panel booking" id="reservations-section" hidden aria-labelledby="reservations-admin-title">
+        <h2 id="reservations-admin-title">Reservas de la sede</h2>
+        <p class="panel-note" id="reservations-restaurant-label"></p>
+        <form class="search-form" id="reservation-filter-form">
+          <div>
+            <label for="reservation-branch">Sede</label>
+            <select id="reservation-branch" required></select>
+          </div>
+          <div>
+            <label for="reservation-from">Desde</label>
+            <input id="reservation-from" type="date" />
+          </div>
+          <div>
+            <label for="reservation-to">Hasta</label>
+            <input id="reservation-to" type="date" />
+          </div>
+          <div>
+            <label for="reservation-status-filter">Estado</label>
+            <select id="reservation-status-filter">
+              <option value="">Todos</option>
+              <option value="PENDING">Pendientes</option>
+              <option value="CONFIRMED">Aceptadas</option>
+              <option value="REJECTED">Rechazadas</option>
+              <option value="COMPLETED">Completadas</option>
+              <option value="CANCELLED">Canceladas</option>
+            </select>
+          </div>
+          <button class="button" type="submit">Filtrar</button>
+        </form>
+        <p class="status" id="reservations-admin-status" aria-live="polite"></p>
+        <div class="empty-state" id="reservations-admin-empty">
+          <p class="empty-text">No hay reservas para los filtros seleccionados.</p>
+        </div>
+        <ul class="restaurant-list" id="reservations-admin-list"></ul>
+      </section>
     </main>
 
     <footer class="site-footer">

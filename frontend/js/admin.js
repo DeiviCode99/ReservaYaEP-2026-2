@@ -28,6 +28,17 @@ const branchListEmpty = document.querySelector("#branch-list-empty");
 const branchList = document.querySelector("#branch-list");
 const scheduleRows = document.querySelector("#schedule-rows");
 
+const reservationsSection = document.querySelector("#reservations-section");
+const reservationsRestaurantLabel = document.querySelector("#reservations-restaurant-label");
+const reservationFilterForm = document.querySelector("#reservation-filter-form");
+const reservationBranch = document.querySelector("#reservation-branch");
+const reservationFrom = document.querySelector("#reservation-from");
+const reservationTo = document.querySelector("#reservation-to");
+const reservationStatusFilter = document.querySelector("#reservation-status-filter");
+const reservationsAdminStatus = document.querySelector("#reservations-admin-status");
+const reservationsAdminEmpty = document.querySelector("#reservations-admin-empty");
+const reservationsAdminList = document.querySelector("#reservations-admin-list");
+
 const rInputs = {
   name: document.querySelector("#restaurant-name"),
   address: document.querySelector("#restaurant-address"),
@@ -67,6 +78,23 @@ let restaurants = [];
 let selectedRestaurant = null;
 let editingBranchId = null;
 let branches = [];
+
+const reservationStatusLabels = {
+  PENDING: "Pendiente",
+  CONFIRMED: "Aceptada",
+  REJECTED: "Rechazada",
+  COMPLETED: "Completada",
+  CANCELLED: "Cancelada",
+};
+
+function localDateIso() {
+  const now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  return now.toISOString().slice(0, 10);
+}
+
+reservationFrom.value = localDateIso();
+reservationTo.value = localDateIso();
 
 /* ── Sesión ────────────────────────────────────────────────────────── */
 
@@ -223,6 +251,8 @@ function selectRestaurant(restaurant) {
   branchesSection.hidden = false;
   branchRestaurantLabel.textContent = "Sedes de: " + restaurant.name;
   resetBranchForm();
+  reservationsSection.hidden = false;
+  reservationsRestaurantLabel.textContent = "Reservas de: " + restaurant.name;
   loadBranches();
   branchesSection.scrollIntoView({ behavior: "smooth", block: "start" });
 }
@@ -368,6 +398,134 @@ function renderBranchList() {
   });
 }
 
+function populateReservationBranches() {
+  const previousBranchId = reservationBranch.value;
+  reservationBranch.innerHTML = "";
+
+  branches.forEach(function (branch) {
+    const option = document.createElement("option");
+    option.value = String(branch.id);
+    option.textContent = branch.name;
+    reservationBranch.appendChild(option);
+  });
+
+  if (branches.some(function (branch) { return String(branch.id) === previousBranchId; })) {
+    reservationBranch.value = previousBranchId;
+  }
+  reservationFilterForm.querySelector("button[type=submit]").disabled = branches.length === 0;
+  reservationsAdminEmpty.hidden = branches.length > 0;
+  reservationsAdminList.innerHTML = "";
+  if (branches.length > 0) loadAdminReservations();
+}
+
+const reservationStatusStyles = {
+  PENDING: "badge-warn",
+  CONFIRMED: "badge-ok",
+  REJECTED: "badge-alert",
+  CANCELLED: "badge-alert",
+  COMPLETED: "badge-off",
+};
+
+function reservationCard(reservation) {
+  const item = document.createElement("li");
+  item.className = "restaurant-card";
+  const time = reservation.reservationTime ? reservation.reservationTime.substring(0, 5) : "";
+  item.innerHTML =
+    '<div class="restaurant-card-head">' +
+      '<h3>' + escapeHtml(reservation.customerEmail || "Cliente #" + reservation.userId) + '</h3>' +
+      '<span class="badge ' + (reservationStatusStyles[reservation.status] || "") + '">' +
+        escapeHtml(reservationStatusLabels[reservation.status] || reservation.status) +
+      '</span>' +
+    '</div>' +
+    '<p class="restaurant-address">' + escapeHtml(reservation.reservationDate) +
+      ' · ' + escapeHtml(time) + '</p>' +
+    '<p class="restaurant-meta">' + reservation.partySize +
+      (reservation.partySize === 1 ? ' persona · ' : ' personas · ') +
+      'Reserva #' + reservation.id + '</p>';
+
+  const actions = document.createElement("div");
+  actions.className = "restaurant-actions";
+  const choices = reservation.status === "PENDING"
+    ? [{ status: "CONFIRMED", label: "Aceptar", className: "button button-small" },
+       { status: "REJECTED", label: "Rechazar", className: "button button-small button-danger" }]
+    : reservation.status === "CONFIRMED"
+      ? [{ status: "COMPLETED", label: "Marcar completada", className: "button button-small button-outline" }]
+      : [];
+
+  choices.forEach(function (choice) {
+    const button = document.createElement("button");
+    button.className = choice.className;
+    button.type = "button";
+    button.textContent = choice.label;
+    button.addEventListener("click", function () {
+      changeReservationStatus(reservation, choice.status);
+    });
+    actions.appendChild(button);
+  });
+  item.appendChild(actions);
+  return item;
+}
+
+async function loadAdminReservations() {
+  if (!reservationBranch.value) return;
+  const params = new URLSearchParams({ branchId: reservationBranch.value });
+  if (reservationFrom.value) params.set("from", reservationFrom.value);
+  if (reservationTo.value) params.set("to", reservationTo.value);
+  if (reservationStatusFilter.value) params.set("status", reservationStatusFilter.value);
+
+  setStatus(reservationsAdminStatus, "Cargando reservas...");
+  reservationsAdminEmpty.hidden = true;
+  try {
+    const response = await fetch(API_BASE + "/api/reservations?" + params, {
+      headers: authHeaders(),
+    });
+    if (response.status === 401) { handleUnauthorized(); return; }
+    const data = await response.json().catch(function () { return []; });
+    if (!response.ok) {
+      setStatus(reservationsAdminStatus, data.message || "No se pudieron cargar las reservas.", "error");
+      return;
+    }
+
+    reservationsAdminList.innerHTML = "";
+    const reservations = Array.isArray(data) ? data : [];
+    reservationsAdminEmpty.hidden = reservations.length > 0;
+    reservations.forEach(function (reservation) {
+      reservationsAdminList.appendChild(reservationCard(reservation));
+    });
+    setStatus(reservationsAdminStatus, reservations.length
+      ? reservations.length + (reservations.length === 1 ? " reserva encontrada." : " reservas encontradas.")
+      : "");
+  } catch {
+    setStatus(reservationsAdminStatus, "No se pudo conectar con el servicio de reservas.", "error");
+  }
+}
+
+async function changeReservationStatus(reservation, status) {
+  try {
+    const response = await fetch(API_BASE + "/api/reservations/" + reservation.id + "/status", {
+      method: "PATCH",
+      headers: authHeaders(),
+      body: JSON.stringify({ status }),
+    });
+    if (response.status === 401) { handleUnauthorized(); return; }
+    const data = await response.json().catch(function () { return {}; });
+    if (!response.ok) {
+      setStatus(reservationsAdminStatus, data.message || "No se pudo actualizar el estado.", "error");
+      return;
+    }
+    await loadAdminReservations();
+    setStatus(reservationsAdminStatus,
+      "Reserva actualizada. Se notificó al cliente si hay correo configurado.", "success");
+  } catch {
+    setStatus(reservationsAdminStatus, "No se pudo conectar con el servidor.", "error");
+  }
+}
+
+reservationFilterForm.addEventListener("submit", function (event) {
+  event.preventDefault();
+  loadAdminReservations();
+});
+
 async function loadBranches() {
   if (!selectedRestaurant) return;
 
@@ -382,6 +540,7 @@ async function loadBranches() {
     const data = await response.json();
     branches = Array.isArray(data) ? data : [];
     renderBranchList();
+    populateReservationBranches();
   } catch {
     branchListEmpty.hidden = false;
     setEmptyText(branchListEmpty, "No se pudieron cargar las sedes. Revisa que el servicio esté encendido.");

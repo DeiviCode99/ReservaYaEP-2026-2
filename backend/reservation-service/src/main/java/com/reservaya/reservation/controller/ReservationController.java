@@ -1,18 +1,32 @@
 package com.reservaya.reservation.controller;
 
-import com.reservaya.reservation.dto.*;
-import com.reservaya.reservation.security.AuthenticatedUser;
-import com.reservaya.reservation.service.AvailabilityService;
-import com.reservaya.reservation.service.ReservationService;
-import jakarta.validation.Valid;
+import java.time.LocalDate;
+import java.util.List;
+
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDate;
-import java.util.List;
+import com.reservaya.reservation.dto.AvailabilityResponse;
+import com.reservaya.reservation.dto.ReservationRequest;
+import com.reservaya.reservation.dto.ReservationResponse;
+import com.reservaya.reservation.dto.StatusUpdateRequest;
+import com.reservaya.reservation.exception.InvalidOperationException;
+import com.reservaya.reservation.security.AuthenticatedUser;
+import com.reservaya.reservation.service.AvailabilityService;
+import com.reservaya.reservation.service.ReservationService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/reservations")
@@ -45,10 +59,17 @@ public class ReservationController {
     public ResponseEntity<List<ReservationResponse>> list(
             @RequestParam(required = false) Long branchId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
             @RequestParam(required = false) String status,
             @AuthenticationPrincipal AuthenticatedUser user) {
-        if (branchId != null && date != null) {
-            return ResponseEntity.ok(reservationService.getByBranch(branchId, date, status));
+        if (branchId != null) {
+            LocalDate start = date != null ? date : from;
+            LocalDate end = date != null ? date : to;
+            return ResponseEntity.ok(reservationService.getByBranch(branchId, start, end, status, user));
+        }
+        if (date != null || from != null || to != null || status != null) {
+            throw new InvalidOperationException("El filtro por fecha requiere una sede.");
         }
         return ResponseEntity.ok(reservationService.getMyReservations(user));
     }

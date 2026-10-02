@@ -1,6 +1,8 @@
 /* =====================================================================
    ReservaYa - Panel del cliente
    Muestra reservas activas e historial del usuario autenticado.
+   Usa auth.js (apiFetch, statusBadge, formatDate, errorText) y
+   reservar.js (editReservation).
    ===================================================================== */
 
 if (!requireRole("CLIENT")) {
@@ -22,69 +24,47 @@ const nextDate = document.querySelector("#next-date");
 const countHistory = document.querySelector("#count-history");
 
 sessionLabel.textContent = user.name;
-
 logoutBtn.addEventListener("click", logout);
 
-const statusLabels = {
-  PENDING: "Pendiente",
-  CONFIRMED: "Confirmada",
-  CANCELLED: "Cancelada",
-  REJECTED: "Rechazada",
-  COMPLETED: "Completada",
-};
+function isActive(reservation) {
+  return reservation.status === "PENDING" || reservation.status === "CONFIRMED";
+}
 
-/* El color del distintivo es información: verde confirmada, mostaza en
-   espera, ladrillo cancelada o rechazada, gris completada. */
-const statusStyles = {
-  PENDING: "badge-warn",
-  CONFIRMED: "badge-ok",
-  CANCELLED: "badge-alert",
-  REJECTED: "badge-alert",
-  COMPLETED: "badge-off",
-};
-
-/* "2026-09-24" → "24 de septiembre" */
-function formatDate(value) {
-  if (!value) return "";
-  const parts = String(value).split("-");
-  if (parts.length !== 3) return value;
-  const date = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
-  return date.toLocaleDateString("es-CO", { day: "numeric", month: "long" });
+function actionButton(text, style, onClick) {
+  const button = document.createElement("button");
+  button.className = "button button-small " + style;
+  button.type = "button";
+  button.textContent = text;
+  button.addEventListener("click", onClick);
+  return button;
 }
 
 function renderReservationCard(reservation) {
   const li = document.createElement("li");
   li.className = "restaurant-card";
 
-  const dateStr = formatDate(reservation.reservationDate);
   const timeStr = reservation.reservationTime ? reservation.reservationTime.substring(0, 5) : "";
-  const statusText = statusLabels[reservation.status] || reservation.status;
-  const statusStyle = statusStyles[reservation.status] || "";
-  const place = reservation.branchName || reservation.restaurantName || "Reserva #" + reservation.id;
+  const place = reservation.branchName || "Reserva #" + reservation.id;
 
   li.innerHTML =
     '<div class="restaurant-card-head">' +
-      '<h3>' + escapeHtml(place) + '</h3>' +
-      '<span class="badge ' + statusStyle + '">' + escapeHtml(statusText) + '</span>' +
-    '</div>' +
-    '<p class="restaurant-address">' + escapeHtml(dateStr) + ' a las ' + escapeHtml(timeStr) + '</p>' +
-    '<p class="restaurant-meta">Para ' + reservation.partySize + ' personas (reserva #' + reservation.id + ')</p>';
+      "<h3>" + escapeHtml(place) + "</h3>" +
+      statusBadge(reservation.status) +
+    "</div>" +
+    '<p class="restaurant-address">' + escapeHtml(formatDate(reservation.reservationDate)) +
+      " a las " + escapeHtml(timeStr) + "</p>" +
+    '<p class="restaurant-meta">Para ' + reservation.partySize + " personas (reserva #" + reservation.id + ")</p>" +
+    (reservation.status === "REJECTED" && reservation.cancellationReason
+      ? '<p class="restaurant-meta">Motivo: ' + escapeHtml(reservation.cancellationReason) + "</p>"
+      : "");
 
-  if (reservation.status === "PENDING" || reservation.status === "CONFIRMED") {
+  if (isActive(reservation)) {
     const actions = document.createElement("div");
     actions.className = "restaurant-actions";
-    const editBtn = document.createElement("button");
-    editBtn.className = "button button-small button-outline";
-    editBtn.type = "button";
-    editBtn.textContent = "Modificar";
-    editBtn.addEventListener("click", function () { editReservation(reservation); });
-    actions.appendChild(editBtn);
-    const cancelBtn = document.createElement("button");
-    cancelBtn.className = "button button-small button-danger";
-    cancelBtn.type = "button";
-    cancelBtn.textContent = "Cancelar";
-    cancelBtn.addEventListener("click", function () { cancelReservation(reservation); });
-    actions.appendChild(cancelBtn);
+    actions.appendChild(actionButton("Modificar", "button-outline",
+      function () { editReservation(reservation); }));
+    actions.appendChild(actionButton("Cancelar", "button-danger",
+      function () { cancelReservation(reservation); }));
     li.appendChild(actions);
   }
 
@@ -100,9 +80,8 @@ async function addBranchNames(reservations) {
 
   await Promise.all(missing.map(async function (id) {
     try {
-      const response = await fetch(API_BASE + "/api/restaurants/branches/" + id);
-      const branch = response.ok ? await response.json() : null;
-      branchNames[id] = branch ? branch.restaurantName + " · " + branch.name : null;
+      const branch = await apiFetch("/api/restaurants/branches/" + id);
+      branchNames[id] = branch.restaurantName + " · " + branch.name;
     } catch {
       branchNames[id] = null;
     }
@@ -111,51 +90,29 @@ async function addBranchNames(reservations) {
   reservations.forEach(function (r) { r.branchName = branchNames[r.branchId]; });
 }
 
+function renderList(list, empty, items, emptyMessage) {
+  list.innerHTML = "";
+  empty.hidden = items.length > 0;
+  if (items.length === 0) setEmptyText(empty, emptyMessage);
+  items.forEach(function (r) { list.appendChild(renderReservationCard(r)); });
+}
+
 async function loadReservations() {
   try {
-    const response = await fetch(API_BASE + "/api/reservations", {
-      headers: authHeaders(),
-    });
-
-    if (response.status === 401) {
-      handleUnauthorized();
-      return;
-    }
-
-    const data = await response.json();
-    const reservations = Array.isArray(data) ? data : [];
+    const reservations = await apiFetch("/api/reservations");
     await addBranchNames(reservations);
 
-    const active = reservations.filter(function (r) {
-      return r.status === "PENDING" || r.status === "CONFIRMED";
-    });
-    const history = reservations.filter(function (r) {
-      return r.status !== "PENDING" && r.status !== "CONFIRMED";
-    });
+    const active = reservations.filter(isActive);
+    const history = reservations.filter(function (r) { return !isActive(r); });
 
-    reservationsList.innerHTML = "";
-    historyList.innerHTML = "";
-
-    if (active.length === 0) {
-      reservationsEmpty.hidden = false;
-      setEmptyText(reservationsEmpty, "No tienes reservas activas. Busca un restaurante y aparta tu mesa.");
-    } else {
-      reservationsEmpty.hidden = true;
-      active.forEach(function (r) { reservationsList.appendChild(renderReservationCard(r)); });
-    }
-
-    if (history.length === 0) {
-      historyEmpty.hidden = false;
-      setEmptyText(historyEmpty, "Aquí quedarán tus reservas completadas, canceladas o rechazadas.");
-    } else {
-      historyEmpty.hidden = true;
-      history.forEach(function (r) { historyList.appendChild(renderReservationCard(r)); });
-    }
-
+    renderList(reservationsList, reservationsEmpty, active,
+      "No tienes reservas activas. Busca una sede arriba y aparta tu mesa.");
+    renderList(historyList, historyEmpty, history,
+      "Aquí quedarán tus reservas completadas, canceladas o rechazadas.");
     updateSummary(active, history);
-  } catch {
+  } catch (error) {
     reservationsEmpty.hidden = false;
-    setEmptyText(reservationsEmpty, "No se pudo conectar con el servidor. Vuelve a intentarlo en un momento.");
+    setEmptyText(reservationsEmpty, errorText(error));
   }
 }
 
@@ -167,7 +124,7 @@ function updateSummary(active, history) {
   const upcoming = active
     .slice()
     .sort(function (a, b) {
-      return String(a.reservationDate).localeCompare(String(b.reservationDate));
+      return String(a.reservationDate + a.reservationTime).localeCompare(String(b.reservationDate + b.reservationTime));
     })[0];
 
   nextDate.textContent = upcoming ? formatDate(upcoming.reservationDate) : "—";
@@ -180,31 +137,14 @@ async function cancelReservation(reservation) {
   if (!confirmed) return;
 
   try {
-    const response = await fetch(API_BASE + "/api/reservations/" + reservation.id, {
+    await apiFetch("/api/reservations/" + reservation.id, {
       method: "PATCH",
-      headers: authHeaders(),
       body: JSON.stringify({ cancellationReason: "Cancelada por el cliente" }),
     });
-
-    if (response.status === 401) {
-      handleUnauthorized();
-      return;
-    }
-
-    if (!response.ok) {
-      const result = await response.json().catch(function () { return {}; });
-      alert(result.message || "No se pudo cancelar la reserva.");
-      return;
-    }
-
     await loadReservations();
-    reservationFeedback.textContent = "La reserva #" + reservation.id + " fue cancelada correctamente.";
-    reservationFeedback.classList.remove("is-error");
-    reservationFeedback.classList.add("is-success");
-  } catch {
-    reservationFeedback.textContent = "No se pudo conectar con el servidor.";
-    reservationFeedback.classList.remove("is-success");
-    reservationFeedback.classList.add("is-error");
+    showStatus(reservationFeedback, "La reserva #" + reservation.id + " fue cancelada correctamente.", "success");
+  } catch (error) {
+    showStatus(reservationFeedback, errorText(error), "error");
   }
 }
 

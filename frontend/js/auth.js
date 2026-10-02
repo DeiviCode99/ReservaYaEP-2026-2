@@ -105,6 +105,71 @@ function setEmptyText(container, message) {
   }
 }
 
+/* ---------------------------------------------------------------------
+   Utilidades compartidas por los paneles
+   --------------------------------------------------------------------- */
+
+/* Llamada al gateway con el token de la sesión. Devuelve el JSON de la
+   respuesta o lanza un Error con el mensaje que manda el backend. Un 401
+   (sesión vencida) cierra la sesión y lleva al login. */
+async function apiFetch(path, options) {
+  const response = await fetch(API_BASE + path, Object.assign({ headers: authHeaders() }, options));
+  if (response.status === 401) {
+    handleUnauthorized();
+    throw new Error("Tu sesión expiró.");
+  }
+  const data = await response.json().catch(function () { return {}; });
+  if (!response.ok) throw new Error(data.message || "No se pudo completar la solicitud.");
+  return data;
+}
+
+/* Mensaje de estado bajo un formulario: tone = "success" | "error" | nada. */
+function showStatus(element, message, tone) {
+  element.textContent = message || "";
+  element.classList.toggle("is-success", tone === "success");
+  element.classList.toggle("is-error", tone === "error");
+}
+
+/* Mensaje legible para un error de apiFetch: sin red, fetch lanza TypeError. */
+function errorText(error) {
+  return error instanceof TypeError ? "No se pudo conectar con el servidor." : error.message;
+}
+
+/* El color del distintivo es información: verde confirmada, mostaza en
+   espera, ladrillo cancelada o rechazada, gris completada. */
+const RESERVATION_STATUS = {
+  PENDING: { label: "Pendiente", badge: "badge-warn" },
+  CONFIRMED: { label: "Confirmada", badge: "badge-ok" },
+  CANCELLED: { label: "Cancelada", badge: "badge-alert" },
+  REJECTED: { label: "Rechazada", badge: "badge-alert" },
+  COMPLETED: { label: "Completada", badge: "badge-off" },
+};
+
+function statusBadge(status) {
+  const info = RESERVATION_STATUS[status] || { label: status, badge: "" };
+  return '<span class="badge ' + info.badge + '">' + escapeHtml(info.label) + "</span>";
+}
+
+/* "2026-09-24" → "24 de septiembre" */
+function formatDate(value) {
+  if (!value) return "";
+  const parts = String(value).split("-");
+  if (parts.length !== 3) return value;
+  const date = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+  return date.toLocaleDateString("es-CO", { day: "numeric", month: "long" });
+}
+
+/* Fecha local de hoy en formato ISO (no UTC, para que no salte de día en la noche). */
+function todayIso() {
+  const now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  return now.toISOString().slice(0, 10);
+}
+
+/* Ciudades del área metropolitana. La búsqueda del cliente compara el texto
+   exacto, así que el administrador elige de esta misma lista. */
+const CITIES = ["Bucaramanga", "Floridablanca", "Girón", "Piedecuesta"];
+
 /* Botón de Google (Google Identity Services). El client ID lo entrega el
    backend: si GOOGLE_CLIENT_ID no está configurado, el bloque sigue oculto y
    solo queda el formulario de correo y contraseña.

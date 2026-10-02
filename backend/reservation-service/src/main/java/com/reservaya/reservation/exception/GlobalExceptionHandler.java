@@ -29,6 +29,11 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<Map<String, Object>> handleForbidden(ForbiddenException ex) {
+        return buildResponse(HttpStatus.FORBIDDEN, ex.getMessage());
+    }
+
     @ExceptionHandler(InsufficientCapacityException.class)
     public ResponseEntity<Map<String, Object>> handleCapacity(InsufficientCapacityException ex) {
         return buildResponse(HttpStatus.CONFLICT, ex.getMessage());

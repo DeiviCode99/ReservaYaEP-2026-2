@@ -49,7 +49,7 @@ class ReservationFlowTest {
     private final AvailabilityService availability = new AvailabilityService(restaurantClient, repository);
     private final ReservationService reservations =
             new ReservationService(repository, auditRepository, availability,
-                new ReservationProperties(), restaurantClient, notifier);
+                new ReservationProperties(), notifier);
     private final AuthenticatedUser client = new AuthenticatedUser(3L, "ana@test.co", "CLIENT");
 
     @BeforeEach
@@ -167,63 +167,33 @@ class ReservationFlowTest {
         ReservationResponse saved = reservations.create(request(LocalTime.of(13, 0), 6), client);
         assertEquals("PENDING", saved.status());
         assertEquals(3L, saved.userId());
-        assertEquals("ana@test.co", saved.customerEmail());
-        verify(repository).save(any(Reservation.class));
+        verify(repository).save(argThat(reservation -> "ana@test.co".equals(reservation.getCustomerEmail())));
         verify(auditRepository).save(any(ReservationAudit.class));
-        }
+    }
 
-        @Test
-        void administratorCanFilterOwnedBranchByDateRangeAndStatus() {
-        AuthenticatedUser admin = new AuthenticatedUser(9L, "admin@test.co", "RESTAURANT_ADMIN");
-        when(restaurantClient.isAdminOfRestaurant(9L, 42L)).thenReturn(true);
-        LocalDate through = NEXT_WEEK.plusDays(4);
-
-        List<ReservationResponse> found = reservations.getByBranch(
-            7L, NEXT_WEEK, through, "CONFIRMED", admin);
-
-        assertTrue(found.isEmpty());
-        verify(repository).searchByBranchAndDateRange(7L, NEXT_WEEK, through, ReservationStatus.CONFIRMED);
-        }
-
-        @Test
-        void clientsAndAdminsOfOtherRestaurantsCannotReadBranchReservations() {
-        assertThrows(AccessDeniedException.class,
-            () -> reservations.getByBranch(7L, NEXT_WEEK, NEXT_WEEK, null, client));
-
-        AuthenticatedUser otherAdmin = new AuthenticatedUser(10L, "other@test.co", "RESTAURANT_ADMIN");
-        assertThrows(AccessDeniedException.class,
-            () -> reservations.getByBranch(7L, NEXT_WEEK, NEXT_WEEK, null, otherAdmin));
-        }
-
-        @Test
-        void administratorStatusChangeIsAuditedAndNotifiesTheCustomer() {
-        Reservation reservation = existing(ReservationStatus.PENDING);
-        AuthenticatedUser admin = new AuthenticatedUser(9L, "admin@test.co", "RESTAURANT_ADMIN");
-        when(restaurantClient.isAdminOfRestaurant(9L, 42L)).thenReturn(true);
-        StatusUpdateRequest request = new StatusUpdateRequest();
-        request.setStatus("CONFIRMED");
-
-        ReservationResponse updated = reservations.updateStatus(55L, request, admin);
-
-        assertEquals("CONFIRMED", updated.status());
-        verify(auditRepository).save(argThat(audit ->
-            audit.getReservationId().equals(55L)
-                && audit.getActorUserId().equals(9L)
-                && audit.getAction().equals("STATUS_CHANGED")
-                && audit.getPreviousStatus() == ReservationStatus.PENDING
-                && audit.getNewStatus() == ReservationStatus.CONFIRMED));
-        verify(notifier).notifyCustomer(reservation, "Estado de reserva actualizado",
-            "El estado de tu reserva #55 cambió de pendiente a confirmada.");
-        }
-
-        @Test
-        void clientCannotModifyReservationInsideMinimumTimeWindow() {
+    @Test
+    void clientCannotModifyReservationInsideMinimumTimeWindow() {
         Reservation reservation = existing(ReservationStatus.CONFIRMED);
         var soon = java.time.LocalDateTime.now(ZoneId.of("America/Bogota")).plusMinutes(45);
         reservation.setReservationDate(soon.toLocalDate());
         reservation.setReservationTime(soon.toLocalTime());
 
         assertThrows(InvalidOperationException.class,
-            () -> reservations.cancel(55L, "Cambio de planes", client));
+                () -> reservations.cancel(55L, "Cambio de planes", client));
+    }
+
+    @Test
+    void cancellationWritesAuditAndNotifiesCustomer() {
+        Reservation reservation = existing(ReservationStatus.CONFIRMED);
+
+        ReservationResponse cancelled = reservations.cancel(55L, "Cambio de planes", client);
+
+        assertEquals("CANCELLED", cancelled.status());
+        verify(auditRepository).save(argThat(audit ->
+                audit.getAction().equals("CANCELLED")
+                        && audit.getPreviousStatus() == ReservationStatus.CONFIRMED
+                        && audit.getNewStatus() == ReservationStatus.CANCELLED));
+        verify(notifier).notifyCustomer(reservation, "Reserva cancelada",
+                "Tu reserva #55 fue cancelada correctamente.");
     }
 }

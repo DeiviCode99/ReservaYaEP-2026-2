@@ -10,6 +10,7 @@ import com.reservaya.reservation.entity.Reservation;
 import com.reservaya.reservation.entity.ReservationStatus;
 import com.reservaya.reservation.exception.ForbiddenException;
 import com.reservaya.reservation.exception.InvalidOperationException;
+import com.reservaya.reservation.repository.ReservationAuditRepository;
 import com.reservaya.reservation.repository.ReservationRepository;
 import com.reservaya.reservation.security.AuthenticatedUser;
 import com.reservaya.reservation.security.BranchAccess;
@@ -32,10 +33,13 @@ class BranchReservationFlowTest {
     private static final LocalDate DAY = LocalDate.of(2026, 10, 1);
 
     private final ReservationRepository repository = mock(ReservationRepository.class);
+    private final ReservationAuditRepository auditRepository = mock(ReservationAuditRepository.class);
     private final RestaurantClient restaurantClient = mock(RestaurantClient.class);
     private final UserClient userClient = mock(UserClient.class);
+    private final ReservationNotifier notifier = mock(ReservationNotifier.class);
     private final BranchReservationService service =
-            new BranchReservationService(repository, new BranchAccess(restaurantClient), userClient);
+            new BranchReservationService(repository, auditRepository, new BranchAccess(restaurantClient),
+                userClient, notifier);
 
     private final AuthenticatedUser owner = new AuthenticatedUser(5L, "dueno@test.co", "RESTAURANT_ADMIN");
     private final AuthenticatedUser otherOwner = new AuthenticatedUser(6L, "otro@test.co", "RESTAURANT_ADMIN");
@@ -60,6 +64,7 @@ class BranchReservationFlowTest {
         r.setReservationDate(DAY);
         r.setReservationTime(LocalTime.of(hour, 0));
         r.setPartySize(2);
+        r.setCustomerEmail("ana@test.co");
         r.setStatus(status);
         when(repository.findById(id)).thenReturn(Optional.of(r));
         return r;
@@ -77,10 +82,10 @@ class BranchReservationFlowTest {
         List<Reservation> reservations = List.of(
                 reservation(2, 20, ReservationStatus.PENDING),
                 reservation(1, 13, ReservationStatus.CONFIRMED));
-        when(repository.findByBranchIdAndReservationDate(7L, DAY)).thenReturn(reservations);
+        when(repository.searchByBranchAndDateRange(7L, DAY, DAY, null)).thenReturn(reservations);
         when(userClient.findByIds(any())).thenReturn(Map.of(3L, new UserSummary(3L, "Ana Gómez", "ana@test.co")));
 
-        List<ReservationResponse> day = service.getByBranch(7L, DAY, null, owner);
+        List<ReservationResponse> day = service.getByBranch(7L, DAY, DAY, null, owner);
 
         assertEquals(List.of(1L, 2L), day.stream().map(ReservationResponse::id).toList(), "ordenadas por hora");
         assertEquals("Ana Gómez", day.get(0).customerName());
@@ -88,20 +93,33 @@ class BranchReservationFlowTest {
     }
 
     @Test
-    void listStillWorksIfCustomerDataIsUnavailable() {
-        List<Reservation> one = List.of(reservation(1, 13, ReservationStatus.PENDING));
-        when(repository.findByBranchIdAndReservationDate(7L, DAY)).thenReturn(one);
+    void ownerCanFilterAReservationRangeByStatus() {
+        Reservation pending = reservation(1, 13, ReservationStatus.PENDING);
+        when(repository.searchByBranchAndDateRange(7L, DAY, DAY.plusDays(2), ReservationStatus.PENDING))
+            .thenReturn(List.of(pending));
         when(userClient.findByIds(any())).thenReturn(Map.of());
 
-        assertNull(service.getByBranch(7L, DAY, null, owner).get(0).customerName());
+        List<ReservationResponse> found = service.getByBranch(7L, DAY, DAY.plusDays(2), "PENDING", owner);
+
+        assertEquals(1, found.size());
+        verify(repository).searchByBranchAndDateRange(7L, DAY, DAY.plusDays(2), ReservationStatus.PENDING);
+    }
+
+    @Test
+    void listStillWorksIfCustomerDataIsUnavailable() {
+        List<Reservation> one = List.of(reservation(1, 13, ReservationStatus.PENDING));
+        when(repository.searchByBranchAndDateRange(7L, DAY, DAY, null)).thenReturn(one);
+        when(userClient.findByIds(any())).thenReturn(Map.of());
+
+        assertNull(service.getByBranch(7L, DAY, DAY, null, owner).get(0).customerName());
     }
 
     @Test
     void onlyTheBranchOwnerCanSeeOrChangeItsReservations() {
         reservation(1, 13, ReservationStatus.PENDING);
 
-        assertThrows(ForbiddenException.class, () -> service.getByBranch(7L, DAY, null, otherOwner));
-        assertThrows(ForbiddenException.class, () -> service.getByBranch(7L, DAY, null, client));
+        assertThrows(ForbiddenException.class, () -> service.getByBranch(7L, DAY, DAY, null, otherOwner));
+        assertThrows(ForbiddenException.class, () -> service.getByBranch(7L, DAY, DAY, null, client));
         assertThrows(ForbiddenException.class, () -> service.updateStatus(1L, to("CONFIRMED", null), client));
         assertThrows(ForbiddenException.class, () -> service.updateStatus(1L, to("CONFIRMED", null), otherOwner));
         verify(repository, never()).save(any());
@@ -118,6 +136,8 @@ class BranchReservationFlowTest {
         ReservationResponse rejected = service.updateStatus(2L, to("REJECTED", "  Sede cerrada por evento  "), owner);
         assertEquals("REJECTED", rejected.status());
         assertEquals("Sede cerrada por evento", rejected.cancellationReason());
+        verify(auditRepository, times(3)).save(any());
+        verify(notifier, times(3)).notifyCustomer(any(Reservation.class), any(), any());
 
         reservation(3, 15, ReservationStatus.PENDING);
         assertThrows(InvalidOperationException.class, () -> service.updateStatus(3L, to("COMPLETED", null), owner),

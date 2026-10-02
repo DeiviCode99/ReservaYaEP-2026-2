@@ -2,7 +2,6 @@ package com.reservaya.reservation.dto;
 
 import com.reservaya.reservation.client.UserClient.UserSummary;
 import com.reservaya.reservation.entity.Reservation;
-
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
@@ -19,8 +18,7 @@ public record ReservationResponse(Long id, Long userId, Long branchId,
         return new ReservationResponse(r.getId(), r.getUserId(), r.getBranchId(),
                 r.getReservationDate(), r.getReservationTime(),
                 r.getPartySize(), r.getStatus().name(),
-                r.getCancellationReason(), r.getCreatedAt(), r.getUpdatedAt(),
-                null, null);
+            r.getCancellationReason(), r.getCreatedAt(), r.getUpdatedAt(), null, null);
     }
 
     public ReservationResponse withCustomer(UserSummary customer) {

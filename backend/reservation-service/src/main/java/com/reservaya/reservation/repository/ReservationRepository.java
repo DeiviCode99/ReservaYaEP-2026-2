@@ -20,16 +20,16 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     List<Reservation> findByBranchIdAndReservationDateAndStatusIn(
             Long branchId, LocalDate date, List<ReservationStatus> statuses);
 
+    /** Sin parámetros null: PostgreSQL no infiere su tipo (ver BranchRepository.search). */
     @Query("SELECT r FROM Reservation r " +
             "WHERE r.branchId = :branchId " +
-            "AND (:fromDate IS NULL OR r.reservationDate >= :fromDate) " +
-            "AND (:toDate IS NULL OR r.reservationDate <= :toDate) " +
-            "AND (:status IS NULL OR r.status = :status) " +
+            "AND r.reservationDate BETWEEN :fromDate AND :toDate " +
+            "AND r.status IN :statuses " +
             "ORDER BY r.reservationDate, r.reservationTime")
     List<Reservation> searchByBranchAndDateRange(@Param("branchId") Long branchId,
-                                                         @Param("fromDate") LocalDate fromDate,
-                                                         @Param("toDate") LocalDate toDate,
-                                                         @Param("status") ReservationStatus status);
+                                                 @Param("fromDate") LocalDate fromDate,
+                                                 @Param("toDate") LocalDate toDate,
+                                                 @Param("statuses") List<ReservationStatus> statuses);
 
     @Query("SELECT COALESCE(SUM(r.partySize), 0) FROM Reservation r " +
            "WHERE r.branchId = :branchId AND r.reservationDate = :date " +

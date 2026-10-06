@@ -108,9 +108,10 @@ function renderReservations(reservations) {
 
   adminReservationsList.innerHTML = "";
   adminReservationsEmpty.hidden = shown.length > 0 || filterBranch.disabled;
-  const rangeLabel = filterFrom.value === filterTo.value
-    ? formatDate(filterFrom.value || filterTo.value)
-    : formatDate(filterFrom.value) + " - " + formatDate(filterTo.value);
+  // Con una sola fecha, el backend consulta ese día.
+  const from = filterFrom.value || filterTo.value;
+  const to = filterTo.value || filterFrom.value;
+  const rangeLabel = from === to ? formatDate(from) : formatDate(from) + " - " + formatDate(to);
   setEmptyText(adminReservationsEmpty, dayReservations.length === 0
     ? "No hay reservas para esta sede en " + rangeLabel + "."
     : "No hay reservas con ese estado en este rango.");

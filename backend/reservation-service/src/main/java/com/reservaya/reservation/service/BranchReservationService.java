@@ -54,13 +54,18 @@ public class BranchReservationService {
         if (from == null && to == null) {
             throw new InvalidOperationException("Indica una fecha o un rango de fechas.");
         }
-        if (from != null && to != null && from.isAfter(to)) {
+        // Con una sola fecha del rango, se consulta ese día.
+        LocalDate start = from != null ? from : to;
+        LocalDate end = to != null ? to : from;
+        if (start.isAfter(end)) {
             throw new InvalidOperationException("La fecha inicial no puede ser posterior a la fecha final.");
         }
 
-        ReservationStatus filterStatus = status == null || status.isBlank() ? null : parseStatus(status);
+        List<ReservationStatus> statuses = status == null || status.isBlank()
+                ? List.of(ReservationStatus.values())
+                : List.of(parseStatus(status));
         List<Reservation> reservations = reservationRepository
-                .searchByBranchAndDateRange(branchId, from, to, filterStatus);
+                .searchByBranchAndDateRange(branchId, start, end, statuses);
 
         Set<Long> customerIds = reservations.stream().map(Reservation::getUserId).collect(Collectors.toSet());
         Map<Long, UserSummary> customers = userClient.findByIds(customerIds);

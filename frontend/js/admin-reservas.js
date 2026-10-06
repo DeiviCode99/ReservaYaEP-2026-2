@@ -19,6 +19,7 @@ const countPeople = document.querySelector("#count-people");
 
 let dayReservations = [];
 let reservationsRequest = 0; // descarta respuestas viejas si cambian los filtros rápido
+let adminBranches = []; // { id, label } de todas las sedes, para la campanita
 
 /* Qué puede hacer el restaurante en cada estado (espejo de ReservationStatus
    en el backend, que es quien valida de verdad). */
@@ -47,6 +48,8 @@ async function refreshReservationBranches() {
       });
     }));
     const options = groups.flat();
+    adminBranches = options;
+    notifications.run();
 
     filterBranch.innerHTML = "";
     if (options.length === 0) {
@@ -184,6 +187,37 @@ filterFrom.addEventListener("change", loadBranchReservations);
 filterTo.addEventListener("change", loadBranchReservations);
 filterStatus.addEventListener("change", function () { renderReservations(dayReservations); });
 
+/* ── Campanita: reservas pendientes nuevas en cualquier sede ───────── */
+
+const pendingSnapshot = notifySnapshot("admin-pending");
+
+async function checkNewReservations() {
+  if (adminBranches.length === 0) return [];
+  const range = { from: todayIso(), to: isoDaysFromToday(365), status: "PENDING" };
+  const perBranch = await Promise.all(adminBranches.map(function (branch) {
+    const params = new URLSearchParams(Object.assign({ branchId: branch.id }, range));
+    return apiFetch("/api/reservations?" + params).then(function (list) {
+      return list.map(function (r) { return { reservation: r, branch: branch }; });
+    });
+  }));
+  const pending = perBranch.flat();
+
+  const known = new Set(pendingSnapshot.load() || []);
+  pendingSnapshot.save(pending.map(function (p) { return p.reservation.id; }));
+  const fresh = pending.filter(function (p) { return !known.has(p.reservation.id); });
+
+  // La lista abierta se actualiza sola si la novedad es de la sede que se está viendo.
+  if (fresh.some(function (p) { return p.branch.id === filterBranch.value; })) loadBranchReservations();
+  return fresh.map(function (p) {
+    const r = p.reservation;
+    return "Nueva reserva en " + p.branch.label + ": " + formatDate(r.reservationDate) + " a las " +
+      r.reservationTime.substring(0, 5) + ", " + r.partySize + (r.partySize === 1 ? " persona." : " personas.");
+  });
+}
+
+const notifications = setupNotifications(checkNewReservations);
+
+// Por defecto, el próximo mes: una reserva para otro día también debe verse.
 filterFrom.value = todayIso();
-filterTo.value = todayIso();
+filterTo.value = isoDaysFromToday(30);
 refreshReservationBranches();

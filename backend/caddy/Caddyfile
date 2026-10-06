@@ -4,6 +4,9 @@
 		reverse_proxy api-gateway:8080
 	}
 	handle {
+		# Sin esto el navegador guarda el JS viejo tras un despliegue y lo mezcla
+		# con el HTML nuevo (elementos null). no-cache = revalidar siempre (304 si no cambio).
+		header Cache-Control "no-cache"
 		root * /srv
 		# URLs limpias: /login.html se sirve desde html/login.html sin redirigir.
 		# Los enlaces de las paginas siguen funcionando: "login.html" queda en

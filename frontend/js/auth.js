@@ -161,9 +161,124 @@ function formatDate(value) {
 
 /* Fecha local de hoy en formato ISO (no UTC, para que no salte de día en la noche). */
 function todayIso() {
-  const now = new Date();
-  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-  return now.toISOString().slice(0, 10);
+  return isoDaysFromToday(0);
+}
+
+function isoDaysFromToday(days) {
+  const date = new Date();
+  date.setDate(date.getDate() + days);
+  date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+  return date.toISOString().slice(0, 10);
+}
+
+/* ── Notificaciones en vivo (campanita) ─────────────────────────────
+   Cada panel pasa `check`: consulta el backend y devuelve los mensajes nuevos
+   desde la última revisión. Se revisa al cargar, cada 15 s y al volver a la pestaña.
+   ponytail: sondeo cada 15 s; si hace falta inmediatez real, SSE desde reservation-service. */
+const NOTIFY_INTERVAL_MS = 15000;
+
+function setupNotifications(check) {
+  const box = document.createElement("div");
+  box.className = "notify";
+  box.innerHTML =
+    '<button class="notify-bell" type="button" aria-expanded="false" aria-label="Notificaciones">' +
+      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22Zm7-6v-5a7 7 0 0 0-5.5-6.84V3a1.5 1.5 0 0 0-3 0v1.16A7 7 0 0 0 5 11v5l-2 2v1h18v-1Z"/></svg>' +
+      '<span class="notify-count" hidden></span>' +
+    "</button>" +
+    '<div class="notify-panel" hidden>' +
+      '<p class="notify-title">Notificaciones</p>' +
+      '<ul class="notify-list"></ul>' +
+      '<p class="notify-empty">Sin novedades por ahora.</p>' +
+    "</div>";
+  document.querySelector(".nav-actions").prepend(box);
+
+  const toast = document.createElement("div");
+  toast.className = "notify-toast";
+  toast.setAttribute("role", "status");
+  toast.hidden = true;
+  document.body.appendChild(toast);
+
+  const bell = box.querySelector(".notify-bell");
+  const count = box.querySelector(".notify-count");
+  const panel = box.querySelector(".notify-panel");
+  const list = box.querySelector(".notify-list");
+  const empty = box.querySelector(".notify-empty");
+  let unread = 0;
+  let toastTimer = null;
+  let running = false;
+
+  function renderCount() {
+    count.hidden = unread === 0;
+    count.textContent = unread > 9 ? "9+" : String(unread);
+    bell.setAttribute("aria-label", unread ? "Notificaciones: " + unread + " sin leer" : "Notificaciones");
+  }
+
+  function setOpen(open) {
+    panel.hidden = !open;
+    bell.setAttribute("aria-expanded", String(open));
+    if (open) {
+      unread = 0;
+      renderCount();
+      // Avisos del sistema cuando la pestaña no está visible; se pide permiso con un clic del usuario.
+      if ("Notification" in window && Notification.permission === "default") Notification.requestPermission();
+    }
+  }
+
+  bell.addEventListener("click", function () { setOpen(panel.hidden); });
+  document.addEventListener("click", function (event) { if (!box.contains(event.target)) setOpen(false); });
+  document.addEventListener("keydown", function (event) { if (event.key === "Escape") setOpen(false); });
+
+  function push(messages) {
+    messages.forEach(function (message) {
+      const item = document.createElement("li");
+      item.textContent = message;
+      list.prepend(item);
+    });
+    while (list.children.length > 20) list.lastChild.remove();
+    empty.hidden = true;
+    unread += messages.length;
+    renderCount();
+
+    const text = messages.length === 1 ? messages[0] : messages.length + " novedades. Revisa la campanita.";
+    toast.textContent = text;
+    toast.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toast.hidden = true; }, 7000);
+    if (document.hidden && "Notification" in window && Notification.permission === "granted") {
+      new Notification("ReservaYa", { body: text, icon: "../images/favicon.svg" });
+    }
+  }
+
+  async function run() {
+    if (running) return;
+    running = true;
+    try {
+      const messages = await check();
+      if (messages.length) push(messages);
+    } catch {
+      // Sin red o sesión caída: se reintenta en el siguiente ciclo.
+    } finally {
+      running = false;
+    }
+  }
+
+  setInterval(run, NOTIFY_INTERVAL_MS);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) run(); });
+  run();
+  return { run: run };
+}
+
+/* Lo último que vio la campanita, por usuario: así también avisa lo que pasó mientras no estaba. */
+function notifySnapshot(name) {
+  const key = "reservaya.notify." + name + "." + (getUser() || {}).id;
+  return {
+    load: function () {
+      try { return JSON.parse(localStorage.getItem(key)); } catch { return null; }
+    },
+    save: function (value) {
+      try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* sin almacenamiento */ }
+    },
+  };
 }
 
 /* Ciudades del área metropolitana. La búsqueda del cliente compara el texto

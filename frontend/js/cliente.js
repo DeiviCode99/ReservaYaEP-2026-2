@@ -149,3 +149,33 @@ async function cancelReservation(reservation) {
 }
 
 loadReservations();
+
+/* Campanita: avisa cuando el restaurante responde. Los cambios que hace el
+   propio cliente (crear, modificar, cancelar) no se notifican. */
+const statusSnapshot = notifySnapshot("client-status");
+const RESTAURANT_UPDATES = {
+  CONFIRMED: "fue confirmada",
+  REJECTED: "fue rechazada",
+  COMPLETED: "quedó como completada",
+};
+
+async function checkStatusChanges() {
+  const reservations = await apiFetch("/api/reservations");
+  const known = statusSnapshot.load() || {};
+  const current = {};
+  reservations.forEach(function (r) { current[r.id] = r.status; });
+  statusSnapshot.save(current);
+
+  const changed = reservations.filter(function (r) {
+    return known[r.id] && known[r.id] !== r.status && RESTAURANT_UPDATES[r.status];
+  });
+  if (changed.length) loadReservations();
+  return changed.map(function (r) {
+    const place = branchNames[r.branchId] ? " en " + branchNames[r.branchId] : "";
+    return "Tu reserva #" + r.id + place + " del " + formatDate(r.reservationDate) + " " +
+      RESTAURANT_UPDATES[r.status] + "." +
+      (r.status === "REJECTED" && r.cancellationReason ? " Motivo: " + r.cancellationReason : "");
+  });
+}
+
+setupNotifications(checkStatusChanges);

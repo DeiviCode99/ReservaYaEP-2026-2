@@ -6,6 +6,8 @@ import com.reservaya.restaurant.dto.ScheduleRequest;
 import com.reservaya.restaurant.entity.Branch;
 import com.reservaya.restaurant.entity.Restaurant;
 import com.reservaya.restaurant.entity.Schedule;
+import com.reservaya.restaurant.exception.BadRequestException;
+import com.reservaya.restaurant.exception.DuplicateResourceException;
 import com.reservaya.restaurant.repository.BranchRepository;
 import com.reservaya.restaurant.repository.RestaurantRepository;
 import com.reservaya.restaurant.security.AuthenticatedUser;
@@ -93,6 +95,31 @@ class BranchUpdateTest {
         assertTrue(branch.getSchedules().get(6).getIsClosed());
         assertFalse(updated.active(), "la sede se puede desactivar");
         assertEquals("Doña Marta", updated.restaurantName());
+    }
+
+    @Test
+    void invalidSchedulesAndDuplicateNamesAreRejectedBeforeTouchingTheDb() {
+        assertThrows(BadRequestException.class, () -> service.update(1L, 7L,
+                request(List.of(day(1, 22, 12, false)), true), owner));
+        assertThrows(BadRequestException.class, () -> service.update(1L, 7L,
+                request(List.of(day(1, 12, 22, false), day(1, 12, 22, false)), true), owner));
+
+        when(branchRepository.existsByRestaurantIdAndNameIgnoreCaseAndIdNot(1L, "Sede Cabecera", 7L)).thenReturn(true);
+        assertThrows(DuplicateResourceException.class, () -> service.update(1L, 7L,
+                request(List.of(day(1, 12, 22, false)), true), owner));
+        verify(branchRepository, never()).save(any());
+    }
+
+    @Test
+    void closedDayWithoutHoursStoresMidnight() {
+        ScheduleRequest closed = new ScheduleRequest();
+        closed.setDayOfWeek((short) 1);
+        closed.setIsClosed(true);
+
+        service.update(1L, 7L, request(List.of(closed), true), owner);
+
+        assertEquals(LocalTime.MIDNIGHT, branch.getSchedules().get(0).getOpenTime());
+        assertTrue(branch.getSchedules().get(0).getIsClosed());
     }
 
     @Test

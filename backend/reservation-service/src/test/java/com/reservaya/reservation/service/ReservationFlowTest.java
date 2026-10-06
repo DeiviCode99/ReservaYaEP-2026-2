@@ -78,6 +78,17 @@ class ReservationFlowTest {
     }
 
     @Test
+    void availabilityEndsWhenClosingIsAfterLastFullHour() {
+        restaurantClient.getBranch(7L).getSchedules().forEach(s -> {
+            s.setOpenTime(LocalTime.of(22, 0));
+            s.setCloseTime(LocalTime.of(23, 30));
+        });
+        assertEquals(List.of(LocalTime.of(22, 0), LocalTime.of(23, 0)),
+                assertTimeoutPreemptively(java.time.Duration.ofSeconds(2),
+                        () -> availability.getAvailability(7L, NEXT_WEEK)).slots().stream().map(TimeSlot::time).toList());
+    }
+
+    @Test
     void availabilityIsEmptyForClosedDayAndPastDate() {
         assertTrue(availability.getAvailability(7L, NEXT_WEEK.plusDays(1)).slots().isEmpty());
         assertTrue(availability.getAvailability(7L, LocalDate.now().minusDays(1)).slots().isEmpty());

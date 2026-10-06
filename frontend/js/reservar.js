@@ -66,7 +66,7 @@ async function searchBranches() {
   if (!editing) reservationForm.hidden = true;
   branchResults.innerHTML = "";
 
-  // El backend trata "" como un filtro real: solo se envían los campos llenos.
+  // Solo se envían los campos llenos; un filtro ausente no filtra.
   const params = new URLSearchParams();
   const filters = {
     name: document.querySelector("#search-name").value.trim(),

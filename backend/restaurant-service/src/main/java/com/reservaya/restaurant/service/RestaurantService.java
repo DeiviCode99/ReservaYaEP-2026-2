@@ -29,9 +29,14 @@ public class RestaurantService {
     }
 
     public List<RestaurantResponse> search(String name, String city, String cuisine) {
-        return restaurantRepository.search(name, city, cuisine).stream()
+        return restaurantRepository.search(blankToEmpty(name), blankToEmpty(city), blankToEmpty(cuisine)).stream()
                 .map(RestaurantResponse::from)
                 .toList();
+    }
+
+    /** Filtro ausente = "": las consultas de búsqueda no aceptan null (ver BranchRepository.search). */
+    static String blankToEmpty(String value) {
+        return value == null ? "" : value.trim();
     }
 
     /** Restaurantes que administra el usuario (panel del administrador). */
@@ -44,7 +49,7 @@ public class RestaurantService {
 
     @Transactional
     public RestaurantResponse create(RestaurantRequest request, AuthenticatedUser user) {
-        if (restaurantRepository.existsByName(request.getName().trim())) {
+        if (restaurantRepository.existsByNameIgnoreCase(request.getName().trim())) {
             throw new DuplicateResourceException("Ya existe un restaurante con ese nombre.");
         }
 
@@ -67,6 +72,9 @@ public class RestaurantService {
                 .orElseThrow(() -> new ResourceNotFoundException("Restaurante no encontrado."));
 
         verifyAdmin(user, restaurant.getId());
+        if (restaurantRepository.existsByNameIgnoreCaseAndIdNot(request.getName().trim(), id)) {
+            throw new DuplicateResourceException("Ya existe un restaurante con ese nombre.");
+        }
 
         restaurant.setName(request.getName().trim());
         restaurant.setCuisineType(request.getCuisineType().trim());

@@ -7,7 +7,8 @@
    ===================================================================== */
 
 const filterBranch = document.querySelector("#filter-branch");
-const filterDate = document.querySelector("#filter-date");
+const filterFrom = document.querySelector("#filter-from");
+const filterTo = document.querySelector("#filter-to");
 const filterStatus = document.querySelector("#filter-status");
 const adminReservationsStatus = document.querySelector("#admin-reservations-status");
 const adminReservationsEmpty = document.querySelector("#admin-reservations-empty");
@@ -64,15 +65,21 @@ async function refreshReservationBranches() {
   }
 }
 
-/* ── Reservas del día ──────────────────────────────────────────────── */
+/* ── Reservas por fecha o rango ────────────────────────────────────── */
 
 async function loadBranchReservations() {
-  if (!filterBranch.value || !filterDate.value) return;
+  if (!filterBranch.value || (!filterFrom.value && !filterTo.value)) return;
+  if (filterFrom.value && filterTo.value && filterFrom.value > filterTo.value) {
+    showStatus(adminReservationsStatus, "La fecha inicial no puede ser posterior a la fecha final.", "error");
+    return;
+  }
   const request = ++reservationsRequest;
   showStatus(adminReservationsStatus, "Cargando reservas...");
   try {
-    const data = await apiFetch("/api/reservations?branchId=" + filterBranch.value +
-      "&date=" + filterDate.value);
+    const params = new URLSearchParams({ branchId: filterBranch.value });
+    if (filterFrom.value) params.set("from", filterFrom.value);
+    if (filterTo.value) params.set("to", filterTo.value);
+    const data = await apiFetch("/api/reservations?" + params);
     if (request !== reservationsRequest) return;
     showStatus(adminReservationsStatus, "");
     renderReservations(data);
@@ -81,8 +88,8 @@ async function loadBranchReservations() {
   }
 }
 
-/* Cifras del día completo, sin importar el filtro de estado. */
-function updateDaySummary() {
+/* Cifras del rango completo, sin importar el filtro de estado. */
+function updateRangeSummary() {
   const active = dayReservations.filter(function (r) {
     return r.status === "PENDING" || r.status === "CONFIRMED";
   });
@@ -93,7 +100,7 @@ function updateDaySummary() {
 
 function renderReservations(reservations) {
   dayReservations = reservations;
-  updateDaySummary();
+  updateRangeSummary();
 
   const shown = filterStatus.value
     ? dayReservations.filter(function (r) { return r.status === filterStatus.value; })
@@ -101,9 +108,12 @@ function renderReservations(reservations) {
 
   adminReservationsList.innerHTML = "";
   adminReservationsEmpty.hidden = shown.length > 0 || filterBranch.disabled;
+  const rangeLabel = filterFrom.value === filterTo.value
+    ? formatDate(filterFrom.value || filterTo.value)
+    : formatDate(filterFrom.value) + " - " + formatDate(filterTo.value);
   setEmptyText(adminReservationsEmpty, dayReservations.length === 0
-    ? "No hay reservas para esta sede el " + formatDate(filterDate.value) + "."
-    : "No hay reservas con ese estado este día.");
+    ? "No hay reservas para esta sede en " + rangeLabel + "."
+    : "No hay reservas con ese estado en este rango.");
   shown.forEach(function (r) { adminReservationsList.appendChild(reservationCard(r)); });
 }
 
@@ -169,8 +179,10 @@ async function changeStatus(reservation, action, buttons) {
 }
 
 filterBranch.addEventListener("change", loadBranchReservations);
-filterDate.addEventListener("change", loadBranchReservations);
+filterFrom.addEventListener("change", loadBranchReservations);
+filterTo.addEventListener("change", loadBranchReservations);
 filterStatus.addEventListener("change", function () { renderReservations(dayReservations); });
 
-filterDate.value = todayIso();
+filterFrom.value = todayIso();
+filterTo.value = todayIso();
 refreshReservationBranches();

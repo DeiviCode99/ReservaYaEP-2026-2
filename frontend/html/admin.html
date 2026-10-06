@@ -38,7 +38,7 @@
         </p>
       </div>
 
-      <!-- RF-10 y RF-11: reservas de las sedes, por fecha y estado -->
+      <!-- RF-10 y RF-11: reservas de las sedes por fecha/rango y estado -->
       <section class="panel admin-reservations" aria-labelledby="reservas-titulo">
         <h2 id="reservas-titulo">Reservas de tus sedes</h2>
         <p class="panel-note">
@@ -54,8 +54,12 @@
             </select>
           </div>
           <div>
-            <label for="filter-date">Fecha</label>
-            <input id="filter-date" type="date" required />
+            <label for="filter-from">Desde</label>
+            <input id="filter-from" type="date" required />
+          </div>
+          <div>
+            <label for="filter-to">Hasta</label>
+            <input id="filter-to" type="date" required />
           </div>
           <div>
             <label for="filter-status">Estado</label>
@@ -70,7 +74,7 @@
           </div>
         </form>
 
-        <section class="summary admin-summary" aria-label="Resumen del día">
+        <section class="summary admin-summary" aria-label="Resumen del rango">
           <div class="summary-item">
             <span class="summary-value" id="count-pending">0</span>
             <span class="summary-label">Por responder</span>
@@ -88,7 +92,7 @@
         <p class="status" id="admin-reservations-status" aria-live="polite"></p>
         <div class="empty-state" id="admin-reservations-empty" hidden>
           <img class="empty-art" src="../images/vacio-reservas.svg" alt="" />
-          <p class="empty-text">No hay reservas para esta sede en esta fecha.</p>
+          <p class="empty-text">No hay reservas para esta sede en este rango.</p>
         </div>
         <ul class="restaurant-list result-grid" id="admin-reservations-list"></ul>
       </section>
@@ -243,6 +247,7 @@
           <ul class="restaurant-list" id="branch-list"></ul>
         </section>
       </div>
+
     </main>
 
     <footer class="site-footer">

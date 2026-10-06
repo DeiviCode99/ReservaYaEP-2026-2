@@ -54,7 +54,9 @@ public class GlobalExceptionHandler {
             "ck_branches_capacity", "La capacidad debe estar entre 1 y 500.",
             "uq_schedules_branch_day", "Hay un día repetido en el horario.",
             "ck_schedules_range", "En cada día abierto el cierre debe ser después de la apertura.",
-            "ck_schedules_day", "El día de la semana debe estar entre 1 y 7.");
+            "ck_schedules_day", "El día de la semana debe estar entre 1 y 7.",
+            "schedules_day_of_week_check",
+            "La base de datos usa días 0-6: aplica migrations/V3__schedules_iso_days.sql.");
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<Map<String, Object>> handleDataIntegrity(DataIntegrityViolationException ex) {

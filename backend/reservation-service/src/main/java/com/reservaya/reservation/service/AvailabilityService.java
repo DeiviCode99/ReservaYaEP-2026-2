@@ -53,15 +53,15 @@ public class AvailabilityService {
 
         while (current.isBefore(close)) {
             // Hoy solo se ofrecen las franjas que aún no empiezan.
-            if (date.equals(today) && !current.isAfter(now)) {
-                current = current.plusHours(1);
-                continue;
+            if (!date.equals(today) || current.isAfter(now)) {
+                int occupied = reservationRepository.sumPartySizeBySlot(
+                        branchId, date, current, ReservationStatus.activeStatuses());
+                slots.add(new TimeSlot(current, Math.max(branch.getCapacity() - occupied, 0)));
             }
-            int occupied = reservationRepository.sumPartySizeBySlot(
-                    branchId, date, current, ReservationStatus.activeStatuses());
-            int available = branch.getCapacity() - occupied;
-            slots.add(new TimeSlot(current, Math.max(available, 0)));
-            current = current.plusHours(1);
+            LocalTime next = current.plusHours(1);
+            // 23:00 + 1h da 00:00, que es "antes" del cierre (ej. 23:30): sin esto el ciclo no termina.
+            if (!next.isAfter(current)) break;
+            current = next;
         }
 
         return new AvailabilityResponse(branchId, date, branch.getCapacity(), slots);

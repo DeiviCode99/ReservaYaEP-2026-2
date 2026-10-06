@@ -5,9 +5,11 @@ import com.reservaya.reservation.client.UserClient.UserSummary;
 import com.reservaya.reservation.dto.ReservationResponse;
 import com.reservaya.reservation.dto.StatusUpdateRequest;
 import com.reservaya.reservation.entity.Reservation;
+import com.reservaya.reservation.entity.ReservationAudit;
 import com.reservaya.reservation.entity.ReservationStatus;
 import com.reservaya.reservation.exception.InvalidOperationException;
 import com.reservaya.reservation.exception.ResourceNotFoundException;
+import com.reservaya.reservation.repository.ReservationAuditRepository;
 import com.reservaya.reservation.repository.ReservationRepository;
 import com.reservaya.reservation.security.AuthenticatedUser;
 import com.reservaya.reservation.security.BranchAccess;
@@ -29,25 +31,36 @@ import java.util.stream.Collectors;
 public class BranchReservationService {
 
     private final ReservationRepository reservationRepository;
+    private final ReservationAuditRepository auditRepository;
     private final BranchAccess branchAccess;
     private final UserClient userClient;
+    private final ReservationNotifier notifier;
 
     public BranchReservationService(ReservationRepository reservationRepository,
+                                    ReservationAuditRepository auditRepository,
                                     BranchAccess branchAccess,
-                                    UserClient userClient) {
+                                    UserClient userClient,
+                                    ReservationNotifier notifier) {
         this.reservationRepository = reservationRepository;
+        this.auditRepository = auditRepository;
         this.branchAccess = branchAccess;
         this.userClient = userClient;
+        this.notifier = notifier;
     }
 
-    public List<ReservationResponse> getByBranch(Long branchId, LocalDate date, String status,
+    public List<ReservationResponse> getByBranch(Long branchId, LocalDate from, LocalDate to, String status,
                                                  AuthenticatedUser user) {
         branchAccess.requireAdmin(branchId, user);
+        if (from == null && to == null) {
+            throw new InvalidOperationException("Indica una fecha o un rango de fechas.");
+        }
+        if (from != null && to != null && from.isAfter(to)) {
+            throw new InvalidOperationException("La fecha inicial no puede ser posterior a la fecha final.");
+        }
 
-        List<Reservation> reservations = status == null || status.isBlank()
-                ? reservationRepository.findByBranchIdAndReservationDate(branchId, date)
-                : reservationRepository.findByBranchIdAndReservationDateAndStatusIn(
-                        branchId, date, List.of(parseStatus(status)));
+        ReservationStatus filterStatus = status == null || status.isBlank() ? null : parseStatus(status);
+        List<Reservation> reservations = reservationRepository
+                .searchByBranchAndDateRange(branchId, from, to, filterStatus);
 
         Set<Long> customerIds = reservations.stream().map(Reservation::getUserId).collect(Collectors.toSet());
         Map<Long, UserSummary> customers = userClient.findByIds(customerIds);
@@ -65,16 +78,22 @@ public class BranchReservationService {
         branchAccess.requireAdmin(reservation.getBranchId(), user);
 
         ReservationStatus next = parseStatus(request.getStatus());
-        if (!reservation.getStatus().canBeChangedByRestaurantTo(next)) {
+        ReservationStatus previous = reservation.getStatus();
+        if (!previous.canBeChangedByRestaurantTo(next)) {
             throw new InvalidOperationException(
-                    "Una reserva " + reservation.getStatus() + " no puede pasar a " + next + ".");
+                "Una reserva " + previous + " no puede pasar a " + next + ".");
         }
 
         reservation.setStatus(next);
         if (request.getCancellationReason() != null && !request.getCancellationReason().isBlank()) {
             reservation.setCancellationReason(request.getCancellationReason().trim());
         }
-        return ReservationResponse.from(reservationRepository.save(reservation));
+        Reservation saved = reservationRepository.save(reservation);
+        recordAudit(saved, user, "STATUS_CHANGED", previous, next, request.getCancellationReason());
+        notifier.notifyCustomer(saved, "Estado de reserva actualizado",
+            "El estado de tu reserva #" + saved.getId() + " cambió de " + statusLabel(previous)
+                + " a " + statusLabel(next) + ".");
+        return ReservationResponse.from(saved);
     }
 
     private static ReservationStatus parseStatus(String status) {
@@ -83,5 +102,28 @@ public class BranchReservationService {
         } catch (IllegalArgumentException e) {
             throw new InvalidOperationException("Estado de reserva no válido: " + status);
         }
+    }
+
+    private void recordAudit(Reservation reservation, AuthenticatedUser actor, String action,
+                             ReservationStatus previousStatus, ReservationStatus newStatus, String details) {
+        ReservationAudit audit = new ReservationAudit();
+        audit.setReservationId(reservation.getId());
+        audit.setActorUserId(actor.id());
+        audit.setActorRole(actor.role());
+        audit.setAction(action);
+        audit.setPreviousStatus(previousStatus);
+        audit.setNewStatus(newStatus);
+        audit.setDetails(details);
+        auditRepository.save(audit);
+    }
+
+    private static String statusLabel(ReservationStatus status) {
+        return switch (status) {
+            case PENDING -> "pendiente";
+            case CONFIRMED -> "confirmada";
+            case CANCELLED -> "cancelada";
+            case REJECTED -> "rechazada";
+            case COMPLETED -> "completada";
+        };
     }
 }

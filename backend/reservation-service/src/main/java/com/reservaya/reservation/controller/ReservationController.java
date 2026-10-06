@@ -1,6 +1,7 @@
 package com.reservaya.reservation.controller;
 
 import com.reservaya.reservation.dto.*;
+import com.reservaya.reservation.exception.InvalidOperationException;
 import com.reservaya.reservation.security.AuthenticatedUser;
 import com.reservaya.reservation.service.AvailabilityService;
 import com.reservaya.reservation.service.BranchReservationService;
@@ -49,10 +50,20 @@ public class ReservationController {
     public ResponseEntity<List<ReservationResponse>> list(
             @RequestParam(required = false) Long branchId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
             @RequestParam(required = false) String status,
             @AuthenticationPrincipal AuthenticatedUser user) {
-        if (branchId != null && date != null) {
-            return ResponseEntity.ok(branchReservationService.getByBranch(branchId, date, status, user));
+        if (branchId != null) {
+            if (date == null && from == null && to == null) {
+                throw new InvalidOperationException("El filtro por fecha requiere una fecha o un rango.");
+            }
+            LocalDate start = date != null ? date : from;
+            LocalDate end = date != null ? date : to;
+            return ResponseEntity.ok(branchReservationService.getByBranch(branchId, start, end, status, user));
+        }
+        if (date != null || from != null || to != null || status != null) {
+            throw new InvalidOperationException("El filtro por fecha requiere una sede.");
         }
         return ResponseEntity.ok(reservationService.getMyReservations(user));
     }

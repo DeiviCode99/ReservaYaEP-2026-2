@@ -166,6 +166,7 @@ COMMENT ON TABLE restaurant_admins IS 'Vinculacion admin-marca. El JWT trae el r
 CREATE TABLE reservations (
     id                  BIGSERIAL    PRIMARY KEY,
     user_id             BIGINT       NOT NULL,
+    customer_email      VARCHAR(255),
     branch_id           BIGINT       NOT NULL,
     reservation_date    DATE         NOT NULL,
     reservation_time    TIME         NOT NULL,     -- franja de una hora exacta
@@ -197,6 +198,21 @@ CREATE UNIQUE INDEX uq_reservations_active_slot
 CREATE TRIGGER trg_reservations_updated_at
     BEFORE UPDATE ON reservations
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+CREATE TABLE reservation_audit (
+    id              BIGSERIAL    PRIMARY KEY,
+    reservation_id  BIGINT       NOT NULL REFERENCES reservations(id) ON DELETE CASCADE,
+    actor_user_id   BIGINT       NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    actor_role      VARCHAR(30)  NOT NULL,
+    action          VARCHAR(20)  NOT NULL,
+    previous_status VARCHAR(20),
+    new_status      VARCHAR(20)  NOT NULL,
+    details         VARCHAR(255),
+    changed_at      TIMESTAMPTZ  NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_reservation_audit_reservation
+    ON reservation_audit (reservation_id, changed_at DESC);
 
 COMMENT ON COLUMN reservations.status IS
     'PENDING (creada por el cliente) -> CONFIRMED (admin acepta) | REJECTED (admin rechaza) | CANCELLED (cliente cancela) -> COMPLETED (asistio)';

@@ -13,11 +13,16 @@ que garantiza la integridad referencial que exige el **RNF-10**.
 
 1. Entra al proyecto en Supabase → **SQL Editor** → **New query**.
 2. Pega el contenido de [`schema.sql`](./schema.sql) y pulsa **Run**.
-3. Verifica en **Table Editor** que aparezcan las 6 tablas.
+3. Verifica en **Table Editor** que aparezcan las tablas del esquema.
 
 > `schema.sql` empieza con `DROP TABLE IF EXISTS ... CASCADE`, así que se puede
 > volver a ejecutar cuantas veces haga falta durante el desarrollo. **Borra
 > todos los datos** cada vez.
+
+Para una base ya creada, no vuelvas a ejecutar `schema.sql`: aplica de forma
+aditiva `migrations/V2__reservation_management.sql` en Supabase para conservar
+reservas y crear los datos de auditoría y notificación requeridos por HU-07,
+HU-09 y HU-10.
 
 Los servicios arrancan con `spring.jpa.hibernate.ddl-auto=validate`: Hibernate
 no crea ni modifica tablas, solo comprueba que las entidades JPA coinciden con
@@ -85,12 +90,25 @@ erDiagram
     RESERVATIONS {
         bigserial id PK
         bigint    user_id FK
+        varchar   customer_email
         bigint    branch_id FK
         date      reservation_date
         time      reservation_time
         int       party_size
         varchar   status "PENDING | CONFIRMED | CANCELLED | REJECTED | COMPLETED"
         varchar   cancellation_reason
+    }
+
+    RESERVATION_AUDIT {
+        bigserial id PK
+        bigint    reservation_id FK
+        bigint    actor_user_id FK
+        varchar   actor_role
+        varchar   action
+        varchar   previous_status
+        varchar   new_status
+        varchar   details
+        timestamptz changed_at
     }
 ```
 

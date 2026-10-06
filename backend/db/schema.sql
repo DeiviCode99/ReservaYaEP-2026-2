@@ -17,6 +17,7 @@
 -- ---------------------------------------------------------------------
 -- Limpieza (util al re-aplicar el esquema durante el desarrollo)
 -- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS reservation_audit CASCADE;
 DROP TABLE IF EXISTS reservations      CASCADE;
 DROP TABLE IF EXISTS restaurant_admins CASCADE;
 DROP TABLE IF EXISTS schedules         CASCADE;
@@ -208,7 +209,13 @@ CREATE TABLE reservation_audit (
     previous_status VARCHAR(20),
     new_status      VARCHAR(20)  NOT NULL,
     details         VARCHAR(255),
-    changed_at      TIMESTAMPTZ  NOT NULL DEFAULT now()
+    changed_at      TIMESTAMPTZ  NOT NULL DEFAULT now(),
+    CONSTRAINT ck_reservation_audit_previous_status CHECK (
+        previous_status IS NULL OR previous_status IN ('PENDING', 'CONFIRMED', 'CANCELLED', 'REJECTED', 'COMPLETED')
+    ),
+    CONSTRAINT ck_reservation_audit_new_status CHECK (
+        new_status IN ('PENDING', 'CONFIRMED', 'CANCELLED', 'REJECTED', 'COMPLETED')
+    )
 );
 
 CREATE INDEX idx_reservation_audit_reservation

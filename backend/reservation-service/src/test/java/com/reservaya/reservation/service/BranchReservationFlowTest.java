@@ -82,7 +82,7 @@ class BranchReservationFlowTest {
         List<Reservation> reservations = List.of(
                 reservation(2, 20, ReservationStatus.PENDING),
                 reservation(1, 13, ReservationStatus.CONFIRMED));
-        when(repository.searchByBranchAndDateRange(7L, DAY, DAY, null)).thenReturn(reservations);
+        when(repository.searchByBranchAndDateRange(7L, DAY, DAY, List.of(ReservationStatus.values()))).thenReturn(reservations);
         when(userClient.findByIds(any())).thenReturn(Map.of(3L, new UserSummary(3L, "Ana Gómez", "ana@test.co")));
 
         List<ReservationResponse> day = service.getByBranch(7L, DAY, DAY, null, owner);
@@ -95,20 +95,31 @@ class BranchReservationFlowTest {
     @Test
     void ownerCanFilterAReservationRangeByStatus() {
         Reservation pending = reservation(1, 13, ReservationStatus.PENDING);
-        when(repository.searchByBranchAndDateRange(7L, DAY, DAY.plusDays(2), ReservationStatus.PENDING))
+        when(repository.searchByBranchAndDateRange(7L, DAY, DAY.plusDays(2), List.of(ReservationStatus.PENDING)))
             .thenReturn(List.of(pending));
         when(userClient.findByIds(any())).thenReturn(Map.of());
 
         List<ReservationResponse> found = service.getByBranch(7L, DAY, DAY.plusDays(2), "PENDING", owner);
 
         assertEquals(1, found.size());
-        verify(repository).searchByBranchAndDateRange(7L, DAY, DAY.plusDays(2), ReservationStatus.PENDING);
+        verify(repository).searchByBranchAndDateRange(7L, DAY, DAY.plusDays(2), List.of(ReservationStatus.PENDING));
+    }
+
+    @Test
+    void oneSidedRangeQueriesThatSingleDay() {
+        when(userClient.findByIds(any())).thenReturn(Map.of());
+
+        service.getByBranch(7L, null, DAY, null, owner);
+
+        verify(repository).searchByBranchAndDateRange(7L, DAY, DAY, List.of(ReservationStatus.values()));
+        assertThrows(InvalidOperationException.class,
+                () -> service.getByBranch(7L, DAY.plusDays(1), DAY, null, owner));
     }
 
     @Test
     void listStillWorksIfCustomerDataIsUnavailable() {
         List<Reservation> one = List.of(reservation(1, 13, ReservationStatus.PENDING));
-        when(repository.searchByBranchAndDateRange(7L, DAY, DAY, null)).thenReturn(one);
+        when(repository.searchByBranchAndDateRange(7L, DAY, DAY, List.of(ReservationStatus.values()))).thenReturn(one);
         when(userClient.findByIds(any())).thenReturn(Map.of());
 
         assertNull(service.getByBranch(7L, DAY, DAY, null, owner).get(0).customerName());

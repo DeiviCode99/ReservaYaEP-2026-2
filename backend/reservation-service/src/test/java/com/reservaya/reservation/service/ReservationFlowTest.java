@@ -50,7 +50,7 @@ class ReservationFlowTest {
     private final AvailabilityService availability = new AvailabilityService(restaurantClient, repository);
     private final ReservationService reservations =
             new ReservationService(repository, auditRepository, availability,
-                new ReservationProperties(), notifier);
+                new ReservationProperties(), notifier, restaurantClient);
     private final AuthenticatedUser client = new AuthenticatedUser(3L, "ana@test.co", "CLIENT");
 
     @BeforeEach

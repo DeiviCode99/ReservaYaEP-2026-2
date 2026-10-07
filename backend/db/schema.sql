@@ -172,6 +172,8 @@ CREATE TABLE reservations (
     reservation_date    DATE         NOT NULL,
     reservation_time    TIME         NOT NULL,     -- franja de una hora exacta
     party_size          INT          NOT NULL,
+    event               VARCHAR(30)  NOT NULL DEFAULT 'NONE',
+    confirmation_code   VARCHAR(40)  NOT NULL UNIQUE,
     status              VARCHAR(20)  NOT NULL DEFAULT 'PENDING',
     cancellation_reason VARCHAR(255),
     created_at          TIMESTAMPTZ  NOT NULL DEFAULT now(),
@@ -182,6 +184,7 @@ CREATE TABLE reservations (
     CONSTRAINT fk_reservations_branch
         FOREIGN KEY (branch_id) REFERENCES branches(id) ON DELETE CASCADE,
     CONSTRAINT ck_reservations_party  CHECK (party_size BETWEEN 1 AND 50),
+    CONSTRAINT ck_reservations_event CHECK (event IN ('NONE', 'ROMANTIC_DINNER', 'BIRTHDAY', 'WEDDING')),
     CONSTRAINT ck_reservations_status CHECK (status IN ('PENDING', 'CONFIRMED', 'CANCELLED', 'REJECTED', 'COMPLETED'))
 );
 

@@ -44,6 +44,10 @@ function clearErrors() {
   setStatus("");
 }
 
+function hasRealEmailShape(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value);
+}
+
 function showPassword() {
   passwordInput.type = "text";
   passwordToggle.dataset.visible = "true";
@@ -99,8 +103,8 @@ if (registrationForm) {
       isValid = false;
     }
 
-    if (!emailInput.validity.valid || email.length === 0) {
-      showError("email", "Introduce un correo electrónico válido.");
+    if (!emailInput.validity.valid || !hasRealEmailShape(email)) {
+      showError("email", "Introduce un correo real, por ejemplo nombre@dominio.com.");
       isValid = false;
     }
 

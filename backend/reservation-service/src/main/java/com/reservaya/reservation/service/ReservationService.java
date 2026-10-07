@@ -1,9 +1,35 @@
 package com.reservaya.reservation.service;
 
+<<<<<<< HEAD
+=======
+import java.text.Normalizer;
+import java.time.LocalDate;
+>>>>>>> juan
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+<<<<<<< HEAD
+=======
+import java.util.Locale;
+
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.reservaya.reservation.client.RestaurantClient;
+import com.reservaya.reservation.config.ReservationProperties;
+import com.reservaya.reservation.dto.ReservationRequest;
+import com.reservaya.reservation.dto.ReservationResponse;
+import com.reservaya.reservation.dto.StatusUpdateRequest;
+import com.reservaya.reservation.entity.Reservation;
+import com.reservaya.reservation.entity.ReservationStatus;
+import com.reservaya.reservation.exception.InsufficientCapacityException;
+import com.reservaya.reservation.exception.InvalidOperationException;
+import com.reservaya.reservation.exception.ResourceNotFoundException;
+import com.reservaya.reservation.repository.ReservationRepository;
+import com.reservaya.reservation.security.AuthenticatedUser;
+>>>>>>> juan
 
 import com.reservaya.reservation.config.ReservationProperties;
 import com.reservaya.reservation.dto.ReservationRequest;
@@ -37,11 +63,26 @@ public class ReservationService {
     private final ReservationAuditRepository auditRepository;
     private final AvailabilityService availabilityService;
     private final ReservationProperties reservationProperties;
+<<<<<<< HEAD
     private final ReservationNotifier notifier;
+=======
+    private final RestaurantClient restaurantClient;
+
+    public ReservationService(ReservationRepository reservationRepository,
+                              AvailabilityService availabilityService,
+                              ReservationProperties reservationProperties,
+                              RestaurantClient restaurantClient) {
+        this.reservationRepository = reservationRepository;
+        this.availabilityService = availabilityService;
+        this.reservationProperties = reservationProperties;
+        this.restaurantClient = restaurantClient;
+    }
+>>>>>>> juan
 
     public ReservationService(ReservationRepository reservationRepository,
                               ReservationAuditRepository auditRepository,
                               AvailabilityService availabilityService,
+<<<<<<< HEAD
                               ReservationProperties reservationProperties,
                               ReservationNotifier notifier) {
         this.reservationRepository = reservationRepository;
@@ -49,6 +90,10 @@ public class ReservationService {
         this.availabilityService = availabilityService;
         this.reservationProperties = reservationProperties;
         this.notifier = notifier;
+=======
+                              ReservationProperties reservationProperties) {
+        this(reservationRepository, availabilityService, reservationProperties, null);
+>>>>>>> juan
     }
 
     @Transactional
@@ -57,7 +102,14 @@ public class ReservationService {
 
         Reservation reservation = new Reservation();
         reservation.setUserId(user.id());
+<<<<<<< HEAD
         reservation.setCustomerEmail(user.email());
+=======
+        String restaurantName = restaurantClient == null
+            ? "ReservaYa"
+            : restaurantClient.getBranch(request.getBranchId()).getRestaurantName();
+        reservation.setConfirmationCode(createConfirmationCode(user.name(), restaurantName));
+>>>>>>> juan
         apply(reservation, request);
         Reservation saved = reservationRepository.save(reservation);
         recordAudit(saved, user, "CREATED", null, saved.getStatus(), "Reserva creada por el cliente.");
@@ -120,7 +172,24 @@ public class ReservationService {
         reservation.setReservationDate(request.getReservationDate());
         reservation.setReservationTime(request.getReservationTime());
         reservation.setPartySize(request.getPartySize());
+        reservation.setEvent(request.getEvent());
         reservation.setStatus(ReservationStatus.PENDING);
+    }
+
+    private static String createConfirmationCode(String customerName, String restaurantName) {
+        int number = java.util.concurrent.ThreadLocalRandom.current().nextInt(100000, 1000000);
+        return initials(customerName) + "-" + initials(restaurantName) + "-" + number;
+    }
+
+    private static String initials(String value) {
+        if (value == null || value.isBlank()) return "RY";
+        String normalized = Normalizer.normalize(value.trim(), Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .replaceAll("[^A-Za-z0-9 ]", " ")
+                .trim().toUpperCase(Locale.ROOT);
+        String[] words = normalized.split("\\s+");
+        if (words.length == 1) return words[0].substring(0, Math.min(3, words[0].length()));
+        return "" + words[0].charAt(0) + words[words.length - 1].charAt(0);
     }
 
     public List<ReservationResponse> getMyReservations(AuthenticatedUser user) {

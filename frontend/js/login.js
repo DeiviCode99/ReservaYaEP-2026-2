@@ -34,6 +34,10 @@ function clearErrors() {
   setStatus("");
 }
 
+function hasRealEmailShape(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value);
+}
+
 /* Toggle de contraseña (mantener pulsado) */
 if (passwordToggle) {
   function showPassword() {
@@ -68,8 +72,8 @@ loginForm.addEventListener("submit", async function (event) {
   const password = passwordInput.value;
   let isValid = true;
 
-  if (!emailInput.validity.valid || email.length === 0) {
-    showError("email", "Introduce un correo electrónico válido.");
+  if (!emailInput.validity.valid || !hasRealEmailShape(email)) {
+    showError("email", "Introduce un correo real, por ejemplo nombre@dominio.com.");
     isValid = false;
   }
 
@@ -88,7 +92,9 @@ loginForm.addEventListener("submit", async function (event) {
     });
 
     if (response.status === 401) {
-      setStatus("Correo o contraseña incorrectos.", "error");
+      emailInput.value = "";
+      passwordInput.value = "";
+      setStatus("Correo o contraseña incorrectos. Verifica el correo y vuelve a intentarlo.", "error");
       return;
     }
 

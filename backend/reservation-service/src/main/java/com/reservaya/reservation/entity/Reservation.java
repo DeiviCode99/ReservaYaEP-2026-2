@@ -44,6 +44,12 @@ public class Reservation {
     @Column(name = "party_size", nullable = false)
     private Integer partySize;
 
+    @Column(name = "event", nullable = false, length = 30)
+    private String event = "NONE";
+
+    @Column(name = "confirmation_code", nullable = false, unique = true, length = 40)
+    private String confirmationCode;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private ReservationStatus status = ReservationStatus.PENDING;
@@ -91,6 +97,12 @@ public class Reservation {
 
     public Integer getPartySize() { return partySize; }
     public void setPartySize(Integer partySize) { this.partySize = partySize; }
+
+    public String getEvent() { return event; }
+    public void setEvent(String event) { this.event = event; }
+
+    public String getConfirmationCode() { return confirmationCode; }
+    public void setConfirmationCode(String confirmationCode) { this.confirmationCode = confirmationCode; }
 
     public ReservationStatus getStatus() { return status; }
     public void setStatus(ReservationStatus status) { this.status = status; }

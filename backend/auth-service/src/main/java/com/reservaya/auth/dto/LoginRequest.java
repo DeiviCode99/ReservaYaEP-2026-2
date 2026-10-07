@@ -2,11 +2,13 @@ package com.reservaya.auth.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 
 public class LoginRequest {
 
     @NotBlank
     @Email
+    @Pattern(regexp = "^[^\\s@]+@[^\\s@]+\\.[^\\s@]{2,}$")
     private String email;
 
     @NotBlank

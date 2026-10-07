@@ -95,6 +95,15 @@
               <label for="party-size">Personas</label>
               <input id="party-size" type="number" min="1" max="50" value="2" required />
             </div>
+            <div>
+              <label for="reservation-event">Ocasión</label>
+              <select id="reservation-event" required>
+                <option value="NONE">Ninguna</option>
+                <option value="ROMANTIC_DINNER">Cena romántica</option>
+                <option value="BIRTHDAY">Cumpleaños</option>
+                <option value="WEDDING">Boda</option>
+              </select>
+            </div>
           </div>
           <p class="field-hint" id="deposit-note"></p>
           <p class="step-label" id="slot-label">Horarios con cupo</p>
@@ -139,6 +148,7 @@
       <div class="container">ReservaYa, plataforma de reservas. Proyecto de Entornos de Programación, UIS 2026.</div>
     </footer>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="../js/auth.js" defer></script>
     <script src="../js/cliente.js" defer></script>
     <script src="../js/reservar.js" defer></script>

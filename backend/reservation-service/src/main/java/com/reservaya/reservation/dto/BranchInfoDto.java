@@ -6,6 +6,7 @@ public class BranchInfoDto {
 
     private Long id;
     private Long restaurantId;
+    private String restaurantName;
     private String name;
     private Integer capacity;
     private Boolean active;
@@ -16,6 +17,9 @@ public class BranchInfoDto {
 
     public Long getRestaurantId() { return restaurantId; }
     public void setRestaurantId(Long restaurantId) { this.restaurantId = restaurantId; }
+
+    public String getRestaurantName() { return restaurantName; }
+    public void setRestaurantName(String restaurantName) { this.restaurantName = restaurantName; }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }

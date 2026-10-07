@@ -1,18 +1,7 @@
-<<<<<<< HEAD
-const dayLabels = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
-const sessionKey = "reservaya.adminSession";
-
-const loginScreen = document.querySelector("#login-screen");
-const dashboard = document.querySelector("#dashboard");
-const sessionLabel = document.querySelector("#session-label");
-const logoutButton = document.querySelector("#logout-button");
-const demoLoginButton = document.querySelector("#demo-login-button");
-const adminNameInput = document.querySelector("#admin-name");
-const loginStatus = document.querySelector("#login-status");
-=======
 /* =====================================================================
-   ReservaYa - Panel de administración
-   CRUD de restaurantes y sedes conectado al backend real via JWT.
+   ReservaYa - Panel de administración: restaurantes y sedes (RF-03, RF-13)
+   Las reservas de las sedes están en admin-reservas.js.
+   Usa auth.js (apiFetch, showStatus, errorText, escapeHtml, CITIES).
    ===================================================================== */
 
 if (!requireRole("RESTAURANT_ADMIN")) {
@@ -22,90 +11,41 @@ if (!requireRole("RESTAURANT_ADMIN")) {
 const dayLabels = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
 
 const user = getUser();
-const sessionLabel = document.querySelector("#session-label");
-const logoutBtn = document.querySelector("#logout-button");
->>>>>>> backend
+document.querySelector("#session-label").textContent = user.name;
+document.querySelector("#logout-button").addEventListener("click", logout);
 
 const form = document.querySelector("#restaurant-form");
 const formStatus = document.querySelector("#form-status");
-const resetButton = document.querySelector("#reset-button");
 const listEmpty = document.querySelector("#list-empty");
 const restaurantList = document.querySelector("#restaurant-list");
-<<<<<<< HEAD
-const scheduleRows = document.querySelector("#schedule-rows");
-
-const inputs = {
-  name: document.querySelector("#restaurant-name"),
-  address: document.querySelector("#restaurant-address"),
-=======
 
 const branchesSection = document.querySelector("#branches-section");
 const branchRestaurantLabel = document.querySelector("#branch-restaurant-label");
 const branchForm = document.querySelector("#branch-form");
 const branchFormStatus = document.querySelector("#branch-form-status");
-const branchResetBtn = document.querySelector("#branch-reset-button");
 const branchListEmpty = document.querySelector("#branch-list-empty");
 const branchList = document.querySelector("#branch-list");
 const scheduleRows = document.querySelector("#schedule-rows");
+const schedulesError = document.querySelector("#schedules-error");
 
 const rInputs = {
   name: document.querySelector("#restaurant-name"),
-  address: document.querySelector("#restaurant-address"),
-  city: document.querySelector("#restaurant-city"),
->>>>>>> backend
   cuisine: document.querySelector("#restaurant-cuisine"),
-  capacity: document.querySelector("#restaurant-capacity"),
+  description: document.querySelector("#restaurant-description"),
 };
 
-<<<<<<< HEAD
-const inputErrors = {
-  name: document.querySelector("#restaurant-name-error"),
-  address: document.querySelector("#restaurant-address-error"),
-=======
 const rErrors = {
   name: document.querySelector("#restaurant-name-error"),
-  address: document.querySelector("#restaurant-address-error"),
-  city: document.querySelector("#restaurant-city-error"),
->>>>>>> backend
   cuisine: document.querySelector("#restaurant-cuisine-error"),
-  capacity: document.querySelector("#restaurant-capacity-error"),
 };
 
-<<<<<<< HEAD
-const schedulesError = document.querySelector("#schedules-error");
-
-let session = null;
-let editingId = null;
-let restaurants = [];
-
-function readSession() {
-  try {
-    return JSON.parse(localStorage.getItem(sessionKey) || "null");
-  } catch {
-    return null;
-  }
-}
-
-function writeSession(value) {
-  if (value) {
-    localStorage.setItem(sessionKey, JSON.stringify(value));
-  } else {
-    localStorage.removeItem(sessionKey);
-  }
-}
-
-function escapeHtml(value) {
-  return String(value).replace(/[&<>"']/g, (char) => {
-    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char];
-  });
-}
-=======
 const bInputs = {
   name: document.querySelector("#branch-name"),
   address: document.querySelector("#branch-address"),
   city: document.querySelector("#branch-city"),
   phone: document.querySelector("#branch-phone"),
   capacity: document.querySelector("#branch-capacity"),
+  active: document.querySelector("#branch-active"),
 };
 
 const bErrors = {
@@ -115,493 +55,134 @@ const bErrors = {
   capacity: document.querySelector("#branch-capacity-error"),
 };
 
-const schedulesError = document.querySelector("#schedules-error");
+CITIES.forEach(function (city) { bInputs.city.add(new Option(city, city)); });
 
-let editingRestaurantId = null;
 let restaurants = [];
-
+let editingRestaurantId = null;
 let selectedRestaurant = null;
-let editingBranchId = null;
 let branches = [];
-
-/* ── Sesión ────────────────────────────────────────────────────────── */
-
-sessionLabel.textContent = user.name;
-logoutBtn.addEventListener("click", logout);
+let editingBranchId = null;
 
 /* ── Utilidades ────────────────────────────────────────────────────── */
->>>>>>> backend
 
-function setStatus(element, message, tone) {
-  element.textContent = message || "";
-  element.classList.toggle("is-error", tone === "error");
-  element.classList.toggle("is-success", tone === "success");
-}
-
-<<<<<<< HEAD
-function buildScheduleRows(entries) {
-  scheduleRows.innerHTML = "";
-
-  dayLabels.forEach((label, index) => {
-    const entry = entries ? entries[index] : null;
-    const open = entry ? entry.open : "12:00";
-    const close = entry ? entry.close : "22:00";
-    const closed = entry ? entry.closed : false;
-
-    const row = document.createElement("div");
-    row.className = "schedule-row";
-    row.innerHTML = `
-      <span class="schedule-day">${label}</span>
-      <label class="schedule-toggle">
-        <input type="checkbox" class="schedule-closed" ${closed ? "checked" : ""} />
-        Cerrado
-      </label>
-      <label class="schedule-time-field">Desde
-        <input type="time" class="schedule-open" value="${open}" />
-      </label>
-      <label class="schedule-time-field">Hasta
-        <input type="time" class="schedule-close" value="${close}" />
-      </label>`;
-
-    const checkbox = row.querySelector(".schedule-closed");
-    const openInput = row.querySelector(".schedule-open");
-    const closeInput = row.querySelector(".schedule-close");
-
-    function syncDisabledState() {
-      openInput.disabled = checkbox.checked;
-      closeInput.disabled = checkbox.checked;
-    }
-
-    checkbox.addEventListener("change", syncDisabledState);
-    syncDisabledState();
-
-    scheduleRows.appendChild(row);
-  });
-}
-
-function collectSchedules() {
-  return [...scheduleRows.querySelectorAll(".schedule-row")].map((row, index) => ({
-    day: dayLabels[index],
-    open: row.querySelector(".schedule-open").value,
-    close: row.querySelector(".schedule-close").value,
-    closed: row.querySelector(".schedule-closed").checked,
-  }));
-}
-
-function validateForm() {
+/* Marca o limpia el error de cada campo; devuelve true si no hubo errores. */
+function applyChecks(errors, checks) {
   let valid = true;
-
-  function check(field, message, condition) {
-    if (condition) {
-      inputErrors[field].textContent = message;
-      valid = false;
-    } else {
-      inputErrors[field].textContent = "";
-    }
-  }
-
-  const name = inputs.name.value.trim();
-  const address = inputs.address.value.trim();
-  const cuisine = inputs.cuisine.value.trim();
-  const capacity = Number(inputs.capacity.value);
-
-  check("name", "El nombre del restaurante es obligatorio (mínimo 2 caracteres).", name.length < 2);
-  check("address", "La dirección es obligatoria (mínimo 5 caracteres).", address.length < 5);
-  check("cuisine", "El tipo de cocina es obligatorio (mínimo 2 caracteres).", cuisine.length < 2);
-  check(
-    "capacity",
-    "La capacidad debe ser un número entero entre 1 y 500.",
-    !Number.isInteger(capacity) || capacity < 1 || capacity > 500,
-  );
-
-  const schedules = collectSchedules();
-  let scheduleError = "";
-
-  if (schedules.every((entry) => entry.closed)) {
-    scheduleError = "Debe haber al menos un día abierto.";
-  } else {
-    for (const entry of schedules) {
-      if (entry.closed) continue;
-
-      if (!entry.open || !entry.close) {
-        scheduleError = `Completa los horarios del ${entry.day}.`;
-        break;
-      }
-
-      if (entry.open >= entry.close) {
-        scheduleError = `El horario del ${entry.day} es inválido: la apertura debe ser antes del cierre.`;
-        break;
-      }
-    }
-  }
-
-  if (scheduleError) {
-    schedulesError.textContent = scheduleError;
-    valid = false;
-  } else {
-    schedulesError.textContent = "";
-  }
-
-  return valid ? { name, address, cuisineType: cuisine, maxCapacity: capacity, schedules } : null;
+  checks.forEach(function (check) {
+    const [field, message, failed] = check;
+    errors[field].textContent = failed ? message : "";
+    if (failed) valid = false;
+  });
+  return valid;
 }
 
-function resetForm() {
-  editingId = null;
-  form.reset();
-  Object.values(inputErrors).forEach((error) => {
-    error.textContent = "";
-  });
-  schedulesError.textContent = "";
-  setStatus(formStatus, "");
-  buildScheduleRows(null);
-=======
+function clearErrors(errors) {
+  Object.values(errors).forEach(function (el) { el.textContent = ""; });
+}
+
+function actionButton(text, style, onClick) {
+  const button = document.createElement("button");
+  button.className = "button button-small " + style;
+  button.type = "button";
+  button.textContent = text;
+  button.addEventListener("click", onClick);
+  return button;
+}
+
+/* Las sedes nuevas o editadas deben aparecer en el filtro de reservas. */
+function notifyBranchesChanged() {
+  if (typeof refreshReservationBranches === "function") refreshReservationBranches();
+}
+
 /* ── Restaurantes ──────────────────────────────────────────────────── */
 
 function validateRestaurant() {
-  let valid = true;
-
-  function check(field, message, condition) {
-    if (condition) { rErrors[field].textContent = message; valid = false; }
-    else { rErrors[field].textContent = ""; }
-  }
-
   const name = rInputs.name.value.trim();
-  const address = rInputs.address.value.trim();
-  const city = rInputs.city.value.trim();
-  const cuisine = rInputs.cuisine.value.trim();
-  const capacity = Number(rInputs.capacity.value);
+  const cuisineType = rInputs.cuisine.value.trim();
+  const description = rInputs.description.value.trim();
 
-  check("name", "El nombre es obligatorio (mínimo 2 caracteres).", name.length < 2);
-  check("address", "La dirección es obligatoria (mínimo 5 caracteres).", address.length < 5);
-  check("city", "La ciudad es obligatoria.", city.length < 2);
-  check("cuisine", "El tipo de cocina es obligatorio.", cuisine.length < 2);
-  check("capacity", "La capacidad debe ser un número entre 1 y 500.",
-    !Number.isInteger(capacity) || capacity < 1 || capacity > 500);
-
-  return valid ? { name, description: address, cuisineType: cuisine } : null;
+  const valid = applyChecks(rErrors, [
+    ["name", "El nombre es obligatorio (mínimo 2 caracteres).", name.length < 2],
+    ["cuisine", "El tipo de cocina es obligatorio.", cuisineType.length < 2],
+  ]);
+  return valid ? { name: name, cuisineType: cuisineType, description: description || null } : null;
 }
 
 function resetRestaurantForm() {
   editingRestaurantId = null;
   form.reset();
-  Object.values(rErrors).forEach(function (el) { el.textContent = ""; });
-  setStatus(formStatus, "");
->>>>>>> backend
+  clearErrors(rErrors);
+  showStatus(formStatus, "");
 }
 
 function renderRestaurantList() {
   listEmpty.hidden = restaurants.length > 0;
-<<<<<<< HEAD
-  listEmpty.textContent = restaurants.length
-    ? ""
-    : "Aún no tienes restaurantes registrados. Completa el formulario para crear el primero.";
-  restaurantList.innerHTML = "";
-
-  restaurants.forEach((restaurant) => {
-    const openDays = restaurant.schedules.filter((entry) => !entry.closed);
-    const scheduleSummary =
-      openDays.length === 7
-        ? "Todos los días de la semana"
-        : openDays.map((entry) => entry.day).join(", ");
-
-    const item = document.createElement("li");
-    item.className = "restaurant-card";
-    item.innerHTML = `
-      <div class="restaurant-card-head">
-        <h3>${escapeHtml(restaurant.name)}</h3>
-        <span class="badge">${escapeHtml(restaurant.cuisineType)}</span>
-      </div>
-      <p class="restaurant-address">${escapeHtml(restaurant.address)}</p>
-      <p class="restaurant-meta">Capacidad máxima: ${restaurant.maxCapacity} personas</p>
-      <p class="restaurant-meta">Atención: ${escapeHtml(scheduleSummary)}</p>
-      <div class="restaurant-actions">
-        <button class="button button-small button-outline" type="button" data-action="edit">
-          Editar
-        </button>
-        <button class="button button-small button-danger" type="button" data-action="delete">
-          Eliminar
-        </button>
-      </div>`;
-
-    item.querySelector('[data-action="edit"]').addEventListener("click", () => {
-      editRestaurant(restaurant);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    });
-    item.querySelector('[data-action="delete"]').addEventListener("click", () => {
-      deleteRestaurant(restaurant);
-    });
-=======
   restaurantList.innerHTML = "";
 
   restaurants.forEach(function (restaurant) {
     const item = document.createElement("li");
     item.className = "restaurant-card";
     item.innerHTML =
-      '<div class="restaurant-card-head">' +
-        '<h3>' + escapeHtml(restaurant.name) + '</h3>' +
-        '<span class="badge">' + escapeHtml(restaurant.cuisineType) + '</span>' +
-      '</div>' +
-      '<p class="restaurant-address">' + escapeHtml(restaurant.description || "") + '</p>' +
-      '<div class="restaurant-actions"></div>';
+      "<h3>" + escapeHtml(restaurant.name) + "</h3>" +
+      '<p class="restaurant-meta">Cocina ' + escapeHtml(restaurant.cuisineType) + "</p>" +
+      (restaurant.description
+        ? '<p class="restaurant-address">' + escapeHtml(restaurant.description) + "</p>"
+        : "");
 
-    const actions = item.querySelector(".restaurant-actions");
-
-    var sedesBtn = document.createElement("button");
-    sedesBtn.className = "button button-small";
-    sedesBtn.type = "button";
-    sedesBtn.textContent = "Gestionar sedes";
-    sedesBtn.addEventListener("click", function () { selectRestaurant(restaurant); });
-    actions.appendChild(sedesBtn);
-
-    var editBtn = document.createElement("button");
-    editBtn.className = "button button-small button-outline";
-    editBtn.type = "button";
-    editBtn.textContent = "Editar";
-    editBtn.addEventListener("click", function () { editRestaurant(restaurant); });
-    actions.appendChild(editBtn);
->>>>>>> backend
-
+    const actions = document.createElement("div");
+    actions.className = "restaurant-actions";
+    actions.appendChild(actionButton("Gestionar sedes", "", function () { selectRestaurant(restaurant); }));
+    actions.appendChild(actionButton("Editar", "button-outline", function () { editRestaurant(restaurant); }));
+    item.appendChild(actions);
     restaurantList.appendChild(item);
   });
 }
 
 async function loadRestaurants() {
   try {
-<<<<<<< HEAD
-    const response = await fetch("/api/restaurants", {
-      headers: { Authorization: `Bearer ${session.token}` },
-    });
-
-    if (response.status === 401) {
-      handleExpiredSession();
-      return;
-    }
-
-    const result = await response.json();
-    restaurants = result.restaurants || [];
+    restaurants = await apiFetch("/api/restaurants?mine=true");
     renderRestaurantList();
-  } catch {
+  } catch (error) {
     listEmpty.hidden = false;
-    listEmpty.textContent = "No se pudo cargar la lista de restaurantes.";
-=======
-    const response = await fetch(API_BASE + "/api/restaurants?mine=true", {
-      headers: authHeaders(),
-    });
-
-    if (response.status === 401) { handleUnauthorized(); return; }
-
-    const data = await response.json();
-    restaurants = Array.isArray(data) ? data : [];
-    renderRestaurantList();
-  } catch {
-    listEmpty.hidden = false;
-    setEmptyText(listEmpty, "No se pudo cargar la lista de restaurantes. Revisa que el servicio esté encendido.");
->>>>>>> backend
+    setEmptyText(listEmpty, errorText(error));
   }
 }
 
 function editRestaurant(restaurant) {
-<<<<<<< HEAD
-  editingId = restaurant.id;
-  inputs.name.value = restaurant.name;
-  inputs.address.value = restaurant.address;
-  inputs.cuisine.value = restaurant.cuisineType;
-  inputs.capacity.value = restaurant.maxCapacity;
-  buildScheduleRows(restaurant.schedules);
-
-  Object.values(inputErrors).forEach((error) => {
-    error.textContent = "";
-  });
-  schedulesError.textContent = "";
-  setStatus(formStatus, `Editando: ${restaurant.name}. Guarda para aplicar los cambios.`);
-  form.scrollIntoView({ behavior: "smooth", block: "start" });
-}
-
-async function deleteRestaurant(restaurant) {
-  const confirmed = confirm(
-    `¿Eliminar el restaurante "${restaurant.name}"? Esta acción no se puede deshacer.`,
-  );
-  if (!confirmed) return;
-
-  try {
-    const response = await fetch(`/api/restaurants/${restaurant.id}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${session.token}` },
-    });
-    const result = await response.json();
-
-    if (!response.ok) {
-      setStatus(formStatus, result.message || "No se pudo eliminar el restaurante.", "error");
-      return;
-    }
-
-    if (editingId === restaurant.id) {
-      resetForm();
-    }
-    setStatus(formStatus, "Restaurante eliminado correctamente.", "success");
-    await loadRestaurants();
-  } catch {
-    setStatus(formStatus, "No se pudo conectar con el servidor.", "error");
-  }
-}
-
-form.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  setStatus(formStatus, "");
-
-  const payload = validateForm();
-  if (!payload) return;
-
-  const endpoint = editingId ? `/api/restaurants/${editingId}` : "/api/restaurants";
-
-  try {
-    const response = await fetch(endpoint, {
-      method: editingId ? "PUT" : "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${session.token}`,
-      },
-      body: JSON.stringify(payload),
-    });
-    const result = await response.json();
-
-    if (!response.ok) {
-      if (response.status === 401) {
-        handleExpiredSession();
-        return;
-      }
-=======
   editingRestaurantId = restaurant.id;
   rInputs.name.value = restaurant.name;
-  rInputs.address.value = restaurant.description || "";
   rInputs.cuisine.value = restaurant.cuisineType;
-  rInputs.city.value = "";
-  rInputs.capacity.value = "";
-  Object.values(rErrors).forEach(function (el) { el.textContent = ""; });
-  setStatus(formStatus, "Editando: " + restaurant.name);
+  rInputs.description.value = restaurant.description || "";
+  clearErrors(rErrors);
+  showStatus(formStatus, "Editando: " + restaurant.name);
   form.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 form.addEventListener("submit", async function (event) {
   event.preventDefault();
-  setStatus(formStatus, "");
+  showStatus(formStatus, "");
 
   const payload = validateRestaurant();
   if (!payload) return;
 
-  const endpoint = editingRestaurantId
-    ? API_BASE + "/api/restaurants/" + editingRestaurantId
-    : API_BASE + "/api/restaurants";
-
+  const wasEditing = editingRestaurantId !== null;
   try {
-    const response = await fetch(endpoint, {
-      method: editingRestaurantId ? "PUT" : "POST",
-      headers: authHeaders(),
+    await apiFetch(wasEditing ? "/api/restaurants/" + editingRestaurantId : "/api/restaurants", {
+      method: wasEditing ? "PUT" : "POST",
       body: JSON.stringify(payload),
     });
-
-    if (response.status === 401) { handleUnauthorized(); return; }
-
-    if (!response.ok) {
-      const result = await response.json().catch(function () { return {}; });
->>>>>>> backend
-      setStatus(formStatus, result.message || "No se pudo guardar el restaurante.", "error");
-      return;
-    }
-
-<<<<<<< HEAD
-    setStatus(
-      formStatus,
-      editingId ? "Restaurante actualizado correctamente." : "Restaurante registrado correctamente.",
-      "success",
-    );
-
-    if (!editingId) {
-      resetForm();
-    }
-=======
-    setStatus(formStatus,
-      editingRestaurantId ? "Restaurante actualizado." : "Restaurante registrado.", "success");
-
-    if (!editingRestaurantId) resetRestaurantForm();
->>>>>>> backend
+    if (!wasEditing) resetRestaurantForm();
+    showStatus(formStatus, wasEditing ? "Restaurante actualizado." : "Restaurante registrado.", "success");
     await loadRestaurants();
-  } catch {
-    setStatus(formStatus, "No se pudo conectar con el servidor.", "error");
+    notifyBranchesChanged();
+  } catch (error) {
+    showStatus(formStatus, errorText(error), "error");
   }
 });
 
-<<<<<<< HEAD
-resetButton.addEventListener("click", resetForm);
+document.querySelector("#reset-button").addEventListener("click", resetRestaurantForm);
 
-demoLoginButton.addEventListener("click", async () => {
-  setStatus(loginStatus, "");
-
-  try {
-    const response = await fetch("/api/demo/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: adminNameInput.value.trim() }),
-    });
-    const result = await response.json();
-
-    if (!response.ok) {
-      setStatus(loginStatus, result.message || "No se pudo iniciar sesión.", "error");
-      return;
-    }
-
-    writeSession({ token: result.token, name: result.admin.name });
-    setStatus(loginStatus, "");
-    showDashboard();
-  } catch {
-    setStatus(loginStatus, "No se pudo conectar con el servidor.", "error");
-  }
-});
-
-logoutButton.addEventListener("click", () => {
-  writeSession(null);
-  showLogin();
-  setStatus(loginStatus, "Sesión cerrada.");
-});
-
-function handleExpiredSession() {
-  writeSession(null);
-  showLogin();
-  setStatus(loginStatus, "La sesión expiró. Vuelve a iniciar sesión.", "error");
-}
-
-function showDashboard() {
-  session = readSession();
-  if (!session) {
-    showLogin();
-    return;
-  }
-
-  loginScreen.hidden = true;
-  dashboard.hidden = false;
-  sessionLabel.textContent = `Sesión: ${session.name}`;
-  sessionLabel.hidden = false;
-  logoutButton.hidden = false;
-
-  resetForm();
-  loadRestaurants();
-}
-
-function showLogin() {
-  session = null;
-  loginScreen.hidden = false;
-  dashboard.hidden = true;
-  sessionLabel.hidden = true;
-  logoutButton.hidden = true;
-  restaurants = [];
-}
-
-buildScheduleRows(null);
-showDashboard();
-=======
-resetButton.addEventListener("click", resetRestaurantForm);
-
-/* ── Sedes (Branches) ─────────────────────────────────────────────── */
+/* ── Sedes ─────────────────────────────────────────────────────────── */
 
 function selectRestaurant(restaurant) {
   selectedRestaurant = restaurant;
@@ -616,24 +197,24 @@ function buildScheduleRows(entries) {
   scheduleRows.innerHTML = "";
 
   dayLabels.forEach(function (label, index) {
-    const entry = entries ? entries[index] : null;
-    const open = entry ? entry.openTime || entry.open || "12:00" : "12:00";
-    const close = entry ? entry.closeTime || entry.close || "22:00" : "22:00";
-    const closed = entry ? (entry.isClosed !== undefined ? entry.isClosed : entry.closed || false) : false;
+    const entry = entries ? entries.find(function (e) { return e.dayOfWeek === index + 1; }) : null;
+    const open = entry && entry.openTime ? entry.openTime.substring(0, 5) : "12:00";
+    const close = entry && entry.closeTime ? entry.closeTime.substring(0, 5) : "22:00";
+    const closed = entry ? Boolean(entry.isClosed) : false;
 
     const row = document.createElement("div");
     row.className = "schedule-row";
     row.innerHTML =
-      '<span class="schedule-day">' + label + '</span>' +
+      '<span class="schedule-day">' + label + "</span>" +
       '<label class="schedule-toggle">' +
-        '<input type="checkbox" class="schedule-closed" ' + (closed ? "checked" : "") + ' /> Cerrado' +
-      '</label>' +
+        '<input type="checkbox" class="schedule-closed" ' + (closed ? "checked" : "") + " /> Cerrado" +
+      "</label>" +
       '<label class="schedule-time-field">Desde' +
         '<input type="time" class="schedule-open" value="' + open + '" />' +
-      '</label>' +
+      "</label>" +
       '<label class="schedule-time-field">Hasta' +
         '<input type="time" class="schedule-close" value="' + close + '" />' +
-      '</label>';
+      "</label>";
 
     const checkbox = row.querySelector(".schedule-closed");
     const openInput = row.querySelector(".schedule-open");
@@ -661,58 +242,66 @@ function collectSchedules() {
   });
 }
 
-function validateBranch() {
-  let valid = true;
-
-  function check(field, message, condition) {
-    if (condition) { bErrors[field].textContent = message; valid = false; }
-    else { bErrors[field].textContent = ""; }
+/* Mensaje del primer día con horario inválido, o "" si todos están bien. */
+function scheduleProblem(schedules) {
+  if (schedules.every(function (e) { return e.isClosed; })) return "Debe haber al menos un día abierto.";
+  for (const entry of schedules) {
+    if (entry.isClosed) continue;
+    const day = dayLabels[entry.dayOfWeek - 1];
+    if (!entry.openTime || !entry.closeTime) return "Completa los horarios del " + day + ".";
+    if (entry.openTime >= entry.closeTime) {
+      return "Horario inválido el " + day + ": la apertura debe ser antes del cierre.";
+    }
   }
+  return "";
+}
 
+function validateBranch() {
   const name = bInputs.name.value.trim();
   const address = bInputs.address.value.trim();
-  const city = bInputs.city.value.trim();
+  const city = bInputs.city.value;
   const phone = bInputs.phone.value.trim();
   const capacity = Number(bInputs.capacity.value);
 
-  check("name", "El nombre de la sede es obligatorio.", name.length < 2);
-  check("address", "La dirección es obligatoria.", address.length < 5);
-  check("city", "La ciudad es obligatoria.", city.length < 2);
-  check("capacity", "La capacidad debe ser entre 1 y 500.",
-    !Number.isInteger(capacity) || capacity < 1 || capacity > 500);
+  const fieldsValid = applyChecks(bErrors, [
+    ["name", "El nombre de la sede es obligatorio.", name.length < 2],
+    ["address", "La dirección es obligatoria (mínimo 5 caracteres).", address.length < 5],
+    ["city", "Elige la ciudad de la sede.", !CITIES.includes(city)],
+    ["capacity", "La capacidad debe ser un número entre 1 y 500.",
+      !Number.isInteger(capacity) || capacity < 1 || capacity > 500],
+  ]);
 
   const schedules = collectSchedules();
-  let scheduleError = "";
+  schedulesError.textContent = scheduleProblem(schedules);
 
-  if (schedules.every(function (e) { return e.isClosed; })) {
-    scheduleError = "Debe haber al menos un día abierto.";
-  } else {
-    for (const entry of schedules) {
-      if (entry.isClosed) continue;
-      if (!entry.openTime || !entry.closeTime) {
-        scheduleError = "Completa los horarios del " + dayLabels[entry.dayOfWeek - 1] + ".";
-        break;
-      }
-      if (entry.openTime >= entry.closeTime) {
-        scheduleError = "Horario inválido el " + dayLabels[entry.dayOfWeek - 1] + ": apertura debe ser antes del cierre.";
-        break;
-      }
-    }
-  }
-
-  if (scheduleError) { schedulesError.textContent = scheduleError; valid = false; }
-  else { schedulesError.textContent = ""; }
-
-  return valid ? { name, address, city, phone: phone || null, capacity, schedules } : null;
+  if (!fieldsValid || schedulesError.textContent) return null;
+  return {
+    name: name,
+    address: address,
+    city: city,
+    phone: phone || null,
+    capacity: capacity,
+    // Siempre se envía: si faltara, el backend la reactivaría al editar.
+    active: bInputs.active.checked,
+    schedules: schedules,
+  };
 }
 
 function resetBranchForm() {
   editingBranchId = null;
   branchForm.reset();
-  Object.values(bErrors).forEach(function (el) { el.textContent = ""; });
+  clearErrors(bErrors);
   schedulesError.textContent = "";
-  setStatus(branchFormStatus, "");
+  showStatus(branchFormStatus, "");
   buildScheduleRows(null);
+}
+
+function scheduleSummary(branch) {
+  const open = (branch.schedules || [])
+    .filter(function (s) { return !s.isClosed; })
+    .sort(function (a, b) { return a.dayOfWeek - b.dayOfWeek; })
+    .map(function (s) { return dayLabels[s.dayOfWeek - 1]; });
+  return open.length ? open.join(", ") : "Sin días abiertos";
 }
 
 function renderBranchList() {
@@ -722,54 +311,32 @@ function renderBranchList() {
   branches.forEach(function (branch) {
     const item = document.createElement("li");
     item.className = "restaurant-card";
-
-    const scheduleSummary = branch.schedules
-      ? branch.schedules
-          .filter(function (s) { return !s.isClosed; })
-          .map(function (s) { return dayLabels[s.dayOfWeek - 1]; })
-          .join(", ") || "Sin días abiertos"
-      : "";
-
     item.innerHTML =
       '<div class="restaurant-card-head">' +
-        '<h3>' + escapeHtml(branch.name) + '</h3>' +
-        '<span class="badge ' + (branch.active ? 'badge-ok">Activa' : 'badge-off">Inactiva') + '</span>' +
-      '</div>' +
-      '<p class="restaurant-address">' + escapeHtml(branch.address) + ', ' + escapeHtml(branch.city) + '</p>' +
-      '<p class="restaurant-meta">Capacidad: ' + branch.capacity + ' personas</p>' +
-      (scheduleSummary ? '<p class="restaurant-meta">Atención: ' + escapeHtml(scheduleSummary) + '</p>' : '') +
-      '<div class="restaurant-actions"></div>';
+        "<h3>" + escapeHtml(branch.name) + "</h3>" +
+        '<span class="badge ' + (branch.active ? "badge-ok" : "badge-off") + '">' +
+          (branch.active ? "Activa" : "Inactiva") + "</span>" +
+      "</div>" +
+      '<p class="restaurant-address">' + escapeHtml(branch.address) + ", " + escapeHtml(branch.city) + "</p>" +
+      '<p class="restaurant-meta">Capacidad: ' + branch.capacity + " personas por franja</p>" +
+      '<p class="restaurant-meta">Atiende: ' + escapeHtml(scheduleSummary(branch)) + "</p>";
 
-    const actions = item.querySelector(".restaurant-actions");
-
-    var editBtn = document.createElement("button");
-    editBtn.className = "button button-small button-outline";
-    editBtn.type = "button";
-    editBtn.textContent = "Editar";
-    editBtn.addEventListener("click", function () { editBranch(branch); });
-    actions.appendChild(editBtn);
-
+    const actions = document.createElement("div");
+    actions.className = "restaurant-actions";
+    actions.appendChild(actionButton("Editar", "button-outline", function () { editBranch(branch); }));
+    item.appendChild(actions);
     branchList.appendChild(item);
   });
 }
 
 async function loadBranches() {
   if (!selectedRestaurant) return;
-
   try {
-    const response = await fetch(
-      API_BASE + "/api/restaurants/" + selectedRestaurant.id + "/branches",
-      { headers: authHeaders() }
-    );
-
-    if (response.status === 401) { handleUnauthorized(); return; }
-
-    const data = await response.json();
-    branches = Array.isArray(data) ? data : [];
+    branches = await apiFetch("/api/restaurants/" + selectedRestaurant.id + "/branches");
     renderBranchList();
-  } catch {
+  } catch (error) {
     branchListEmpty.hidden = false;
-    setEmptyText(branchListEmpty, "No se pudieron cargar las sedes. Revisa que el servicio esté encendido.");
+    setEmptyText(branchListEmpty, errorText(error));
   }
 }
 
@@ -777,63 +344,46 @@ function editBranch(branch) {
   editingBranchId = branch.id;
   bInputs.name.value = branch.name;
   bInputs.address.value = branch.address;
-  bInputs.city.value = branch.city;
+  // Una ciudad escrita a mano antes (ej. "Giron") no está en la lista:
+  // el select queda vacío y la validación pide elegirla de nuevo.
+  bInputs.city.value = CITIES.includes(branch.city) ? branch.city : "";
   bInputs.phone.value = branch.phone || "";
   bInputs.capacity.value = branch.capacity;
+  bInputs.active.checked = branch.active !== false;
+  buildScheduleRows(branch.schedules && branch.schedules.length ? branch.schedules : null);
 
-  if (branch.schedules && branch.schedules.length > 0) {
-    const sorted = branch.schedules.slice().sort(function (a, b) { return a.dayOfWeek - b.dayOfWeek; });
-    buildScheduleRows(sorted);
-  } else {
-    buildScheduleRows(null);
-  }
-
-  Object.values(bErrors).forEach(function (el) { el.textContent = ""; });
+  clearErrors(bErrors);
   schedulesError.textContent = "";
-  setStatus(branchFormStatus, "Editando: " + branch.name);
+  showStatus(branchFormStatus, "Editando: " + branch.name);
   branchForm.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 branchForm.addEventListener("submit", async function (event) {
   event.preventDefault();
-  setStatus(branchFormStatus, "");
+  showStatus(branchFormStatus, "");
 
   const payload = validateBranch();
   if (!payload) return;
 
-  const endpoint = editingBranchId
-    ? API_BASE + "/api/restaurants/" + selectedRestaurant.id + "/branches/" + editingBranchId
-    : API_BASE + "/api/restaurants/" + selectedRestaurant.id + "/branches";
-
+  const base = "/api/restaurants/" + selectedRestaurant.id + "/branches";
+  const wasEditing = editingBranchId !== null;
   try {
-    const response = await fetch(endpoint, {
-      method: editingBranchId ? "PUT" : "POST",
-      headers: authHeaders(),
+    await apiFetch(wasEditing ? base + "/" + editingBranchId : base, {
+      method: wasEditing ? "PUT" : "POST",
       body: JSON.stringify(payload),
     });
-
-    if (response.status === 401) { handleUnauthorized(); return; }
-
-    if (!response.ok) {
-      const result = await response.json().catch(function () { return {}; });
-      setStatus(branchFormStatus, result.message || "No se pudo guardar la sede.", "error");
-      return;
-    }
-
-    setStatus(branchFormStatus,
-      editingBranchId ? "Sede actualizada." : "Sede registrada.", "success");
-
-    if (!editingBranchId) resetBranchForm();
+    if (!wasEditing) resetBranchForm();
+    showStatus(branchFormStatus, wasEditing ? "Sede actualizada." : "Sede registrada.", "success");
     await loadBranches();
-  } catch {
-    setStatus(branchFormStatus, "No se pudo conectar con el servidor.", "error");
+    notifyBranchesChanged();
+  } catch (error) {
+    showStatus(branchFormStatus, errorText(error), "error");
   }
 });
 
-branchResetBtn.addEventListener("click", resetBranchForm);
+document.querySelector("#branch-reset-button").addEventListener("click", resetBranchForm);
 
-/* ── Inicializacion ────────────────────────────────────────────────── */
+/* ── Inicio ────────────────────────────────────────────────────────── */
 
 buildScheduleRows(null);
 loadRestaurants();
->>>>>>> backend

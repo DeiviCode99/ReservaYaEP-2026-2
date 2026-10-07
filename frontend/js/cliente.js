@@ -42,6 +42,13 @@ const statusStyles = {
   COMPLETED: "badge-off",
 };
 
+const eventLabels = {
+  NONE: "Ninguna",
+  ROMANTIC_DINNER: "Cena romántica",
+  BIRTHDAY: "Cumpleaños",
+  WEDDING: "Boda",
+};
+
 /* "2026-09-24" → "24 de septiembre" */
 function formatDate(value) {
   if (!value) return "";
@@ -49,6 +56,41 @@ function formatDate(value) {
   if (parts.length !== 3) return value;
   const date = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
   return date.toLocaleDateString("es-CO", { day: "numeric", month: "long" });
+}
+
+function reservationCode(reservation) {
+  return reservation.confirmationCode || "RESERVA-" + reservation.id;
+}
+
+function downloadConfirmation(reservation) {
+  const JsPDF = window.jspdf && window.jspdf.jsPDF;
+  if (!JsPDF) {
+    alert("No se pudo preparar el PDF. Revisa tu conexión e inténtalo de nuevo.");
+    return;
+  }
+
+  const pdf = new JsPDF();
+  const time = reservation.reservationTime ? reservation.reservationTime.substring(0, 5) : "";
+  pdf.setTextColor(107, 22, 38);
+  pdf.setFontSize(22);
+  pdf.text("ReservaYa", 20, 25);
+  pdf.setTextColor(38, 22, 26);
+  pdf.setFontSize(16);
+  pdf.text("Confirmación de reserva", 20, 42);
+  pdf.setFontSize(11);
+  pdf.text("Código: " + reservationCode(reservation), 20, 58);
+  pdf.text("Sede: " + (reservation.branchName || "No disponible"), 20, 70);
+  pdf.text("Fecha: " + formatDate(reservation.reservationDate), 20, 82);
+  pdf.text("Hora: " + time, 20, 94);
+  pdf.text("Personas: " + reservation.partySize, 20, 106);
+  pdf.text("Ocasión: " + (eventLabels[reservation.event] || "Ninguna"), 20, 118);
+  pdf.text("Estado: " + (statusLabels[reservation.status] || reservation.status), 20, 130);
+  pdf.setDrawColor(233, 178, 60);
+  pdf.line(20, 140, 190, 140);
+  pdf.setFontSize(10);
+  pdf.setTextColor(124, 102, 107);
+  pdf.text("Presenta este código al restaurante.", 20, 153);
+  pdf.save("reserva-" + reservationCode(reservation) + ".pdf");
 }
 
 function renderReservationCard(reservation) {
@@ -67,7 +109,9 @@ function renderReservationCard(reservation) {
       '<span class="badge ' + statusStyle + '">' + escapeHtml(statusText) + '</span>' +
     '</div>' +
     '<p class="restaurant-address">' + escapeHtml(dateStr) + ' a las ' + escapeHtml(timeStr) + '</p>' +
-    '<p class="restaurant-meta">Para ' + reservation.partySize + ' personas (reserva #' + reservation.id + ')</p>';
+    '<p class="restaurant-meta">Para ' + reservation.partySize + ' personas · ocasión: ' +
+      escapeHtml(eventLabels[reservation.event] || "Ninguna") + '</p>' +
+    '<p class="restaurant-meta">Código: <strong>' + escapeHtml(reservationCode(reservation)) + '</strong></p>';
 
   if (reservation.status === "PENDING" || reservation.status === "CONFIRMED") {
     const actions = document.createElement("div");
@@ -84,6 +128,22 @@ function renderReservationCard(reservation) {
     cancelBtn.textContent = "Cancelar";
     cancelBtn.addEventListener("click", function () { cancelReservation(reservation); });
     actions.appendChild(cancelBtn);
+    const pdfBtn = document.createElement("button");
+    pdfBtn.className = "button button-small button-outline";
+    pdfBtn.type = "button";
+    pdfBtn.textContent = "Descargar PDF";
+    pdfBtn.addEventListener("click", function () { downloadConfirmation(reservation); });
+    actions.appendChild(pdfBtn);
+    li.appendChild(actions);
+  } else {
+    const actions = document.createElement("div");
+    actions.className = "restaurant-actions";
+    const pdfBtn = document.createElement("button");
+    pdfBtn.className = "button button-small button-outline";
+    pdfBtn.type = "button";
+    pdfBtn.textContent = "Descargar PDF";
+    pdfBtn.addEventListener("click", function () { downloadConfirmation(reservation); });
+    actions.appendChild(pdfBtn);
     li.appendChild(actions);
   }
 

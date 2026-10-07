@@ -1,8 +1,14 @@
 package com.reservaya.reservation.dto;
 
-import jakarta.validation.constraints.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
+
+import jakarta.validation.constraints.FutureOrPresent;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 
 public class ReservationRequest {
 
@@ -19,6 +25,10 @@ public class ReservationRequest {
     @NotNull @Min(1) @Max(50)
     private Integer partySize;
 
+    @NotBlank
+    @Pattern(regexp = "NONE|ROMANTIC_DINNER|BIRTHDAY|WEDDING")
+    private String event = "NONE";
+
     public Long getBranchId() { return branchId; }
     public void setBranchId(Long branchId) { this.branchId = branchId; }
 
@@ -30,4 +40,7 @@ public class ReservationRequest {
 
     public Integer getPartySize() { return partySize; }
     public void setPartySize(Integer partySize) { this.partySize = partySize; }
+
+    public String getEvent() { return event; }
+    public void setEvent(String event) { this.event = event; }
 }

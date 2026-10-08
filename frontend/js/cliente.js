@@ -26,8 +26,11 @@ const countHistory = document.querySelector("#count-history");
 sessionLabel.textContent = user.name;
 logoutBtn.addEventListener("click", logout);
 
+/* Activa = pendiente o confirmada y aún por venir. Una reserva cuya hora ya
+   pasó va al historial aunque nadie la haya marcado como completada. */
 function isActive(reservation) {
-  return reservation.status === "PENDING" || reservation.status === "CONFIRMED";
+  const open = reservation.status === "PENDING" || reservation.status === "CONFIRMED";
+  return open && new Date(reservation.reservationDate + "T" + reservation.reservationTime) > new Date();
 }
 
 function actionButton(text, style, onClick) {
@@ -191,6 +194,7 @@ async function cancelReservation(reservation) {
     showStatus(reservationFeedback, "La reserva #" + reservation.id + " fue cancelada correctamente.", "success");
   } catch (error) {
     showStatus(reservationFeedback, errorText(error), "error");
+    reservationFeedback.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 }
 

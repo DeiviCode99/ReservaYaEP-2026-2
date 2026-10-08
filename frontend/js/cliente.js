@@ -30,15 +30,14 @@ function isActive(reservation) {
   return reservation.status === "PENDING" || reservation.status === "CONFIRMED";
 }
 
-/* El color del distintivo es información: verde confirmada, mostaza en
-   espera, ladrillo cancelada o rechazada, gris completada. */
-const statusStyles = {
-  PENDING: "badge-warn",
-  CONFIRMED: "badge-ok",
-  CANCELLED: "badge-alert",
-  REJECTED: "badge-alert",
-  COMPLETED: "badge-off",
-};
+function actionButton(text, style, onClick) {
+  const button = document.createElement("button");
+  button.className = "button button-small " + style;
+  button.type = "button";
+  button.textContent = text;
+  button.addEventListener("click", onClick);
+  return button;
+}
 
 const eventLabels = {
   NONE: "Ninguna",
@@ -46,15 +45,6 @@ const eventLabels = {
   BIRTHDAY: "Cumpleaños",
   WEDDING: "Boda",
 };
-
-/* "2026-09-24" → "24 de septiembre" */
-function formatDate(value) {
-  if (!value) return "";
-  const parts = String(value).split("-");
-  if (parts.length !== 3) return value;
-  const date = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
-  return date.toLocaleDateString("es-CO", { day: "numeric", month: "long" });
-}
 
 function reservationCode(reservation) {
   return reservation.confirmationCode || "RESERVA-" + reservation.id;
@@ -82,7 +72,7 @@ function downloadConfirmation(reservation) {
   pdf.text("Hora: " + time, 20, 94);
   pdf.text("Personas: " + reservation.partySize, 20, 106);
   pdf.text("Ocasión: " + (eventLabels[reservation.event] || "Ninguna"), 20, 118);
-  pdf.text("Estado: " + (statusLabels[reservation.status] || reservation.status), 20, 130);
+  pdf.text("Estado: " + ((RESERVATION_STATUS[reservation.status] || {}).label || reservation.status), 20, 130);
   pdf.setDrawColor(233, 178, 60);
   pdf.line(20, 140, 190, 140);
   pdf.setFontSize(10);
@@ -100,47 +90,29 @@ function renderReservationCard(reservation) {
 
   li.innerHTML =
     '<div class="restaurant-card-head">' +
-      '<h3>' + escapeHtml(place) + '</h3>' +
-      '<span class="badge ' + statusStyle + '">' + escapeHtml(statusText) + '</span>' +
-    '</div>' +
-    '<p class="restaurant-address">' + escapeHtml(dateStr) + ' a las ' + escapeHtml(timeStr) + '</p>' +
-    '<p class="restaurant-meta">Para ' + reservation.partySize + ' personas · ocasión: ' +
-      escapeHtml(eventLabels[reservation.event] || "Ninguna") + '</p>' +
-    '<p class="restaurant-meta">Código: <strong>' + escapeHtml(reservationCode(reservation)) + '</strong></p>';
+      "<h3>" + escapeHtml(place) + "</h3>" +
+      statusBadge(reservation.status) +
+    "</div>" +
+    '<p class="restaurant-address">' + escapeHtml(formatDate(reservation.reservationDate)) +
+      " a las " + escapeHtml(timeStr) + "</p>" +
+    '<p class="restaurant-meta">Para ' + reservation.partySize + " personas · ocasión: " +
+      escapeHtml(eventLabels[reservation.event] || "Ninguna") + "</p>" +
+    '<p class="restaurant-meta">Código: <strong>' + escapeHtml(reservationCode(reservation)) + "</strong></p>" +
+    (reservation.status === "REJECTED" && reservation.cancellationReason
+      ? '<p class="restaurant-meta">Motivo: ' + escapeHtml(reservation.cancellationReason) + "</p>"
+      : "");
 
+  const actions = document.createElement("div");
+  actions.className = "restaurant-actions";
   if (isActive(reservation)) {
-    const actions = document.createElement("div");
-    actions.className = "restaurant-actions";
-    const editBtn = document.createElement("button");
-    editBtn.className = "button button-small button-outline";
-    editBtn.type = "button";
-    editBtn.textContent = "Modificar";
-    editBtn.addEventListener("click", function () { editReservation(reservation); });
-    actions.appendChild(editBtn);
-    const cancelBtn = document.createElement("button");
-    cancelBtn.className = "button button-small button-danger";
-    cancelBtn.type = "button";
-    cancelBtn.textContent = "Cancelar";
-    cancelBtn.addEventListener("click", function () { cancelReservation(reservation); });
-    actions.appendChild(cancelBtn);
-    const pdfBtn = document.createElement("button");
-    pdfBtn.className = "button button-small button-outline";
-    pdfBtn.type = "button";
-    pdfBtn.textContent = "Descargar PDF";
-    pdfBtn.addEventListener("click", function () { downloadConfirmation(reservation); });
-    actions.appendChild(pdfBtn);
-    li.appendChild(actions);
-  } else {
-    const actions = document.createElement("div");
-    actions.className = "restaurant-actions";
-    const pdfBtn = document.createElement("button");
-    pdfBtn.className = "button button-small button-outline";
-    pdfBtn.type = "button";
-    pdfBtn.textContent = "Descargar PDF";
-    pdfBtn.addEventListener("click", function () { downloadConfirmation(reservation); });
-    actions.appendChild(pdfBtn);
-    li.appendChild(actions);
+    actions.appendChild(actionButton("Modificar", "button-outline",
+      function () { editReservation(reservation); }));
+    actions.appendChild(actionButton("Cancelar", "button-danger",
+      function () { cancelReservation(reservation); }));
   }
+  actions.appendChild(actionButton("Descargar PDF", "button-outline",
+    function () { downloadConfirmation(reservation); }));
+  li.appendChild(actions);
 
   return li;
 }

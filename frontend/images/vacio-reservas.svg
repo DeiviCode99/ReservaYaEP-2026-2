@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" role="img" aria-label="Aún sin reservas">
+  <ellipse cx="80" cy="104" rx="52" ry="7" fill="#6B1626" opacity=".08"/>
+  <circle cx="80" cy="58" r="38" fill="none" stroke="#6B1626" stroke-width="2.5" opacity=".55"/>
+  <circle cx="80" cy="58" r="26" fill="#FBF5EA" stroke="#E9B23C" stroke-width="2.5"/>
+  <path d="M80 44v15l10 6" fill="none" stroke="#6B1626" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M26 34v20a5 5 0 0 0 5 5v28" fill="none" stroke="#6B1626" stroke-width="3" stroke-linecap="round" opacity=".45"/>
+  <path d="M34 34v20" fill="none" stroke="#6B1626" stroke-width="3" stroke-linecap="round" opacity=".45"/>
+  <path d="M130 34c5 4 7 11 5 18-1.5 5-5 8-5 8v27" fill="none" stroke="#6B1626" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity=".45"/>
+</svg>

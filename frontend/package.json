@@ -1,0 +1,9 @@
+{
+  "name": "reservaya-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Frontend de ReservaYa: paginas estaticas servidas con node:http. La API la expone el backend.",
+  "scripts": {
+    "start": "node js/server.js"
+  }
+}

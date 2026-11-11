@@ -151,7 +151,7 @@ export function SiteLayout({ children }) {
             </p>
           </div>
           <p className="text-sm text-crema-100/75">
-            Proyecto de Entornos de Programación · UIS 2026
+            Proyecto de Entornos de Programación, UIS 2026
           </p>
         </div>
       </footer>

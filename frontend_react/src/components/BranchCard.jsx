@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowUpRight, Clock, MapPin } from "lucide-react";
+import { Clock, MapPin } from "lucide-react";
 import { SmartImage } from "./SmartImage";
 import { coverFor } from "../lib/images";
 import { depositFor, formatCurrency, todayLabel } from "../lib/format";
@@ -10,7 +10,7 @@ export function BranchCard({ branch, eager = false }) {
   const cover = coverFor(branch);
   const today = todayLabel(branch);
   return (
-    <article className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-tinta/8 bg-papel shadow-card transition duration-300 hover:-translate-y-1 hover:shadow-lift focus-within:shadow-lift">
+    <article className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-tinta/8 bg-papel shadow-card transition-shadow duration-200 hover:shadow-lift focus-within:shadow-lift">
       <div className="relative">
         <SmartImage
           src={cover.thumb}
@@ -19,9 +19,8 @@ export function BranchCard({ branch, eager = false }) {
           alt=""
           eager={eager}
           className="aspect-[4/3]"
-          imgClassName="transition-transform duration-700 group-hover:scale-105"
         />
-        <span className="absolute left-3 top-3 rounded-full bg-mostaza-500 px-3 py-1 text-xs font-bold uppercase tracking-wide text-tinta shadow-card">
+        <span className="absolute left-3 top-3 rounded-full bg-mostaza-500 px-3 py-1 text-xs font-bold text-tinta shadow-card">
           {branch.cuisineType}
         </span>
       </div>
@@ -46,8 +45,8 @@ export function BranchCard({ branch, eager = false }) {
           <p className="text-sm text-piedra-700">
             Abono desde <strong className="font-bold tabular-nums text-tinta">{formatCurrency(depositFor(1))}</strong>
           </p>
-          <span className="inline-flex items-center gap-1 text-sm font-bold text-naranja-700 transition-transform duration-200 group-hover:translate-x-0.5" aria-hidden="true">
-            Reservar <ArrowUpRight size={16} />
+          <span className="text-sm font-bold text-naranja-700 underline decoration-2 underline-offset-4 decoration-transparent transition-colors group-hover:decoration-naranja-600" aria-hidden="true">
+            Reservar
           </span>
         </div>
       </div>

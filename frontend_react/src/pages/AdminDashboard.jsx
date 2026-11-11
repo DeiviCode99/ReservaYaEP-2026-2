@@ -27,8 +27,8 @@ export default function AdminDashboard() {
     <SiteLayout>
       <Page>
         <header>
-          <p className="text-xs font-bold uppercase tracking-wider text-naranja-700">Hola, {user.name}</p>
-          <h1 className="mt-2 text-3xl font-extrabold text-rojo-700 sm:text-4xl">Tu restaurante en ReservaYa</h1>
+          <p className="font-semibold text-piedra-700">Hola, {user.name}</p>
+          <h1 className="mt-1 text-3xl font-extrabold text-rojo-700 sm:text-4xl">Tu restaurante en ReservaYa</h1>
           <p className="mt-2 max-w-2xl text-piedra-700">Responde las reservas de tus sedes, registra tu marca y define horarios y aforo.</p>
         </header>
 

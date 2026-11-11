@@ -113,9 +113,8 @@ export default function Branches() {
     <SiteLayout>
       <div className="border-b border-tinta/8 bg-crema-50">
         <Page className="pb-6 sm:pb-8">
-          <p className="text-xs font-bold uppercase tracking-wider text-naranja-700">Área metropolitana de Bucaramanga</p>
-          <h1 className="mt-2 text-3xl font-extrabold text-rojo-700 sm:text-4xl">Encuentra tu sede favorita</h1>
-          <p className="mt-2 max-w-2xl text-piedra-700">Filtra por ubicación o tipo de cocina y elige dónde vivir tu próxima experiencia.</p>
+          <h1 className="text-3xl font-extrabold text-rojo-700 sm:text-4xl">Encuentra tu sede favorita</h1>
+          <p className="mt-2 max-w-2xl text-piedra-700">Sedes en Bucaramanga, Floridablanca, Girón y Piedecuesta. Filtra por ciudad o tipo de cocina y elige dónde quieres sentarte.</p>
 
           <form
             role="search"
@@ -132,7 +131,7 @@ export default function Branches() {
 
           <div className="mt-5 space-y-3">
             <div className="flex items-center gap-3">
-              <span id="filtro-ciudad" className="w-16 shrink-0 text-xs font-bold uppercase tracking-wide text-piedra-700">Ciudad</span>
+              <span id="filtro-ciudad" className="w-16 shrink-0 text-xs font-bold text-piedra-700">Ciudad</span>
               <div role="group" aria-labelledby="filtro-ciudad" className="-my-1 flex gap-2 overflow-x-auto py-1 pr-1">
                 <Chip selected={!city} aria-pressed={!city} onClick={() => setFilters({ city: "" })}>Todas</Chip>
                 {CITIES.map((option) => (
@@ -144,7 +143,7 @@ export default function Branches() {
             </div>
             {cuisineChips.length > 0 && (
               <div className="flex items-center gap-3">
-                <span id="filtro-cocina" className="w-16 shrink-0 text-xs font-bold uppercase tracking-wide text-piedra-700">Cocina</span>
+                <span id="filtro-cocina" className="w-16 shrink-0 text-xs font-bold text-piedra-700">Cocina</span>
                 <div role="group" aria-labelledby="filtro-cocina" className="-my-1 flex gap-2 overflow-x-auto py-1 pr-1">
                   <Chip selected={!cuisine} aria-pressed={!cuisine} onClick={() => setFilters({ cuisine: "" })}>Todas</Chip>
                   {cuisineChips.map((option) => (
@@ -195,7 +194,7 @@ export default function Branches() {
           <>
             <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {shown.map((branch, index) => (
-                <li key={branch.id} className="animate-surgir" style={{ animationDelay: `${index * 45}ms` }}>
+                <li key={branch.id}>
                   <BranchCard branch={branch} eager={index < 3} />
                 </li>
               ))}

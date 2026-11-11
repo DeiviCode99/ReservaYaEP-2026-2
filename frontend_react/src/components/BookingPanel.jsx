@@ -15,7 +15,7 @@ import { downloadConfirmation } from "../lib/pdf";
 function Step({ number, id, title, children }) {
   return (
     <section className="border-t border-tinta/8 py-4 first:border-t-0 first:pt-0">
-      <h3 id={id} className="mb-3 flex items-center gap-2.5 text-sm font-bold uppercase tracking-wide text-tinta">
+      <h3 id={id} className="mb-3 flex items-center gap-2.5 text-sm font-bold text-tinta">
         <span className="grid size-6 place-items-center rounded-full bg-rojo-600 text-xs font-extrabold text-white" aria-hidden="true">{number}</span>
         {title}
       </h3>
@@ -149,7 +149,7 @@ export function BookingPanel({ branch, editing = null, onDone, onCancel }) {
               ["Correo", user.email],
               ["Sede", created.branchName],
               ["Dirección", `${branch.address}, ${branch.city}`],
-              ["Fecha y hora", `${formatDate(created.reservationDate)} · ${hhmm(created.reservationTime)}`],
+              ["Fecha y hora", `${formatDate(created.reservationDate)}, ${hhmm(created.reservationTime)}`],
               ["Personas", created.partySize],
               ["Ocasión", EVENTS[created.event] || "Ninguna"],
               ["Abono", formatCurrency(depositFor(created.partySize))],

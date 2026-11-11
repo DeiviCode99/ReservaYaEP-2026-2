@@ -90,8 +90,8 @@ export default function ClientDashboard() {
       <Page>
         <header className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-naranja-700">Hola, {user.name}</p>
-            <h1 className="mt-2 text-3xl font-extrabold text-rojo-700 sm:text-4xl">Mis reservas</h1>
+            <p className="font-semibold text-piedra-700">Hola, {user.name}</p>
+            <h1 className="mt-1 text-3xl font-extrabold text-rojo-700 sm:text-4xl">Mis reservas</h1>
             <p className="mt-2 max-w-xl text-piedra-700">Revisa lo que tienes reservado, cancela si cambian tus planes y consulta tu historial.</p>
           </div>
           <form
@@ -118,7 +118,7 @@ export default function ClientDashboard() {
               <Stat
                 tone={upcoming ? "accent" : "plain"}
                 value={upcoming ? formatDate(upcoming.reservationDate) : "—"}
-                label={upcoming ? `Tu próxima reserva · ${hhmm(upcoming.reservationTime)}` : "Tu próxima reserva"}
+                label={upcoming ? `Tu próxima reserva, a las ${hhmm(upcoming.reservationTime)}` : "Tu próxima reserva"}
               />
               <Stat value={history.length} label="Reservas en el historial" />
             </>
@@ -192,7 +192,7 @@ export default function ClientDashboard() {
         {cancelling && (
           <p className="text-sm text-piedra-800">
             <strong className="font-bold text-tinta">{cancelling.branchName || `Reserva #${cancelling.id}`}</strong><br />
-            {formatDate(cancelling.reservationDate)} a las {hhmm(cancelling.reservationTime)} · {cancelling.partySize} {cancelling.partySize === 1 ? "persona" : "personas"}
+            {formatDate(cancelling.reservationDate)} a las {hhmm(cancelling.reservationTime)}, {cancelling.partySize} {cancelling.partySize === 1 ? "persona" : "personas"}
           </p>
         )}
       </Modal>

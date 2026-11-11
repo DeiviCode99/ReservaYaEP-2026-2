@@ -34,7 +34,7 @@ export function AuthLayout({ title, lead, switcher, children }) {
               ))}
             </ul>
           </div>
-          <p className="hidden text-sm text-white/70 lg:block">Proyecto de Entornos de Programación · UIS 2026</p>
+          <p className="hidden text-sm text-white/70 lg:block">Proyecto de Entornos de Programación, UIS 2026</p>
         </div>
       </aside>
 
@@ -50,7 +50,7 @@ export function AuthLayout({ title, lead, switcher, children }) {
 
 export function AuthCard({ title, lead, children }) {
   return (
-    <section className="animate-surgir">
+    <section>
       <h2 className="text-2xl font-extrabold text-rojo-700 sm:text-3xl">{title}</h2>
       {lead && <p className="mt-2 text-piedra-700">{lead}</p>}
       <div className="mt-7">{children}</div>

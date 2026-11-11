@@ -173,7 +173,7 @@ export function ReservationsTab({ branchesVersion }) {
           </Field>
         </div>
         <div className="mt-4 flex items-center gap-3">
-          <span id="filtro-estado" className="shrink-0 text-xs font-bold uppercase tracking-wide text-piedra-700">Estado</span>
+          <span id="filtro-estado" className="shrink-0 text-xs font-bold text-piedra-700">Estado</span>
           <div role="group" aria-labelledby="filtro-estado" className="-my-1 flex gap-2 overflow-x-auto py-1 pr-1">
             <Chip selected={!filters.status} aria-pressed={!filters.status} onClick={() => setFilters({ ...filters, status: "" })}>Todos</Chip>
             {Object.entries(STATUS).map(([key, [label]]) => (
@@ -211,10 +211,10 @@ export function ReservationsTab({ branchesVersion }) {
         {state.status === "ready" && shown.length > 0 && (
           <>
             {/* Escritorio: tabla */}
-            <Card className="hidden overflow-hidden md:block">
+            <Card className="hidden overflow-hidden lg:block">
               <table className="w-full text-left text-sm">
                 <caption className="sr-only">Reservas de la sede en {rangeLabel}</caption>
-                <thead className="bg-crema-50 text-xs font-bold uppercase tracking-wide text-piedra-700">
+                <thead className="bg-crema-50 text-xs font-bold text-piedra-700">
                   <tr>
                     <th scope="col" className="px-4 py-3">Fecha y hora</th>
                     <th scope="col" className="px-4 py-3">Cliente</th>
@@ -233,7 +233,7 @@ export function ReservationsTab({ branchesVersion }) {
                       </td>
                       <td className="px-4 py-3.5">
                         <Customer reservation={reservation} />
-                        <span className="mt-0.5 block font-mono text-xs text-piedra-600">#{reservation.id} · {reservationCode(reservation)}</span>
+                        <span className="mt-0.5 block text-xs text-piedra-600">Reserva #{reservation.id}, código {reservationCode(reservation)}</span>
                       </td>
                       <td className="px-4 py-3.5 font-bold tabular-nums">{reservation.partySize}</td>
                       <td className="px-4 py-3.5 text-piedra-800">{EVENTS[reservation.event] || "Ninguna"}</td>
@@ -250,8 +250,8 @@ export function ReservationsTab({ branchesVersion }) {
               </table>
             </Card>
 
-            {/* Móvil: tarjetas */}
-            <ul className="space-y-3 md:hidden">
+            {/* Móvil y tablet: tarjetas */}
+            <ul className="grid gap-3 sm:grid-cols-2 lg:hidden">
               {shown.map((reservation) => (
                 <Card as="li" key={reservation.id} className="p-4">
                   <div className="flex items-start justify-between gap-3">
@@ -263,7 +263,7 @@ export function ReservationsTab({ branchesVersion }) {
                   </div>
                   <div className="mt-2"><Customer reservation={reservation} /></div>
                   <p className="mt-2 text-sm text-piedra-700">
-                    {reservation.partySize} {reservation.partySize === 1 ? "persona" : "personas"} · {EVENTS[reservation.event] || "Ninguna"} · reserva #{reservation.id}
+                    {reservation.partySize} {reservation.partySize === 1 ? "persona" : "personas"}, ocasión: {(EVENTS[reservation.event] || "Ninguna").toLowerCase()}. Reserva #{reservation.id}
                   </p>
                   {reservation.cancellationReason && <p className="mt-1 text-sm text-piedra-700">Motivo: {reservation.cancellationReason}</p>}
                   {ACTIONS[reservation.status] && (
@@ -281,7 +281,7 @@ export function ReservationsTab({ branchesVersion }) {
         onClose={() => { if (!busy) setRejecting(null); }}
         size="sm"
         title={`¿Rechazar la reserva #${rejecting?.id ?? ""}?`}
-        description={rejecting ? `${rejecting.customerName || `Cliente #${rejecting.userId}`} · ${formatDate(rejecting.reservationDate)} a las ${hhmm(rejecting.reservationTime)}` : undefined}
+        description={rejecting ? `${rejecting.customerName || `Cliente #${rejecting.userId}`}, ${formatDate(rejecting.reservationDate)} a las ${hhmm(rejecting.reservationTime)}` : undefined}
         footer={(
           <>
             <Button variant="ghost" onClick={() => setRejecting(null)} disabled={Boolean(busy)}>Volver</Button>

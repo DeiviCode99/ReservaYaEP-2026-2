@@ -11,7 +11,7 @@ const TONES = {
 
 export function Badge({ tone = "off", dot = true, className, children }) {
   return (
-    <span className={clsx("inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold uppercase tracking-wide whitespace-nowrap", TONES[tone], className)}>
+    <span className={clsx("inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold whitespace-nowrap", TONES[tone], className)}>
       {dot && <span className="size-1.5 rounded-full bg-(--punto)" aria-hidden="true" />}
       {children}
     </span>

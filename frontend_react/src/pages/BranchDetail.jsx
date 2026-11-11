@@ -6,6 +6,7 @@ import { Page, SiteLayout } from "../layouts/SiteLayout";
 import { Button } from "../components/ui/Button";
 import { Badge } from "../components/ui/Badge";
 import { Card } from "../components/ui/Card";
+import { Modal } from "../components/ui/Modal";
 import { Loading, Skeleton } from "../components/ui/Skeleton";
 import { EmptyState } from "../components/ui/EmptyState";
 import { Gallery } from "../components/Gallery";
@@ -21,7 +22,7 @@ function Fact({ icon: Icon, label, children }) {
         <Icon size={18} aria-hidden="true" />
       </span>
       <div className="min-w-0">
-        <p className="text-xs font-bold uppercase tracking-wide text-piedra-600">{label}</p>
+        <p className="text-xs font-bold text-piedra-600">{label}</p>
         <div className="font-semibold text-tinta">{children}</div>
       </div>
     </li>
@@ -42,7 +43,7 @@ function Schedules({ branch }) {
           <li key={day} className={clsx("flex items-center justify-between gap-4 px-3 py-2.5 text-sm", isToday && "rounded-xl bg-mostaza-100 font-bold")}>
             <span className="flex items-center gap-2">
               {day}
-              {isToday && <span className="rounded-full bg-tinta px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wide text-mostaza-300">Hoy</span>}
+              {isToday && <span className="rounded-full bg-tinta px-2 py-0.5 text-[0.65rem] font-bold text-mostaza-300">Hoy</span>}
             </span>
             <span className={clsx("tabular-nums", closed ? "text-piedra-600" : "text-tinta")}>
               {closed ? "Cerrado" : `${hhmm(schedule.openTime)} – ${hhmm(schedule.closeTime)}`}
@@ -71,8 +72,22 @@ function DetailSkeleton() {
   );
 }
 
+/* true desde 1024 px: ahí el panel de reserva va fijo al lado; por debajo, en hoja inferior. */
+function useDesktop() {
+  const [matches, setMatches] = useState(() => window.matchMedia("(min-width: 1024px)").matches);
+  useEffect(() => {
+    const query = window.matchMedia("(min-width: 1024px)");
+    const onChange = () => setMatches(query.matches);
+    query.addEventListener("change", onChange);
+    return () => query.removeEventListener("change", onChange);
+  }, []);
+  return matches;
+}
+
 export default function BranchDetail() {
   const { id } = useParams();
+  const desktop = useDesktop();
+  const [sheetOpen, setSheetOpen] = useState(false);
   const [state, setState] = useState({ status: "loading", branch: null, message: "" });
 
   useEffect(() => {
@@ -132,7 +147,7 @@ export default function BranchDetail() {
                   )}
                   <Fact icon={Users} label="Aforo">{branch.capacity} personas por franja</Fact>
                   <Fact icon={Wallet} label="Abono">
-                    {formatCurrency(depositFor(1))} hasta 3 personas · {formatCurrency(depositFor(4))} desde 4
+                    {formatCurrency(depositFor(1))} hasta 3 personas, {formatCurrency(depositFor(4))} desde 4
                   </Fact>
                 </ul>
 
@@ -146,21 +161,33 @@ export default function BranchDetail() {
                 </section>
               </div>
 
-              <Card as="aside" id="reservar" aria-labelledby="reservar-titulo" className="min-w-0 scroll-mt-24 p-5 lg:sticky lg:top-24">
-                <h2 id="reservar-titulo" className="text-xl font-extrabold text-rojo-700">Reserva tu mesa</h2>
-                <p className="mb-5 mt-1 text-sm text-piedra-700">{branch.restaurantName} · {branch.name}</p>
-                {branch.active === false
-                  ? <p className="rounded-2xl bg-crema-100 px-4 py-3 text-sm text-piedra-800">Esta sede no está recibiendo reservas por ahora.</p>
-                  : <BookingPanel key={branch.id} branch={branch} />}
-              </Card>
+              {desktop && (
+                <Card as="aside" aria-labelledby="reservar-titulo" className="sticky top-24 min-w-0 p-5">
+                  <h2 id="reservar-titulo" className="text-xl font-extrabold text-rojo-700">Reserva tu mesa</h2>
+                  <p className="mb-5 mt-1 text-sm text-piedra-700">{branch.restaurantName} · {branch.name}</p>
+                  {branch.active === false
+                    ? <p className="rounded-2xl bg-crema-100 px-4 py-3 text-sm text-piedra-800">Esta sede no está recibiendo reservas por ahora.</p>
+                    : <BookingPanel key={branch.id} branch={branch} />}
+                </Card>
+              )}
             </div>
 
-            {branch.active !== false && (
-              <div className="fixed inset-x-0 bottom-0 z-30 border-t border-tinta/10 bg-papel/95 p-3 backdrop-blur lg:hidden">
-                <Button size="lg" className="w-full" onClick={() => document.getElementById("reservar")?.scrollIntoView({ block: "start" })}>
-                  Reservar mesa
-                </Button>
-              </div>
+            {!desktop && (
+              <>
+                <div className="fixed inset-x-0 bottom-0 z-30 border-t border-tinta/10 bg-papel/95 p-3 backdrop-blur">
+                  {branch.active === false
+                    ? <p className="py-2 text-center text-sm font-semibold text-piedra-700">Esta sede no está recibiendo reservas por ahora.</p>
+                    : <Button size="lg" className="w-full" aria-haspopup="dialog" onClick={() => setSheetOpen(true)}>Reservar mesa</Button>}
+                </div>
+                <Modal
+                  open={sheetOpen}
+                  onClose={() => setSheetOpen(false)}
+                  title="Reserva tu mesa"
+                  description={branch.restaurantName + " · " + branch.name}
+                >
+                  {sheetOpen && <BookingPanel key={branch.id} branch={branch} />}
+                </Modal>
+              </>
             )}
             <div className="h-20 lg:hidden" aria-hidden="true" />
           </>

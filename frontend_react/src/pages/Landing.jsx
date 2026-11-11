@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight, CalendarCheck, MapPin, Search, Store, UtensilsCrossed } from "lucide-react";
+import { CalendarCheck, MapPin, Search, Store, UtensilsCrossed } from "lucide-react";
 import { SiteLayout } from "../layouts/SiteLayout";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { Select } from "../components/ui/Select";
 import { BranchCardSkeleton, Loading } from "../components/ui/Skeleton";
 import { EmptyState } from "../components/ui/EmptyState";
-import { Carousel } from "../components/Carousel";
+import { Carousel, Rail } from "../components/Carousel";
 import { BranchCard } from "../components/BranchCard";
 import { apiFetch, getUser } from "../lib/api";
 import { CITIES, homeFor } from "../lib/format";
@@ -18,8 +18,6 @@ const STEPS = [
   { icon: CalendarCheck, title: "Elige día y hora", text: "Solo ves las franjas que todavía tienen cupo." },
   { icon: UtensilsCrossed, title: "Llega directo a la mesa", text: "El restaurante confirma y tú llevas tu código." },
 ];
-
-const RAIL_SLIDE = "basis-[82%] sm:basis-1/2 lg:basis-1/3";
 
 function HeroSearch() {
   const navigate = useNavigate();
@@ -40,18 +38,18 @@ function HeroSearch() {
       className="grid gap-3 rounded-3xl bg-papel p-4 text-tinta shadow-lift sm:grid-cols-2 sm:p-5 lg:grid-cols-[1.3fr_1fr_1fr_auto] lg:items-end"
     >
       <label className="block">
-        <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-piedra-700">Restaurante</span>
+        <span className="mb-1.5 block text-xs font-bold text-piedra-700">Restaurante</span>
         <Input type="search" icon={Search} placeholder="Ej. Doña Marta" value={query.name} onChange={update("name")} />
       </label>
       <label className="block">
-        <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-piedra-700">Ciudad</span>
+        <span className="mb-1.5 block text-xs font-bold text-piedra-700">Ciudad</span>
         <Select value={query.city} onChange={update("city")}>
           <option value="">Toda el área metropolitana</option>
           {CITIES.map((city) => <option key={city}>{city}</option>)}
         </Select>
       </label>
       <label className="block">
-        <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-piedra-700">Tipo de cocina</span>
+        <span className="mb-1.5 block text-xs font-bold text-piedra-700">Tipo de cocina</span>
         <Input type="search" icon={UtensilsCrossed} placeholder="Ej. Santandereana" value={query.cuisine} onChange={update("cuisine")} />
       </label>
       <Button type="submit" size="md" icon={Search} className="sm:col-span-2 lg:col-span-1">Buscar mesa</Button>
@@ -103,11 +101,11 @@ function FeaturedBranches() {
   }
   return (
     <>
-      <Carousel label="Sedes destacadas" header={header} slideClassName={RAIL_SLIDE} viewportClassName="-m-3 p-3">
+      <Rail label="Sedes destacadas" header={header}>
         {state.items.map((branch) => <BranchCard key={branch.id} branch={branch} />)}
-      </Carousel>
+      </Rail>
       <p className="mt-6 text-center">
-        <Button to="/sedes" variant="secondary" iconRight={ArrowRight}>Ver todas las sedes</Button>
+        <Button to="/sedes" variant="secondary">Ver todas las sedes</Button>
       </p>
     </>
   );
@@ -120,7 +118,6 @@ export default function Landing() {
       <section className="relative isolate bg-tinta text-white">
         <Carousel
           label="Fotos de restaurantes y platos"
-          variant="hero"
           autoplay
           loop
           className="absolute inset-0 -z-10"
@@ -148,11 +145,11 @@ export default function Landing() {
 
         <div className="pointer-events-none mx-auto max-w-6xl px-4 pb-48 pt-12 sm:px-6 sm:pb-44 sm:pt-20 lg:pb-44 lg:pt-28">
           <div className="pointer-events-auto max-w-2xl animate-surgir">
-            <p className="inline-flex items-center gap-2 rounded-full bg-mostaza-500 px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider text-tinta">
+            <p className="inline-flex items-center gap-2 rounded-full bg-mostaza-500 px-3.5 py-1.5 text-xs font-bold text-tinta">
               <MapPin size={14} aria-hidden="true" /> Área metropolitana de Bucaramanga
             </p>
             <h1 className="mt-5 text-4xl font-extrabold sm:text-5xl lg:text-6xl">
-              Tu mesa lista,<br />sin llamadas <span className="text-mostaza-400">ni filas.</span>
+              Tu mesa lista,<br />sin llamadas ni filas.
             </h1>
             <p className="mt-4 max-w-xl text-lg text-white/90">
               Elige la sede, el día y la hora con cupo real. El restaurante confirma y tú llegas directo a sentarte.
@@ -176,12 +173,11 @@ export default function Landing() {
             <li key={city}>
               <Link
                 to={`/sedes?city=${encodeURIComponent(city)}`}
-                className="group flex h-full items-center justify-between gap-3 rounded-2xl border border-tinta/8 bg-papel px-4 py-4 font-bold text-tinta shadow-card transition duration-200 hover:-translate-y-0.5 hover:border-mostaza-600 hover:bg-mostaza-100"
+                className="flex h-full items-center rounded-2xl border border-tinta/8 bg-papel px-4 py-4 font-bold text-tinta shadow-card transition-colors duration-200 hover:border-mostaza-600 hover:bg-mostaza-100"
               >
                 <span className="flex items-center gap-2.5">
                   <MapPin size={18} className="text-rojo-600" aria-hidden="true" /> {city}
                 </span>
-                <ArrowRight size={18} className="text-piedra-500 transition-transform duration-200 group-hover:translate-x-1 group-hover:text-tinta" aria-hidden="true" />
               </Link>
             </li>
           ))}
@@ -190,14 +186,18 @@ export default function Landing() {
 
       <section className="mx-auto max-w-6xl px-4 pt-16 sm:px-6" aria-labelledby="como-funciona">
         <h2 id="como-funciona" className="text-2xl font-extrabold text-rojo-700 sm:text-3xl">Así funciona</h2>
-        <ol className="mt-6 grid gap-4 md:grid-cols-3">
+        {/* Un solo tiquete con tres talones: el mismo motivo que las reservas. */}
+        <ol className="mt-6 grid rounded-3xl border border-tinta/8 bg-papel shadow-card md:grid-cols-3">
           {STEPS.map((step, index) => (
-            <li key={step.title} className="relative rounded-3xl border border-tinta/8 bg-papel p-6 shadow-card">
-              <span className="absolute right-5 top-4 text-5xl font-extrabold tabular-nums text-crema-200" aria-hidden="true">{index + 1}</span>
-              <span className="grid size-12 place-items-center rounded-2xl bg-rojo-600 text-white">
-                <step.icon size={22} aria-hidden="true" />
-              </span>
-              <h3 className="mt-4 text-lg font-extrabold text-tinta">{step.title}</h3>
+            <li
+              key={step.title}
+              className="border-dashed border-piedra-300 p-6 not-first:border-t-2 md:not-first:border-l-2 md:not-first:border-t-0"
+            >
+              <p className="flex items-center gap-3">
+                <span className="text-4xl font-extrabold leading-none tabular-nums text-rojo-600" aria-hidden="true">{index + 1}</span>
+                <step.icon size={22} className="text-mostaza-700" aria-hidden="true" />
+              </p>
+              <h3 className="mt-3 text-lg font-extrabold text-tinta">{step.title}</h3>
               <p className="mt-1.5 text-sm text-piedra-700">{step.text}</p>
             </li>
           ))}
@@ -213,8 +213,8 @@ export default function Landing() {
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             {user
-              ? <Button to={homeFor(user)} size="lg" iconRight={ArrowRight} className="shadow-[0_3px_0_0_var(--color-rojo-900)]">Ir a mi panel</Button>
-              : <Button to="/registro?rol=restaurante" size="lg" iconRight={ArrowRight} className="shadow-[0_3px_0_0_var(--color-rojo-900)]">Registrar mi restaurante</Button>}
+              ? <Button to={homeFor(user)} size="lg" className="shadow-[0_3px_0_0_var(--color-rojo-900)]">Ir a mi panel</Button>
+              : <Button to="/registro?rol=restaurante" size="lg" className="shadow-[0_3px_0_0_var(--color-rojo-900)]">Registrar mi restaurante</Button>}
           </div>
         </div>
       </section>

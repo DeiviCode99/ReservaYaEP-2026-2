@@ -1,3 +1,5 @@
+/* Contrato con el backend. No cambiar sin revisar el gateway:
+   sesión en localStorage ("reservaya.session"), token Bearer, 401 -> /login. */
 const SESSION_KEY = "reservaya.session";
 export const API_BASE = window.location.port === "3000" ? "http://localhost:8080" : "";
 
@@ -38,12 +40,13 @@ export async function apiFetch(path, options = {}) {
   return data;
 }
 
+/* [etiqueta, tono]. El componente StatusBadge traduce el tono a colores. */
 export const STATUS = {
-  PENDING: ["Pendiente", "badge-warn"],
-  CONFIRMED: ["Confirmada", "badge-ok"],
-  CANCELLED: ["Cancelada", "badge-alert"],
-  REJECTED: ["Rechazada", "badge-alert"],
-  COMPLETED: ["Completada", "badge-off"],
+  PENDING: ["Pendiente", "warn"],
+  CONFIRMED: ["Confirmada", "ok"],
+  CANCELLED: ["Cancelada", "alert"],
+  REJECTED: ["Rechazada", "alert"],
+  COMPLETED: ["Completada", "off"],
 };
 export const EVENTS = {
   NONE: "Ninguna",

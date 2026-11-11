@@ -26,19 +26,6 @@ const countHistory = document.querySelector("#count-history");
 sessionLabel.textContent = user.name;
 logoutBtn.addEventListener("click", logout);
 
-<<<<<<< HEAD
-function isActive(reservation) {
-  return reservation.status === "PENDING" || reservation.status === "CONFIRMED";
-}
-
-function actionButton(text, style, onClick) {
-  const button = document.createElement("button");
-  button.className = "button button-small " + style;
-  button.type = "button";
-  button.textContent = text;
-  button.addEventListener("click", onClick);
-  return button;
-=======
 /* Activa = pendiente o confirmada y aún por venir. Una reserva cuya hora ya
    pasó va al historial aunque nadie la haya marcado como completada. */
 function isActive(reservation) {
@@ -95,7 +82,6 @@ function downloadConfirmation(reservation) {
   pdf.setTextColor(124, 102, 107);
   pdf.text("Presenta este código al restaurante.", 20, 153);
   pdf.save("reserva-" + reservationCode(reservation) + ".pdf");
->>>>>>> dcfe4110e45d1d3ff1d9efdb271f41fe2a3f618d
 }
 
 function renderReservationCard(reservation) {
@@ -112,34 +98,20 @@ function renderReservationCard(reservation) {
     "</div>" +
     '<p class="restaurant-address">' + escapeHtml(formatDate(reservation.reservationDate)) +
       " a las " + escapeHtml(timeStr) + "</p>" +
-<<<<<<< HEAD
-    '<p class="restaurant-meta">Para ' + reservation.partySize + " personas (reserva #" + reservation.id + ")</p>" +
-=======
     '<p class="restaurant-meta">Para ' + reservation.partySize + " personas · ocasión: " +
       escapeHtml(eventLabels[reservation.event] || "Ninguna") + "</p>" +
     '<p class="restaurant-meta">Código: <strong>' + escapeHtml(reservationCode(reservation)) + "</strong></p>" +
->>>>>>> dcfe4110e45d1d3ff1d9efdb271f41fe2a3f618d
     (reservation.status === "REJECTED" && reservation.cancellationReason
       ? '<p class="restaurant-meta">Motivo: ' + escapeHtml(reservation.cancellationReason) + "</p>"
       : "");
 
-<<<<<<< HEAD
-  if (isActive(reservation)) {
-    const actions = document.createElement("div");
-    actions.className = "restaurant-actions";
-=======
   const actions = document.createElement("div");
   actions.className = "restaurant-actions";
   if (isActive(reservation)) {
->>>>>>> dcfe4110e45d1d3ff1d9efdb271f41fe2a3f618d
     actions.appendChild(actionButton("Modificar", "button-outline",
       function () { editReservation(reservation); }));
     actions.appendChild(actionButton("Cancelar", "button-danger",
       function () { cancelReservation(reservation); }));
-<<<<<<< HEAD
-    li.appendChild(actions);
-=======
->>>>>>> dcfe4110e45d1d3ff1d9efdb271f41fe2a3f618d
   }
   actions.appendChild(actionButton("Descargar PDF", "button-outline",
     function () { downloadConfirmation(reservation); }));
@@ -222,10 +194,7 @@ async function cancelReservation(reservation) {
     showStatus(reservationFeedback, "La reserva #" + reservation.id + " fue cancelada correctamente.", "success");
   } catch (error) {
     showStatus(reservationFeedback, errorText(error), "error");
-<<<<<<< HEAD
-=======
     reservationFeedback.scrollIntoView({ behavior: "smooth", block: "center" });
->>>>>>> dcfe4110e45d1d3ff1d9efdb271f41fe2a3f618d
   }
 }
 

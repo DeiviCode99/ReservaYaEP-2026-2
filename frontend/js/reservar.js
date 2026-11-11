@@ -16,10 +16,7 @@ const step2Title = document.querySelector("#step2-title");
 const selectedBranchText = document.querySelector("#selected-branch");
 const reservationDate = document.querySelector("#reservation-date");
 const partySize = document.querySelector("#party-size");
-<<<<<<< HEAD
-=======
 const reservationEvent = document.querySelector("#reservation-event");
->>>>>>> dcfe4110e45d1d3ff1d9efdb271f41fe2a3f618d
 const depositNote = document.querySelector("#deposit-note");
 const slotList = document.querySelector("#slot-list");
 const slotStatus = document.querySelector("#slot-status");
@@ -207,10 +204,7 @@ async function editReservation(reservation) {
     cancelEditButton.hidden = false;
     reservationDate.value = reservation.reservationDate < todayIso() ? todayIso() : reservation.reservationDate;
     partySize.value = String(reservation.partySize);
-<<<<<<< HEAD
-=======
     reservationEvent.value = reservation.event || "NONE";
->>>>>>> dcfe4110e45d1d3ff1d9efdb271f41fe2a3f618d
     chooseBranch(branch);
   } catch (error) {
     alert(errorText(error));
@@ -251,10 +245,7 @@ reservationForm.addEventListener("submit", async function (event) {
         reservationDate: reservationDate.value,
         reservationTime: chosenSlot.time,
         partySize: people,
-<<<<<<< HEAD
-=======
         event: reservationEvent.value,
->>>>>>> dcfe4110e45d1d3ff1d9efdb271f41fe2a3f618d
       }),
     });
     showStatus(reservationStatus,

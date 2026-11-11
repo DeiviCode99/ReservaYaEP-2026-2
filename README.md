@@ -17,14 +17,6 @@ Bucaramanga. Proyecto de la materia Entornos de Programación, UIS 2026.
 ## Contenido
 
 1. [¿Qué es ReservaYa?](#1-qué-es-reservaya)
-<<<<<<< HEAD
-2. [Cómo está construido](#2-cómo-está-construido)
-3. [Ejecutarlo en local](#3-ejecutarlo-en-local)
-4. [Manual de uso](#4-manual-de-uso)
-5. [Estado del proyecto](#5-estado-del-proyecto)
-6. [Despliegue en producción](#6-despliegue-en-producción)
-7. [Problemas frecuentes](#7-problemas-frecuentes)
-=======
 2. [Arquitectura](#2-arquitectura)
 3. [Diseño de la base de datos](#3-diseño-de-la-base-de-datos)
 4. [Ciclo de vida de una reserva](#4-ciclo-de-vida-de-una-reserva)
@@ -34,7 +26,6 @@ Bucaramanga. Proyecto de la materia Entornos de Programación, UIS 2026.
 8. [Estado del proyecto](#8-estado-del-proyecto)
 9. [Despliegue en producción](#9-despliegue-en-producción)
 10. [Problemas frecuentes](#10-problemas-frecuentes)
->>>>>>> dcfe4110e45d1d3ff1d9efdb271f41fe2a3f618d
 
 ---
 
@@ -63,19 +54,6 @@ Conceptos clave:
 
 ---
 
-<<<<<<< HEAD
-## 2. Cómo está construido
-
-```
-Navegador ──► frontend (HTML/CSS/JS, puerto 3000)
-    │
-    └── /api ──► api-gateway (8080) ──┬──► auth-service        (8081)  cuentas, login, Google, JWT
-                                      ├──► restaurant-service  (8082)  restaurantes, sedes, horarios
-                                      └──► reservation-service (8083)  reservas y disponibilidad
-                                                    │
-                                          PostgreSQL en Supabase
-```
-=======
 ## 2. Arquitectura
 
 ReservaYa es un backend de **cuatro microservicios Spring Boot** detrás de un
@@ -121,7 +99,6 @@ flowchart LR
 
 En local no hay Caddy: el frontend lo sirve `server.js` en el puerto 3000 y
 llama directamente al gateway en `http://localhost:8080`.
->>>>>>> dcfe4110e45d1d3ff1d9efdb271f41fe2a3f618d
 
 | Parte | Tecnología |
 |---|---|
@@ -131,11 +108,8 @@ llama directamente al gateway en `http://localhost:8080`.
 | Seguridad | Contraseñas con BCrypt, sesiones con JWT, inicio de sesión con Google. |
 | Producción | Docker Compose y Caddy (HTTPS automático) en una VM de Oracle Cloud. |
 
-<<<<<<< HEAD
-=======
 ### Estructura del repositorio
 
->>>>>>> dcfe4110e45d1d3ff1d9efdb271f41fe2a3f618d
 ```
 ReservaYaEP-2026-2/
 ├── backend/
@@ -144,18 +118,12 @@ ReservaYaEP-2026-2/
 │   ├── restaurant-service/     restaurantes, sedes, horarios, búsqueda
 │   ├── reservation-service/    reservas, disponibilidad, validación de aforo
 │   ├── db/schema.sql           tablas de la base de datos
-<<<<<<< HEAD
-=======
 │   ├── db/migrations/          cambios aditivos para una base ya creada
->>>>>>> dcfe4110e45d1d3ff1d9efdb271f41fe2a3f618d
 │   ├── caddy/Caddyfile         servidor web de producción
 │   ├── docker-compose.yml      despliegue de producción
 │   ├── run-dev.ps1             arranque rápido en local (Windows)
 │   └── .env.example            plantilla de variables de entorno
-<<<<<<< HEAD
-=======
 ├── docs/                       SRS y análisis de POO / SOLID
->>>>>>> dcfe4110e45d1d3ff1d9efdb271f41fe2a3f618d
 └── frontend/
     ├── html/                   páginas (index, login, recuperar, cliente, admin)
     ├── js/                     lógica de cada página + server.js
@@ -165,11 +133,6 @@ ReservaYaEP-2026-2/
 
 ---
 
-<<<<<<< HEAD
-## 3. Ejecutarlo en local
-
-### 3.1 Requisitos
-=======
 ## 3. Diseño de la base de datos
 
 Una sola base PostgreSQL en Supabase con **7 tablas**. Cada microservicio es
@@ -388,7 +351,6 @@ sequenceDiagram
 ## 6. Ejecutarlo en local
 
 ### 6.1 Requisitos
->>>>>>> dcfe4110e45d1d3ff1d9efdb271f41fe2a3f618d
 
 | Herramienta | Versión | Cómo comprobarla |
 |---|---|---|
@@ -398,11 +360,7 @@ sequenceDiagram
 
 No hace falta instalar Maven ni ninguna dependencia de Node.
 
-<<<<<<< HEAD
-### 3.2 Descargar el proyecto
-=======
 ### 6.2 Descargar el proyecto
->>>>>>> dcfe4110e45d1d3ff1d9efdb271f41fe2a3f618d
 
 ```bash
 git clone https://github.com/DeiviCode99/ReservaYaEP-2026-2.git
@@ -410,11 +368,7 @@ cd ReservaYaEP-2026-2
 git checkout backend
 ```
 
-<<<<<<< HEAD
-### 3.3 Configurar las variables de entorno
-=======
 ### 6.3 Configurar las variables de entorno
->>>>>>> dcfe4110e45d1d3ff1d9efdb271f41fe2a3f618d
 
 ```bash
 cd backend
@@ -436,11 +390,7 @@ repositorio (ya está en `.gitignore`).
 Si un valor tiene espacios o `<>`, ponlo entre comillas, como
 `MAIL_FROM="ReservaYa <correo@gmail.com>"`.
 
-<<<<<<< HEAD
-### 3.4 Base de datos
-=======
 ### 6.4 Base de datos
->>>>>>> dcfe4110e45d1d3ff1d9efdb271f41fe2a3f618d
 
 Si el equipo **ya comparte** un proyecto de Supabase, no hagas nada: las
 tablas ya existen.
@@ -451,11 +401,7 @@ Solo si vas a usar **tu propia** base de Supabase: abre el SQL Editor, pega
 > ⚠️ `schema.sql` **borra todas las tablas y sus datos** antes de crearlas.
 > Nunca lo ejecutes sobre la base compartida sin avisar al equipo.
 
-<<<<<<< HEAD
-### 3.5 Arrancar todo
-=======
 ### 6.5 Arrancar todo
->>>>>>> dcfe4110e45d1d3ff1d9efdb271f41fe2a3f618d
 
 **Windows (recomendado):** desde la carpeta `backend`:
 
@@ -487,22 +433,14 @@ cd frontend
 npm start
 ```
 
-<<<<<<< HEAD
-### 3.6 Comprobar que funciona
-=======
 ### 6.6 Comprobar que funciona
->>>>>>> dcfe4110e45d1d3ff1d9efdb271f41fe2a3f618d
 
 1. Abre http://localhost:8080/api/auth/config: debe mostrar un JSON como
    `{"googleClientId":"..."}`. Si da error, algún servicio no arrancó; revisa
    su ventana.
 2. Abre **http://localhost:3000** y crea una cuenta.
 
-<<<<<<< HEAD
-### 3.7 Pruebas automáticas
-=======
 ### 6.7 Pruebas automáticas
->>>>>>> dcfe4110e45d1d3ff1d9efdb271f41fe2a3f618d
 
 No necesitan base de datos:
 
@@ -516,20 +454,12 @@ cd backend/restaurant-service  && ./mvnw test -Dtest=BranchUpdateTest
 
 ---
 
-<<<<<<< HEAD
-## 4. Manual de uso
-=======
 ## 7. Manual de uso
->>>>>>> dcfe4110e45d1d3ff1d9efdb271f41fe2a3f618d
 
 Las direcciones son iguales en local (`http://localhost:3000/...`) y en
 producción (`https://reservaya.duckdns.org/...`).
 
-<<<<<<< HEAD
-### 4.1 Crear una cuenta — `/`
-=======
 ### 7.1 Crear una cuenta — `/`
->>>>>>> dcfe4110e45d1d3ff1d9efdb271f41fe2a3f618d
 
 1. Elige cómo vas a usar ReservaYa: **Quiero reservar** (cliente) o
    **Tengo un restaurante** (administrador).
@@ -540,20 +470,12 @@ producción (`https://reservaya.duckdns.org/...`).
 **Con Google:** marca el tipo de cuenta y pulsa el botón de Google que aparece
 debajo del formulario. Si ya tenías una cuenta con ese correo, entras a ella.
 
-<<<<<<< HEAD
-### 4.2 Iniciar sesión — `/login.html`
-=======
 ### 7.2 Iniciar sesión — `/login.html`
->>>>>>> dcfe4110e45d1d3ff1d9efdb271f41fe2a3f618d
 
 Correo y contraseña, o el botón de Google. Cada tipo de usuario llega a su
 propio panel.
 
-<<<<<<< HEAD
-### 4.3 Recuperar la contraseña — `/recuperar.html`
-=======
 ### 7.3 Recuperar la contraseña — `/recuperar.html`
->>>>>>> dcfe4110e45d1d3ff1d9efdb271f41fe2a3f618d
 
 1. En el login, pulsa **¿Olvidaste tu contraseña?**
 2. Escribe tu correo y pulsa **Enviar enlace**.
@@ -564,11 +486,7 @@ propio panel.
 Si creaste la cuenta con Google y quieres entrar también con correo y
 contraseña, usa este mismo proceso para ponerle una.
 
-<<<<<<< HEAD
-### 4.4 Panel del cliente — `/cliente.html`
-=======
 ### 7.4 Panel del cliente — `/cliente.html`
->>>>>>> dcfe4110e45d1d3ff1d9efdb271f41fe2a3f618d
 
 Arriba ves tres cifras: reservas activas, tu próxima reserva y cuántas hay en
 el historial.
@@ -603,11 +521,7 @@ cambios**. Vuelve a quedar Pendiente.
 | Cancelada / Rechazada | ladrillo | No se realizará |
 | Completada | gris | Ya ocurrió |
 
-<<<<<<< HEAD
-### 4.5 Panel del administrador — `/admin.html`
-=======
 ### 7.5 Panel del administrador — `/admin.html`
->>>>>>> dcfe4110e45d1d3ff1d9efdb271f41fe2a3f618d
 
 **Primera vez: registra tu restaurante y sus sedes**
 
@@ -640,11 +554,7 @@ Solo ves y gestionas las reservas de las sedes de **tus** restaurantes.
 
 ---
 
-<<<<<<< HEAD
-## 5. Estado del proyecto
-=======
 ## 8. Estado del proyecto
->>>>>>> dcfe4110e45d1d3ff1d9efdb271f41fe2a3f618d
 
 **Hecho**
 
@@ -671,11 +581,7 @@ Solo ves y gestionas las reservas de las sedes de **tus** restaurantes.
 
 ---
 
-<<<<<<< HEAD
-## 6. Despliegue en producción
-=======
 ## 9. Despliegue en producción
->>>>>>> dcfe4110e45d1d3ff1d9efdb271f41fe2a3f618d
 
 La VM corre todo con Docker Compose y Caddy sirve el frontend con HTTPS. Para
 publicar cambios que ya estén en la rama `backend`:
@@ -703,11 +609,7 @@ servicios lo lean.
 
 ---
 
-<<<<<<< HEAD
-## 7. Problemas frecuentes
-=======
 ## 10. Problemas frecuentes
->>>>>>> dcfe4110e45d1d3ff1d9efdb271f41fe2a3f618d
 
 | Síntoma | Causa | Solución |
 |---|---|---|
@@ -718,9 +620,5 @@ servicios lo lean.
 | No aparece el botón de Google | `GOOGLE_CLIENT_ID` vacío o backend caído | Revisa `http://localhost:8080/api/auth/config` (en producción, `/api/auth/config`) |
 | Google dice `origin_mismatch` | La dirección no está autorizada | En Google Cloud → Clientes → *Orígenes de JavaScript autorizados*, agrega la dirección exacta, sin barra final |
 | El correo de recuperación no llega | SMTP sin configurar o contraseña de aplicación mal copiada | Mira el log de `auth-service`: sin SMTP, el enlace aparece ahí |
-<<<<<<< HEAD
-| Un servicio no arranca con `Schema-validation: missing table` | La base no tiene las tablas | Aplica `schema.sql` (ver 3.4) |
-=======
 | Un servicio no arranca con `Schema-validation: missing table` | La base no tiene las tablas | Aplica `schema.sql` (ver 6.4) |
->>>>>>> dcfe4110e45d1d3ff1d9efdb271f41fe2a3f618d
 | `run-dev.ps1` dice que un puerto está en uso | Ya hay un servicio corriendo en ese puerto | Ciérralo o déjalo: el script lo omite |

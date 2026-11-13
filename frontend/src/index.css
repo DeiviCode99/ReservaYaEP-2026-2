@@ -1,0 +1,161 @@
+@import "tailwindcss";
+
+/* Sistema de diseño de ReservaYa.
+   Solo existe esta paleta: se anulan los colores por defecto de Tailwind. */
+@theme {
+  --color-*: initial;
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  /* Crema: fondos y superficies (base 100) */
+  --color-crema-50: #fbfbef;
+  --color-crema-100: #f5f5dc;
+  --color-crema-200: #ececc6;
+  --color-crema-300: #dfdfab;
+  --color-crema-400: #cdcd8c;
+  --color-crema-500: #b3b36e;
+  --color-crema-600: #8f8f54;
+  --color-crema-700: #6b6b3f;
+  --color-crema-800: #4a4a2c;
+  --color-crema-900: #2e2e1b;
+
+  /* Mostaza: acentos, seleccionados y resaltados (base 500) */
+  --color-mostaza-50: #fff9e6;
+  --color-mostaza-100: #fef0bf;
+  --color-mostaza-200: #fde594;
+  --color-mostaza-300: #fcd968;
+  --color-mostaza-400: #fccb45;
+  --color-mostaza-500: #fbc02d;
+  --color-mostaza-600: #e0a416;
+  --color-mostaza-700: #a8760a;
+  --color-mostaza-800: #7a5507;
+  --color-mostaza-900: #4f3805;
+
+  /* Naranja: acción principal y foco (base 500) */
+  --color-naranja-50: #fff4e5;
+  --color-naranja-100: #ffe2bd;
+  --color-naranja-200: #ffce91;
+  --color-naranja-300: #ffb85c;
+  --color-naranja-400: #ffa22e;
+  --color-naranja-500: #ff8f00;
+  --color-naranja-600: #d06e00;
+  --color-naranja-700: #a85a00;
+  --color-naranja-800: #7a4100;
+  --color-naranja-900: #4d2900;
+
+  /* Rojo: marca, títulos, errores y cancelaciones (base 600) */
+  --color-rojo-50: #fdecec;
+  --color-rojo-100: #fad1d1;
+  --color-rojo-200: #f3a6a6;
+  --color-rojo-300: #eb7676;
+  --color-rojo-400: #e04b4b;
+  --color-rojo-500: #d43434;
+  --color-rojo-600: #c62828;
+  --color-rojo-700: #a31f1f;
+  --color-rojo-800: #7d1818;
+  --color-rojo-900: #561010;
+
+  /* Verde de éxito: solo "confirmada" y avisos de éxito */
+  --color-exito-50: #e9f6ec;
+  --color-exito-100: #c9e9d0;
+  --color-exito-500: #2e8b47;
+  --color-exito-600: #1f7a3a;
+  --color-exito-700: #17602d;
+  --color-exito-800: #124a23;
+
+  /* Neutros cálidos */
+  --color-tinta: #2a1a14;
+  --color-papel: #fffdf8;
+  --color-piedra-50: #faf8f5;
+  --color-piedra-100: #f1ede7;
+  --color-piedra-200: #e2dbd1;
+  --color-piedra-300: #cbc1b4;
+  --color-piedra-400: #a89c8e;
+  --color-piedra-500: #85786b;
+  --color-piedra-600: #6b5f54;
+  --color-piedra-700: #52483f;
+  --color-piedra-800: #3b332c;
+
+  --font-sans: "Epilogue", "Segoe UI", system-ui, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+
+  --shadow-card: 0 1px 2px rgb(42 26 20 / 0.06), 0 10px 28px -16px rgb(42 26 20 / 0.28);
+  --shadow-lift: 0 2px 4px rgb(42 26 20 / 0.08), 0 22px 40px -20px rgb(42 26 20 / 0.4);
+
+  --animate-surgir: surgir 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-aviso: aviso 0.28s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+
+  @keyframes surgir {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes aviso {
+    from { opacity: 0; transform: translateY(12px) scale(0.97); }
+    to { opacity: 1; transform: none; }
+  }
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5.5rem;
+  }
+  /* Con un diálogo modal abierto la página de fondo no se desplaza. */
+  html:has(dialog[open]) {
+    overflow: hidden;
+  }
+  body {
+    background: var(--color-crema-100);
+    color: var(--color-tinta);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  h1, h2, h3, h4 {
+    letter-spacing: -0.02em;
+    line-height: 1.12;
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  ::selection {
+    background: var(--color-mostaza-300);
+    color: var(--color-tinta);
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-naranja-600);
+    outline-offset: 2px;
+  }
+  /* Sobre fondos oscuros (rojo, tinta, fotos) el anillo pasa a mostaza. */
+  .foco-claro :focus-visible,
+  .foco-claro:focus-visible {
+    outline-color: var(--color-mostaza-400);
+  }
+  button, [role="button"], summary, label[for] {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: not-allowed;
+  }
+  dialog::backdrop {
+    background: rgb(42 26 20 / 0.62);
+    backdrop-filter: blur(3px);
+  }
+  input[type="date"], input[type="time"] {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

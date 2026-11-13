@@ -24,10 +24,10 @@ aditiva `migrations/V2__reservation_management.sql` en Supabase para conservar
 reservas y crear los datos de auditoría y notificación requeridos por HU-07,
 HU-09 y HU-10.
 
-Los servicios arrancan con `spring.jpa.hibernate.ddl-auto=validate`: Hibernate
-no crea ni modifica tablas, solo comprueba que las entidades JPA coinciden con
-lo que hay en la base. Si una entidad no cuadra, el servicio no arranca — que
-es justo lo que queremos para no corromper el esquema por accidente.
+Los modelos de Django son `managed = False`: Django no crea ni modifica tablas
+(no se ejecuta `migrate` contra Supabase). El esquema es este `schema.sql`, y
+las pruebas automáticas lo cargan en un PostgreSQL local para trabajar con las
+mismas tablas, restricciones e índices que producción.
 
 ---
 
@@ -116,12 +116,12 @@ erDiagram
 
 ## Qué tabla pertenece a qué servicio
 
-| Servicio | Tablas | Entidades JPA |
+| Servicio | Tablas | Modelos de Django |
 |---|---|---|
-| `auth-service` | `users` | `User` |
-| `restaurant-service` | `restaurants`, `branches`, `schedules`, `restaurant_admins` | `Restaurant`, `Branch`, `Schedule`, `RestaurantAdmin` |
-| `reservation-service` | `reservations` | `Reservation` |
-| `api-gateway` | — | — |
+| `auth_service` | `users` | `User` |
+| `restaurant_service` | `restaurants`, `branches`, `schedules`, `restaurant_admins` | `Restaurant`, `Branch`, `Schedule`, `RestaurantAdmin` |
+| `reservation_service` | `reservations`, `reservation_audit` | `Reservation`, `ReservationAudit` |
+| `gateway` | — | — |
 
 En `reservation-service` los campos `user_id` y `branch_id` se mapean como
 columnas `Long` sueltas (no como `@ManyToOne`), porque las entidades `User` y
@@ -179,12 +179,12 @@ Solo se le muestran al cliente las franjas con `cupo_disponible >= party_size`
 | Decisión | Por qué |
 |---|---|
 | `BIGSERIAL` en vez de UUID | Más simple de depurar y es lo estándar en una base relacional docente. |
-| `VARCHAR + CHECK` en vez de `ENUM` nativo | El tipo `ENUM` de Postgres obliga a escribir un conversor de Hibernate; con `VARCHAR` basta `@Enumerated(EnumType.STRING)`. Se conserva la validación gracias al `CHECK`. |
+| `VARCHAR + CHECK` en vez de `ENUM` nativo | Con `VARCHAR` el ORM guarda el texto tal cual (en Django, un `CharField`), sin conversores para el tipo `ENUM` de Postgres. Se conserva la validación gracias al `CHECK`. |
 | Franja de **una hora exacta** | El aforo se valida contra `reservation_time` sin cálculos de solapamiento. |
 | `capacity` en la sede, no una tabla `tables` | El PDF pide "capacidad (número de mesas/aforo)". Una tabla `tables` por mesa individual queda como extensión futura. |
-| `day_of_week` de 1 a 7 | Coincide con `java.time.DayOfWeek.getValue()`, así no hay que convertir nada en Java. |
+| `day_of_week` de 1 a 7 | Es el estándar ISO-8601 (`date.isoweekday()` en Python), así no hay que convertir nada. |
 | Índice único parcial en `reservations` | Evita que un cliente duplique su reserva en la misma franja por doble clic, pero deja volver a reservar si canceló. |
-| Triggers para `updated_at` | La marca de tiempo es correcta venga el `UPDATE` de donde venga, no solo desde Hibernate. |
+| Triggers para `updated_at` | La marca de tiempo es correcta venga el `UPDATE` de donde venga, no solo desde el ORM. |
 
 ---
 

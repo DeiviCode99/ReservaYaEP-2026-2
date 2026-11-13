@@ -1,13 +1,15 @@
-# Imagen de cualquier microservicio. El servicio se elige con el build-arg SERVICE
-# (ver docker-compose.yml). Se usa Maven de la imagen en vez de mvnw para evitar
-# problemas de fin de linea (CRLF) al clonar desde Windows.
-FROM maven:3.9-eclipse-temurin-21 AS build
-ARG SERVICE
+# Imagen de cualquier microservicio Django. El servicio se elige con el build-arg
+# SERVICE (auth_service, restaurant_service, reservation_service o gateway).
+FROM python:3.12-slim
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 WORKDIR /app
-COPY ${SERVICE}/pom.xml .
-COPY ${SERVICE}/src src
-RUN mvn -q package -DskipTests
-
-FROM eclipse-temurin:21-jre
-COPY --from=build /app/target/*.jar /app.jar
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY common /app/common
+ARG SERVICE
+COPY ${SERVICE} /app/service
+WORKDIR /app/service
+ENV PORT=8000
+EXPOSE 8000
+# 2 workers por servicio: Supabase limita las conexiones simultáneas.
+CMD ["sh", "-c", "exec gunicorn config.wsgi:application --bind 0.0.0.0:${PORT} --workers 2 --timeout 30 --access-logfile -"]

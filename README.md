@@ -9,8 +9,8 @@ Bucaramanga. Proyecto de la materia Entornos de Programación, UIS 2026.
 - **Guía visual del frontend:** [`frontend/README.md`](./frontend/README.md)
 - **Análisis de arquitectura, POO y SOLID:** [`docs/analisis-poo-solid.md`](./docs/analisis-poo-solid.md)
 
-> El código más reciente está en la rama **`backend`**. Trabaja sobre esa rama
-> hasta que se fusione con `main`.
+> El código más reciente (frontend en **React** y backend en **Django**) está en
+> la rama **`frontend`**. Trabaja sobre esa rama hasta que se fusione con `main`.
 
 ---
 
@@ -56,22 +56,22 @@ Conceptos clave:
 
 ## 2. Arquitectura
 
-ReservaYa es un backend de **cuatro microservicios Spring Boot** detrás de un
-gateway, más un frontend estático. En producción todo corre en una VM de
-Oracle Cloud con Docker Compose, y Caddy sirve el frontend con HTTPS.
+ReservaYa es un backend de **tres microservicios Django** detrás de un gateway
+(también en Django), más un frontend en **React**. En producción todo corre en
+una VM de Oracle Cloud con Docker Compose, y Caddy sirve el frontend con HTTPS.
 
 ```mermaid
 flowchart LR
     NAV(["Navegador<br/>(cliente / admin)"])
 
     subgraph VM["VM Oracle Cloud — Docker Compose"]
-        CADDY["Caddy<br/>HTTPS + archivos estáticos<br/>(HTML/CSS/JS)"]
-        GW["api-gateway :8080<br/>Spring Cloud Gateway<br/>enrutamiento + CORS"]
+        CADDY["Caddy<br/>HTTPS + build de React"]
+        GW["gateway :8080<br/>Django<br/>enrutamiento + CORS"]
 
-        subgraph MS["Microservicios Spring Boot"]
-            RES["reservation-service :8083<br/>reservas, disponibilidad,<br/>cupo, estados, auditoría"]
-            REST["restaurant-service :8082<br/>restaurantes, sedes,<br/>horarios, búsqueda"]
-            AUTH["auth-service :8081<br/>cuentas, login, Google,<br/>recuperación, emite JWT"]
+        subgraph MS["Microservicios Django + DRF"]
+            RES["reservation_service :8083<br/>reservas, disponibilidad,<br/>cupo, estados, auditoría"]
+            REST["restaurant_service :8082<br/>restaurantes, sedes,<br/>horarios, búsqueda"]
+            AUTH["auth_service :8081<br/>cuentas, login, Google,<br/>recuperación, emite JWT"]
         end
     end
 
@@ -97,13 +97,13 @@ flowchart LR
     RES -. notificaciones .-> SMTP
 ```
 
-En local no hay Caddy: el frontend lo sirve `server.js` en el puerto 3000 y
-llama directamente al gateway en `http://localhost:8080`.
+En local no hay Caddy: el frontend corre con Vite (`npm run dev`) en el
+puerto 3000 y llama directamente al gateway en `http://localhost:8080`.
 
 | Parte | Tecnología |
 |---|---|
-| Frontend | HTML, CSS y JavaScript sin frameworks. `server.js` (Node) solo sirve los archivos en local. |
-| Backend | Java 21, Spring Boot 4, 4 microservicios con Maven Wrapper (no hace falta instalar Maven). |
+| Frontend | React 18, Vite, Tailwind CSS v4 y React Router. |
+| Backend | Python 3.12, Django 5.2 y Django REST Framework: 3 microservicios + gateway. |
 | Base de datos | PostgreSQL en Supabase. El esquema está en [`backend/db/schema.sql`](./backend/db/schema.sql). |
 | Seguridad | Contraseñas con BCrypt, sesiones con JWT, inicio de sesión con Google. |
 | Producción | Docker Compose y Caddy (HTTPS automático) en una VM de Oracle Cloud. |
@@ -113,22 +113,19 @@ llama directamente al gateway en `http://localhost:8080`.
 ```
 ReservaYaEP-2026-2/
 ├── backend/
-│   ├── api-gateway/            enrutamiento y CORS
-│   ├── auth-service/           registro, login, Google, recuperación de cuenta
-│   ├── restaurant-service/     restaurantes, sedes, horarios, búsqueda
-│   ├── reservation-service/    reservas, disponibilidad, validación de aforo
+│   ├── gateway/                enrutamiento y CORS
+│   ├── auth_service/           registro, login, Google, recuperación de cuenta
+│   ├── restaurant_service/     restaurantes, sedes, horarios, búsqueda
+│   ├── reservation_service/    reservas, disponibilidad, validación de aforo
+│   ├── common/                 código compartido (JWT, errores, cliente HTTP)
 │   ├── db/schema.sql           tablas de la base de datos
 │   ├── db/migrations/          cambios aditivos para una base ya creada
-│   ├── caddy/Caddyfile         servidor web de producción
+│   ├── caddy/                  servidor web de producción (sirve el build de React)
 │   ├── docker-compose.yml      despliegue de producción
-│   ├── run-dev.ps1             arranque rápido en local (Windows)
+│   ├── setup-dev.ps1 · run-dev.ps1 · run-tests.ps1   desarrollo en Windows
 │   └── .env.example            plantilla de variables de entorno
-├── docs/                       SRS y análisis de POO / SOLID
-└── frontend/
-    ├── html/                   páginas (index, login, recuperar, cliente, admin)
-    ├── js/                     lógica de cada página + server.js
-    ├── styles/styles.css       todo el estilo
-    └── images/
+├── docs/                       SRS, análisis de POO / SOLID y diseño de la migración
+└── frontend/                   React + Vite (src/pages, src/components, src/lib)
 ```
 
 ---
@@ -270,12 +267,14 @@ erDiagram
   tenga dos reservas activas (`PENDING` o `CONFIRMED`) en la misma sede,
   fecha y hora, pero le deja volver a reservar si canceló.
 - `updated_at` se actualiza con un trigger en cada `UPDATE`.
-- Los servicios arrancan con `ddl-auto=validate`: Hibernate no crea tablas,
-  solo comprueba que las entidades coinciden con la base.
+- Los modelos de Django son `managed = False`: Django no crea ni modifica
+  tablas; el esquema es `schema.sql`. **No ejecutes `migrate` contra Supabase.**
 
 El cupo disponible de una franja es el aforo de la sede menos las personas de
 las reservas `PENDING` y `CONFIRMED` en esa fecha y hora. Por eso, al cancelar
-o rechazar una reserva, el cupo se libera solo.
+o rechazar una reserva, el cupo se libera solo. Al crear o modificar, un
+bloqueo de PostgreSQL por franja (`pg_advisory_xact_lock`) atiende en orden
+las reservas simultáneas, así nunca se supera el aforo.
 
 ### 3.5 Esquema y migraciones
 
@@ -315,17 +314,17 @@ confirme de nuevo. Las 2 horas de anticipación se configuran con
 
 ## 5. Seguridad: autenticación con JWT
 
-Solo `auth-service` **firma** el token; `restaurant-service` y
-`reservation-service` lo **verifican** con el mismo secreto (`JWT_SECRET`), sin
+Solo `auth_service` **firma** el token; `restaurant_service` y
+`reservation_service` lo **verifican** con el mismo secreto (`JWT_SECRET`), sin
 consultar a nadie. El gateway solo reenvía el header `Authorization`.
 
 ```mermaid
 sequenceDiagram
     autonumber
     participant F as Frontend
-    participant G as api-gateway
-    participant A as auth-service
-    participant R as reservation-service
+    participant G as gateway
+    participant A as auth_service
+    participant R as reservation_service
 
     F->>G: POST /api/auth/login
     G->>A: reenvía la petición
@@ -341,8 +340,10 @@ sequenceDiagram
 
 - El token lleva el id del usuario (`sub`), su correo, nombre y **rol**, y
   vence a los 120 minutos (`JWT_EXPIRATION_MINUTES`).
-- Cada servicio tiene un `JwtAuthenticationFilter` que valida el token antes
-  de llegar al controlador. Los servicios no guardan sesión (`STATELESS`).
+- Cada servicio usa la autenticación `JWTAuthentication` de
+  `reservaya_common` (Django REST Framework), que valida el token antes de
+  llegar a la vista. Sin token o con uno vencido la API responde **401** y el
+  frontend vuelve al login. Los servicios no guardan sesión.
 - Además del rol, se valida el **dueño del recurso**: un administrador solo
   gestiona las sedes de sus restaurantes y un cliente solo sus reservas.
 
@@ -355,83 +356,59 @@ sequenceDiagram
 | Herramienta | Versión | Cómo comprobarla |
 |---|---|---|
 | Git | cualquiera | `git --version` |
-| JDK | **21 o superior** (con 17 no arranca) | `java -version` |
+| Python | **3.12 o superior** | `py --version` |
 | Node.js | 18 o superior | `node --version` |
+| Docker Desktop | solo para las pruebas automáticas | `docker --version` |
 
-No hace falta instalar Maven ni ninguna dependencia de Node.
+### 6.2 Descargar y preparar el proyecto
 
-### 6.2 Descargar el proyecto
-
-```bash
+```powershell
 git clone https://github.com/DeiviCode99/ReservaYaEP-2026-2.git
 cd ReservaYaEP-2026-2
-git checkout backend
+git checkout frontend
+cd backend
+.\setup-dev.ps1     # entorno virtual de Python + dependencias + npm install del frontend
 ```
+
+Si PowerShell bloquea el script: `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass`.
 
 ### 6.3 Configurar las variables de entorno
 
-```bash
-cd backend
-cp .env.example .env        # en PowerShell: Copy-Item .env.example .env
-```
-
-Abre `backend/.env` y rellena los valores. **Pídele los valores reales al
-líder del equipo por un canal privado**: el `.env` nunca se sube al
-repositorio (ya está en `.gitignore`).
+`setup-dev.ps1` crea `backend/.env` a partir de `.env.example` si no existe.
+Rellena los valores. **Pídele los valores reales al líder del equipo por un
+canal privado**: el `.env` nunca se sube al repositorio. El `.env` del backend
+Spring anterior sirve tal cual.
 
 | Variable | Obligatoria | Para qué |
 |---|---|---|
 | `SUPABASE_DB_URL`, `SUPABASE_DB_USER`, `SUPABASE_DB_PASSWORD` | Sí | Conexión a la base de datos |
-| `JWT_SECRET` | Sí | Firma de las sesiones. **Mínimo 32 caracteres** o los servicios no arrancan. Genera uno con `openssl rand -base64 48`. |
+| `JWT_SECRET` | Sí | Firma de las sesiones. **Mínimo 32 caracteres** o los servicios no arrancan. |
 | `FRONTEND_ORIGIN` | Sí | En local `http://localhost:3000` |
 | `GOOGLE_CLIENT_ID` | No | Sin él, el botón de Google no aparece |
-| `SPRING_MAIL_*`, `MAIL_FROM` | No | Sin ellos, el enlace de recuperación de cuenta se imprime en la ventana de `auth-service` en vez de enviarse por correo |
-
-Si un valor tiene espacios o `<>`, ponlo entre comillas, como
-`MAIL_FROM="ReservaYa <correo@gmail.com>"`.
+| `EMAIL_*`, `MAIL_FROM` | No | Sin ellos, el enlace de recuperación y las notificaciones se imprimen en la ventana del servicio |
 
 ### 6.4 Base de datos
 
 Si el equipo **ya comparte** un proyecto de Supabase, no hagas nada: las
-tablas ya existen.
-
-Solo si vas a usar **tu propia** base de Supabase: abre el SQL Editor, pega
-[`backend/db/schema.sql`](./backend/db/schema.sql) y ejecútalo.
+tablas ya existen. Solo si vas a usar **tu propia** base: abre el SQL Editor,
+pega [`backend/db/schema.sql`](./backend/db/schema.sql) y ejecútalo.
 
 > ⚠️ `schema.sql` **borra todas las tablas y sus datos** antes de crearlas.
 > Nunca lo ejecutes sobre la base compartida sin avisar al equipo.
 
+Si haces pruebas a mano sobre la base compartida, usa correos
+`qa+algo@reservaya.test` y restaurantes que empiecen por `QA `, y al terminar
+ejecuta [`backend/db/cleanup_qa.sql`](./backend/db/cleanup_qa.sql).
+
 ### 6.5 Arrancar todo
 
-**Windows (recomendado):** desde la carpeta `backend`:
-
 ```powershell
+cd backend
 .\run-dev.ps1 -Frontend
 ```
 
-Se abre una ventana por servicio más una para el frontend. La primera vez
-tarda varios minutos porque Maven descarga dependencias. Si PowerShell bloquea
-el script:
-
-```powershell
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-```
-
-**macOS / Linux:** una terminal por servicio, cargando el `.env` en cada una:
-
-```bash
-cd backend
-set -a; source .env; set +a
-cd auth-service && ./mvnw spring-boot:run
-# repetir en otras terminales con restaurant-service, reservation-service y api-gateway
-```
-
-Y el frontend en otra terminal:
-
-```bash
-cd frontend
-npm start
-```
+Se abre una ventana por servicio (8080, 8081, 8082, 8083) más una para el
+frontend (3000).
 
 ### 6.6 Comprobar que funciona
 
@@ -442,15 +419,13 @@ npm start
 
 ### 6.7 Pruebas automáticas
 
-No necesitan base de datos:
-
-```bash
-cd backend/auth-service        && ./mvnw test -Dtest=AccountFlowTest
-cd backend/reservation-service && ./mvnw test -Dtest="ReservationFlowTest,BranchReservationFlowTest"
-cd backend/restaurant-service  && ./mvnw test -Dtest=BranchUpdateTest
+```powershell
+cd backend
+.\run-tests.ps1
 ```
 
-(Las pruebas `*ApplicationTests` sí necesitan la base de datos configurada.)
+Levanta un PostgreSQL 16 temporal en Docker y ejecuta las pruebas de los cuatro
+servicios. Nunca tocan Supabase. Detalle en [`backend/README.md`](./backend/README.md#pruebas).
 
 ---
 
@@ -459,7 +434,7 @@ cd backend/restaurant-service  && ./mvnw test -Dtest=BranchUpdateTest
 Las direcciones son iguales en local (`http://localhost:3000/...`) y en
 producción (`https://reservaya.duckdns.org/...`).
 
-### 7.1 Crear una cuenta — `/`
+### 7.1 Crear una cuenta — `/registro`
 
 1. Elige cómo vas a usar ReservaYa: **Quiero reservar** (cliente) o
    **Tengo un restaurante** (administrador).
@@ -470,12 +445,12 @@ producción (`https://reservaya.duckdns.org/...`).
 **Con Google:** marca el tipo de cuenta y pulsa el botón de Google que aparece
 debajo del formulario. Si ya tenías una cuenta con ese correo, entras a ella.
 
-### 7.2 Iniciar sesión — `/login.html`
+### 7.2 Iniciar sesión — `/login`
 
 Correo y contraseña, o el botón de Google. Cada tipo de usuario llega a su
 propio panel.
 
-### 7.3 Recuperar la contraseña — `/recuperar.html`
+### 7.3 Recuperar la contraseña — `/recuperar`
 
 1. En el login, pulsa **¿Olvidaste tu contraseña?**
 2. Escribe tu correo y pulsa **Enviar enlace**.
@@ -486,7 +461,7 @@ propio panel.
 Si creaste la cuenta con Google y quieres entrar también con correo y
 contraseña, usa este mismo proceso para ponerle una.
 
-### 7.4 Panel del cliente — `/cliente.html`
+### 7.4 Panel del cliente — `/cliente`
 
 Arriba ves tres cifras: reservas activas, tu próxima reserva y cuántas hay en
 el historial.
@@ -521,7 +496,7 @@ cambios**. Vuelve a quedar Pendiente.
 | Cancelada / Rechazada | ladrillo | No se realizará |
 | Completada | gris | Ya ocurrió |
 
-### 7.5 Panel del administrador — `/admin.html`
+### 7.5 Panel del administrador — `/admin`
 
 **Primera vez: registra tu restaurante y sus sedes**
 
@@ -574,17 +549,22 @@ Solo ves y gestionas las reservas de las sedes de **tus** restaurantes.
 
 **Pendiente**
 
-- Correo de confirmación al crear, modificar o cancelar una reserva (RF-12):
-  hoy la confirmación es solo en pantalla.
-- El abono y el tipo de evento (cumpleaños, boda…) no se guardan en la base.
+- Correo al **crear** una reserva (RF-12): al modificarla, cancelarla o
+  cambiar su estado sí se envía; al crearla la confirmación es en pantalla.
+- El abono no se guarda en la base.
 - Límite de intentos en "olvidé mi contraseña".
 
 ---
 
 ## 9. Despliegue en producción
 
-La VM corre todo con Docker Compose y Caddy sirve el frontend con HTTPS. Para
-publicar cambios que ya estén en la rama `backend`:
+La VM corre todo con Docker Compose: los cuatro servicios Django con gunicorn y
+un Caddy que **construye el frontend React** y lo sirve con HTTPS. Las URLs
+viejas (`/login.html`, `/recuperar.html?token=…`) redirigen a las nuevas.
+
+El paso del backend Spring al Django y el procedimiento completo están en
+[`backend/README.md`](./backend/README.md#despliegue-vm-de-oracle-cloud-reservayaduckdnsorg).
+Para publicar cambios después:
 
 ```bash
 ssh ubuntu@<ip-de-la-vm>
@@ -592,8 +572,7 @@ cd reservaya            # la carpeta donde está clonado el repositorio
 git pull
 cd backend
 docker compose up -d --build
-docker compose restart caddy
-docker compose ps       # todos deben quedar "Up" y el tiempo debe ir subiendo
+docker compose ps       # todos deben quedar "running"
 ```
 
 En el `.env` **de la VM**:
@@ -604,21 +583,20 @@ DOMAIN=reservaya.duckdns.org
 JWT_SECRET=<mínimo 32 caracteres>
 ```
 
-Si se cambia el `.env`, basta con `docker compose up -d` para que los
-servicios lo lean.
-
 ---
 
 ## 10. Problemas frecuentes
 
 | Síntoma | Causa | Solución |
 |---|---|---|
-| Un servicio se reinicia en bucle; en el log sale `WeakKeyException ... 200 bits` | `JWT_SECRET` muy corto | Usa uno de 32+ caracteres (`openssl rand -base64 48`) y reinicia |
-| Todas las llamadas a `/api` dan **500** | El gateway no alcanza los servicios: están caídos o arrancando | `docker compose ps` y `docker compose logs --tail=60 <servicio>` |
-| El login da **403** en producción | Gateway viejo o `FRONTEND_ORIGIN` mal puesto | `git pull`, revisa el `.env` y `docker compose up -d --build` |
-| `/login.html` da 404 en producción | Caddy sigue con la configuración vieja | `docker compose up -d --force-recreate caddy` |
+| Un servicio se reinicia en bucle; en el log sale `JWT_SECRET debe tener al menos 32 caracteres` | `JWT_SECRET` muy corto | Usa uno de 32+ caracteres (`openssl rand -base64 48`) y reinicia |
+| Todas las llamadas a `/api` dan **502** | El gateway no alcanza los servicios: están caídos o arrancando | `docker compose ps` y `docker compose logs --tail=60 <servicio>` |
+| El navegador dice *CORS* en local | `FRONTEND_ORIGIN` no es `http://localhost:3000` | `git pull`, revisa el `.env` y `docker compose up -d --build` |
+| En producción se ve el frontend viejo | La imagen de Caddy no se reconstruyó | `docker compose up -d --build caddy` |
 | No aparece el botón de Google | `GOOGLE_CLIENT_ID` vacío o backend caído | Revisa `http://localhost:8080/api/auth/config` (en producción, `/api/auth/config`) |
 | Google dice `origin_mismatch` | La dirección no está autorizada | En Google Cloud → Clientes → *Orígenes de JavaScript autorizados*, agrega la dirección exacta, sin barra final |
-| El correo de recuperación no llega | SMTP sin configurar o contraseña de aplicación mal copiada | Mira el log de `auth-service`: sin SMTP, el enlace aparece ahí |
-| Un servicio no arranca con `Schema-validation: missing table` | La base no tiene las tablas | Aplica `schema.sql` (ver 6.4) |
-| `run-dev.ps1` dice que un puerto está en uso | Ya hay un servicio corriendo en ese puerto | Ciérralo o déjalo: el script lo omite |
+| El correo de recuperación no llega | SMTP sin configurar o contraseña de aplicación mal copiada | Mira la ventana o el log de `auth_service`: sin SMTP, el enlace aparece ahí |
+| Error `relation "users" does not exist` | La base no tiene las tablas | Aplica `schema.sql` (ver 6.4) |
+| `run-dev.ps1` dice que un servicio ya está corriendo | Ya hay un servicio corriendo en ese puerto | Ciérralo o déjalo: el script lo omite |
+| `No existe backend\.venv` al ejecutar `run-dev.ps1` | Falta preparar el entorno | `.\setup-dev.ps1` |
+| `ModuleNotFoundError: No module named 'django'` | Se ejecutó con el Python del sistema | Usa `backend\.venv\Scripts\python` (o `run-dev.ps1`) |

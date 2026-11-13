@@ -1,5 +1,10 @@
 # ReservaYa — Análisis de estructura, POO y SOLID
 
+> **Nota:** este análisis describe la **primera versión** (backend Spring Boot y
+> frontend HTML/JS), que se reemplazó por Django y React. Las reglas de negocio
+> y las correcciones aquí descritas se conservaron en la nueva versión; ver
+> [`superpowers/specs/2026-11-12-backend-django-microservicios-design.md`](./superpowers/specs/2026-11-12-backend-django-microservicios-design.md).
+
 Revisión del código (backend en Java/Spring Boot y frontend en JavaScript)
 hecha durante la construcción del panel del administrador. Para cada
 principio se indica **dónde se cumple**, **qué se corrigió** en esta revisión

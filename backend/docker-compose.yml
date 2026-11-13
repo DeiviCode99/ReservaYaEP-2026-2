@@ -1,15 +1,17 @@
 # =====================================================================
 # ReservaYa - Despliegue en produccion (una sola VM)
-# Uso: docker compose up -d --build   (desde backend/, con backend/.env)
-# Solo Caddy expone puertos (80/443); los microservicios hablan por la
-# red interna de Docker usando el nombre del servicio como host.
+# Uso (desde backend/, con backend/.env):  docker compose up -d --build
+# Solo Caddy expone puertos (80/443); los microservicios hablan por la red
+# interna de Docker usando el nombre del servicio como host.
 # =====================================================================
 x-service: &service
   env_file: .env
   restart: unless-stopped
-  environment:
+  build: &build
+    context: .
+  environment: &env
     TZ: America/Bogota
-    JAVA_TOOL_OPTIONS: -Xmx512m
+    DJANGO_DEBUG: "false"
     AUTH_SERVICE_URI: http://auth-service:8081
     RESTAURANT_SERVICE_URI: http://restaurant-service:8082
     RESERVATION_SERVICE_URI: http://reservation-service:8083
@@ -17,33 +19,37 @@ x-service: &service
 services:
   auth-service:
     <<: *service
-    build: { context: ., args: { SERVICE: auth-service } }
+    build: { <<: *build, args: { SERVICE: auth_service } }
+    environment: { <<: *env, PORT: "8081" }
 
   restaurant-service:
     <<: *service
-    build: { context: ., args: { SERVICE: restaurant-service } }
+    build: { <<: *build, args: { SERVICE: restaurant_service } }
+    environment: { <<: *env, PORT: "8082" }
 
   reservation-service:
     <<: *service
-    build: { context: ., args: { SERVICE: reservation-service } }
+    build: { <<: *build, args: { SERVICE: reservation_service } }
+    environment: { <<: *env, PORT: "8083" }
 
   api-gateway:
     <<: *service
-    build: { context: ., args: { SERVICE: api-gateway } }
+    build: { <<: *build, args: { SERVICE: gateway } }
+    environment: { <<: *env, PORT: "8080" }
+    depends_on: [auth-service, restaurant-service, reservation-service]
 
-  # Sirve el frontend estatico y reenvia /api/* al gateway, con HTTPS automatico.
+  # Construye el frontend React y lo sirve; reenvia /api/* al gateway. HTTPS automatico.
   caddy:
-    image: caddy:2
+    build:
+      context: ..
+      dockerfile: backend/caddy/Dockerfile
     restart: unless-stopped
     ports: ["80:80", "443:443"]
     environment:
       DOMAIN: ${DOMAIN}
     volumes:
-      # Carpeta y no archivo suelto: con un archivo, "git pull" crea uno nuevo
-      # y el contenedor seguiria leyendo el viejo.
-      - ./caddy:/etc/caddy:ro
-      - ../frontend:/srv:ro
       - caddy_data:/data
+    depends_on: [api-gateway]
 
 volumes:
   caddy_data:

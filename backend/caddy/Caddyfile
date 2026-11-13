@@ -1,22 +1,27 @@
 # Caddy obtiene el certificado HTTPS de Let's Encrypt solo con el dominio.
 {$DOMAIN} {
+	encode zstd gzip
+
 	handle /api/* {
 		reverse_proxy api-gateway:8080
 	}
+
+	# URLs del frontend anterior (marcadores y correos ya enviados) -> rutas de React.
+	@paginaVieja path_regexp vieja ^/(?:html/)?(login|sedes|cliente|admin|recuperar)\.html$
+	redir @paginaVieja /{re.vieja.1}{?query} permanent
+	@inicioViejo path /index.html /html/index.html /html /html/
+	redir @inicioViejo / permanent
+
 	handle {
-		# Sin esto el navegador guarda el JS viejo tras un despliegue y lo mezcla
-		# con el HTML nuevo (elementos null). no-cache = revalidar siempre (304 si no cambio).
-		header Cache-Control "no-cache"
 		root * /srv
-		# URLs limpias: /login.html se sirve desde html/login.html sin redirigir.
-		# Los enlaces de las paginas siguen funcionando: "login.html" queda en
-		# la raiz y "../styles/..." desde la raiz apunta a /styles/.
-		# Las URLs viejas con /html/ (marcadores, correos ya enviados) redirigen.
-		@conCarpeta path_regexp vieja ^/html/([^/]+\.html)$
-		redir @conCarpeta /{re.vieja.1}{?query}
-		redir /html/ /
-		rewrite / /html/index.html
-		try_files {path} /html{path}
+		# Los archivos de /assets llevan hash en el nombre: se pueden guardar para siempre.
+		@assets path /assets/*
+		header @assets Cache-Control "public, max-age=31536000, immutable"
+		# El resto (index.html) se revalida siempre para que un despliegue se vea de inmediato.
+		@noAssets not path /assets/*
+		header @noAssets Cache-Control "no-cache"
+		# Aplicacion de una sola pagina: cualquier ruta de React devuelve index.html.
+		try_files {path} /index.html
 		file_server
 	}
 }

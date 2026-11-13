@@ -14,7 +14,7 @@ from reservaya_common.errors import Conflict, Forbidden, NotFound, Unprocessable
 from reservaya_common.principal import AuthenticatedUser
 
 from . import availability, clients, notifier
-from .domain import STATUSES, can_restaurant_change, confirmation_code, status_label, whole_hours_between
+from .domain import ACTIVE, STATUSES, can_restaurant_change, confirmation_code, status_label, whole_hours_between
 from .models import Reservation, ReservationAudit
 
 DUPLICATE_SLOT = "Ya existe una reserva activa en esa franja horaria."
@@ -66,6 +66,21 @@ def _is_duplicate_slot(error: IntegrityError) -> bool:
     return "uq_reservations_active_slot" in str(error)
 
 
+def _reject_duplicate_slot(user_id: int, data: dict, exclude_id: int | None = None) -> None:
+    """Un cliente no puede tener dos reservas activas en la misma sede, fecha y hora.
+
+    schema.sql lo garantiza con un índice único parcial, pero la base de producción
+    no lo tiene: se valida aquí, bajo el bloqueo de la franja.
+    """
+    query = Reservation.objects.filter(user_id=user_id, branch_id=data["branchId"],
+                                       reservation_date=data["reservationDate"],
+                                       reservation_time=data["reservationTime"], status__in=ACTIVE)
+    if exclude_id is not None:
+        query = query.exclude(id=exclude_id)
+    if query.exists():
+        raise Conflict(DUPLICATE_SLOT)
+
+
 # ------------------------------------------------------------------ cliente
 
 def availability_for(branch_id: int, day: date) -> dict:
@@ -78,6 +93,7 @@ def create(data: dict, user: AuthenticatedUser) -> dict:
         try:
             with transaction.atomic():
                 availability.lock_slot(data["branchId"], data["reservationDate"], data["reservationTime"])
+                _reject_duplicate_slot(user.id, data)
                 _require_seats(data["partySize"], availability.seats_in_slot(
                     branch, data["reservationDate"], data["reservationTime"]))
                 r = Reservation(user_id=user.id, customer_email=user.email,
@@ -128,6 +144,7 @@ def update(reservation_id: int, data: dict, user: AuthenticatedUser) -> dict:
             r = _find_changeable(reservation_id, user, "modificar")
             previous = r.status
             availability.lock_slot(data["branchId"], data["reservationDate"], data["reservationTime"])
+            _reject_duplicate_slot(user.id, data, exclude_id=r.id)
             same_slot = (r.branch_id == data["branchId"] and r.reservation_date == data["reservationDate"]
                          and r.reservation_time == data["reservationTime"])
             own_seats = r.party_size if same_slot else 0  # sus propios puestos cuentan como libres

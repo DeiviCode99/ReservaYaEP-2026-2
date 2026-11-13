@@ -12,6 +12,11 @@ CONSTRAINT_MESSAGES = {
     "ck_schedules_range": "En cada día abierto el cierre debe ser después de la apertura.",
     "ck_schedules_day": "El día de la semana debe estar entre 1 y 7.",
     "schedules_day_of_week_check": "La base de datos usa días 0-6: aplica migrations/V3__schedules_iso_days.sql.",
+    # Nombres que generó PostgreSQL en la base de producción (creada con un borrador viejo del esquema).
+    "restaurants_name_key": "Ya existe un restaurante con ese nombre.",
+    "branches_restaurant_id_name_key": "Ya existe una sede con ese nombre en este restaurante.",
+    "branches_capacity_check": "La capacidad debe estar entre 1 y 500.",
+    "schedules_branch_id_day_of_week_key": "Hay un día repetido en el horario.",
 }
 
 

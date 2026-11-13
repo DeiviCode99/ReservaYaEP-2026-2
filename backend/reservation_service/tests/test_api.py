@@ -156,6 +156,21 @@ def test_duplicate_active_reservation_same_slot(api, ids):
     assert response.json()["message"] == "Ya existe una reserva activa en esa franja horaria."
 
 
+def test_duplicate_slot_rejected_even_without_db_index(api, ids):
+    """La base de producción no tiene el índice uq_reservations_active_slot: el servicio lo valida."""
+    with connection.cursor() as cursor:
+        cursor.execute("DROP INDEX IF EXISTS uq_reservations_active_slot")  # se revierte al final de la prueba
+    assert book(api, ids).status_code == 201
+    response = book(api, ids)
+    assert response.status_code == 409
+    assert response.json()["message"] == "Ya existe una reserva activa en esa franja horaria."
+    assert Reservation.objects.filter(user_id=ids["ana"]).count() == 1
+    # Modificar otra reserva propia hacia esa misma franja también se rechaza.
+    other = make(ids, hour=14)
+    body = {"branchId": 7, "reservationDate": NEXT_WEEK.isoformat(), "reservationTime": "13:00", "partySize": 2}
+    assert api.put(f"/api/reservations/{other.id}", body, format="json", **as_user(ids, "ana")).status_code == 409
+
+
 def test_restaurant_down_returns_503(api, ids, services_mock):
     services_mock["get_branch"].side_effect = Unavailable("Un servicio interno no está disponible.")
     response = book(api, ids)

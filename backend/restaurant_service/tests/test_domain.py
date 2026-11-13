@@ -60,3 +60,13 @@ def test_closed_day_without_hours_stores_midnight():
     values = schedule_values(day(6, open_t=None, close_t=None, closed=True))
     assert values == {"open_time": time(0), "close_time": time(0), "is_closed": True}
     assert schedule_values(day(1))["is_closed"] is False
+
+
+def test_constraint_messages_with_production_names():
+    # La base de producción se creó con un borrador viejo: otros nombres de restricciones.
+    assert constraint_message('violates check constraint "branches_capacity_check"') == \
+        "La capacidad debe estar entre 1 y 500."
+    assert constraint_message('duplicate key value violates unique constraint '
+                              '"schedules_branch_id_day_of_week_key"') == "Hay un día repetido en el horario."
+    assert constraint_message('duplicate key value violates unique constraint "restaurants_name_key"') == \
+        "Ya existe un restaurante con ese nombre."

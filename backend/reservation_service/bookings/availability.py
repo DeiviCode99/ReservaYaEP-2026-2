@@ -6,7 +6,7 @@ from django.utils import timezone
 
 from reservaya_common.errors import NotFound, Unprocessable
 
-from .domain import ACTIVE, hourly_slots
+from .domain import ACTIVE, hourly_slots, match_slot
 
 
 def now_local():
@@ -40,30 +40,38 @@ def lock_slot(branch_id: int, day: date, slot: time) -> None:
         cursor.execute("SELECT pg_advisory_xact_lock(hashtextextended(%s, 0))", [key])
 
 
-def compute(branch: dict, day: date) -> dict:
-    """{branchId, date, capacity, slots: [{time, available}]} a partir de los datos de la sede."""
+def _open_slots(branch: dict, day: date) -> list[tuple[time, int]]:
+    """[(hora de inicio, cupo libre)] de las franjas que se ofrecen ese día."""
     if not branch.get("active"):
         raise NotFound("La sede no está activa.")
     capacity = int(branch["capacity"])
-    result = {"branchId": branch["id"], "date": day.isoformat(), "capacity": capacity, "slots": []}
     schedule = next((s for s in branch.get("schedules") or [] if s.get("dayOfWeek") == day.isoweekday()), None)
     if schedule is None or schedule.get("isClosed"):
-        return result
+        return []
     now = now_local()
     starts = hourly_slots(_time(schedule["openTime"]), _time(schedule["closeTime"]),
                           day=day, today=now.date(), now_t=now.time().replace(tzinfo=None))
     if not starts:
-        return result
+        return []
     occupied = occupied_by_slot(branch["id"], day)
-    result["slots"] = [{"time": slot.strftime("%H:%M:%S"), "available": max(capacity - occupied.get(slot, 0), 0)}
-                       for slot in starts]
-    return result
+    return [(slot, max(capacity - occupied.get(slot, 0), 0)) for slot in starts]
+
+
+def compute(branch: dict, day: date) -> dict:
+    """{branchId, date, capacity, slots: [{time, available}]} a partir de los datos de la sede."""
+    slots = _open_slots(branch, day)
+    return {"branchId": branch["id"], "date": day.isoformat(), "capacity": int(branch["capacity"]),
+            "slots": [{"time": slot.strftime("%H:%M:%S"), "available": free} for slot, free in slots]}
 
 
 def seats_in_slot(branch: dict, day: date, slot: time) -> int:
-    """Cupo de la franja pedida, con las mismas franjas que ve el cliente."""
-    wanted = slot.strftime("%H:%M:%S")
-    for item in compute(branch, day)["slots"]:
-        if item["time"] == wanted:
-            return item["available"]
-    raise Unprocessable("La sede no atiende a esa hora o la franja ya pasó.")
+    """Cupo de la franja pedida, con las mismas franjas que ve el cliente.
+
+    La hora se compara como `time` exacto: una hora con segundos o fracciones
+    (ej. 13:00:00.5) no es ninguna franja y se rechaza, así no se salta el aforo.
+    """
+    slots = _open_slots(branch, day)
+    start = match_slot(slot, [start for start, _ in slots])
+    if start is None:
+        raise Unprocessable("La sede no atiende a esa hora o la franja ya pasó.")
+    return dict(slots)[start]

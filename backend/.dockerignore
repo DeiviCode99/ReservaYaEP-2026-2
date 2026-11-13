@@ -1,0 +1,10 @@
+# Contexto de las imagenes de los servicios Django (backend/).
+.env
+.env.*
+!.env.example
+.venv
+**/__pycache__
+**/.pytest_cache
+caddy
+db
+*.ps1

@@ -80,3 +80,10 @@ def whole_hours_between(start: datetime, end: datetime) -> int:
     seconds = (end - start).total_seconds()
     hours = int(abs(seconds) // 3600)
     return hours if seconds >= 0 else -hours
+
+
+def match_slot(slot: time, starts: list[time]) -> time | None:
+    """La franja pedida debe coincidir EXACTAMENTE con una de las ofrecidas
+    (13:00:00.5 o 13:00:30 no son la franja de las 13:00)."""
+    wanted = slot.replace(tzinfo=None)
+    return next((start for start in starts if start == wanted), None)

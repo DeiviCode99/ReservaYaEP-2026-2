@@ -70,3 +70,12 @@ def test_whole_hours_between_truncates():
 
 def test_status_labels():
     assert [status_label(s) for s in STATUSES] == ["pendiente", "confirmada", "cancelada", "rechazada", "completada"]
+
+
+def test_match_slot_requires_exact_time():
+    from bookings.domain import match_slot
+    starts = [time(12), time(13), time(14)]
+    assert match_slot(time(13), starts) == time(13)
+    assert match_slot(time(13, 0, 0, 500000), starts) is None  # "13:00:00.5" no es la franja de las 13:00
+    assert match_slot(time(13, 0, 30), starts) is None
+    assert match_slot(time(18), starts) is None

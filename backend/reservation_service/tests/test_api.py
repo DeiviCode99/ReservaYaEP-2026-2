@@ -133,6 +133,16 @@ def test_create_rejects_time_outside_schedule(api, ids):
     assert response.json()["message"] == "La sede no atiende a esa hora o la franja ya pasó."
 
 
+def test_create_rejects_fractional_second_time(api, ids):
+    """Una hora como 13:00:00.5 no es la franja de las 13:00: no puede saltarse el aforo."""
+    make(ids, who="leo", people=10)  # franja de las 13:00 llena
+    for hour in ("13:00:00.5", "13:00:30"):
+        response = book(api, ids, hour=hour)
+        assert response.status_code == 422, hour
+        assert response.json()["message"] == "La sede no atiende a esa hora o la franja ya pasó."
+    assert Reservation.objects.filter(user_id=ids["ana"]).count() == 0
+
+
 def test_create_rejects_past_date_and_bad_party(api, ids):
     assert book(api, ids, day=NOW.date() - timedelta(days=1)).status_code == 400
     assert book(api, ids, people=51).status_code == 400

@@ -17,6 +17,7 @@
 -- ---------------------------------------------------------------------
 -- Limpieza (util al re-aplicar el esquema durante el desarrollo)
 -- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS reservation_audit CASCADE;
 DROP TABLE IF EXISTS reservations      CASCADE;
 DROP TABLE IF EXISTS restaurant_admins CASCADE;
 DROP TABLE IF EXISTS schedules         CASCADE;
@@ -166,10 +167,13 @@ COMMENT ON TABLE restaurant_admins IS 'Vinculacion admin-marca. El JWT trae el r
 CREATE TABLE reservations (
     id                  BIGSERIAL    PRIMARY KEY,
     user_id             BIGINT       NOT NULL,
+    customer_email      VARCHAR(255),
     branch_id           BIGINT       NOT NULL,
     reservation_date    DATE         NOT NULL,
     reservation_time    TIME         NOT NULL,     -- franja de una hora exacta
     party_size          INT          NOT NULL,
+    event               VARCHAR(30)  NOT NULL DEFAULT 'NONE',
+    confirmation_code   VARCHAR(40)  NOT NULL UNIQUE,
     status              VARCHAR(20)  NOT NULL DEFAULT 'PENDING',
     cancellation_reason VARCHAR(255),
     created_at          TIMESTAMPTZ  NOT NULL DEFAULT now(),
@@ -180,6 +184,7 @@ CREATE TABLE reservations (
     CONSTRAINT fk_reservations_branch
         FOREIGN KEY (branch_id) REFERENCES branches(id) ON DELETE CASCADE,
     CONSTRAINT ck_reservations_party  CHECK (party_size BETWEEN 1 AND 50),
+    CONSTRAINT ck_reservations_event CHECK (event IN ('NONE', 'ROMANTIC_DINNER', 'BIRTHDAY', 'WEDDING')),
     CONSTRAINT ck_reservations_status CHECK (status IN ('PENDING', 'CONFIRMED', 'CANCELLED', 'REJECTED', 'COMPLETED'))
 );
 
@@ -197,6 +202,27 @@ CREATE UNIQUE INDEX uq_reservations_active_slot
 CREATE TRIGGER trg_reservations_updated_at
     BEFORE UPDATE ON reservations
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+CREATE TABLE reservation_audit (
+    id              BIGSERIAL    PRIMARY KEY,
+    reservation_id  BIGINT       NOT NULL REFERENCES reservations(id) ON DELETE CASCADE,
+    actor_user_id   BIGINT       NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    actor_role      VARCHAR(30)  NOT NULL,
+    action          VARCHAR(20)  NOT NULL,
+    previous_status VARCHAR(20),
+    new_status      VARCHAR(20)  NOT NULL,
+    details         VARCHAR(255),
+    changed_at      TIMESTAMPTZ  NOT NULL DEFAULT now(),
+    CONSTRAINT ck_reservation_audit_previous_status CHECK (
+        previous_status IS NULL OR previous_status IN ('PENDING', 'CONFIRMED', 'CANCELLED', 'REJECTED', 'COMPLETED')
+    ),
+    CONSTRAINT ck_reservation_audit_new_status CHECK (
+        new_status IN ('PENDING', 'CONFIRMED', 'CANCELLED', 'REJECTED', 'COMPLETED')
+    )
+);
+
+CREATE INDEX idx_reservation_audit_reservation
+    ON reservation_audit (reservation_id, changed_at DESC);
 
 COMMENT ON COLUMN reservations.status IS
     'PENDING (creada por el cliente) -> CONFIRMED (admin acepta) | REJECTED (admin rechaza) | CANCELLED (cliente cancela) -> COMPLETED (asistio)';

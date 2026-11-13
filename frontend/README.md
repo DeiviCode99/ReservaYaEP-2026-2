@@ -1,37 +1,75 @@
-# ReservaYaEP-2026-2
-Proyecto de aplicativo para reservas de restaurantes para la materia Entornos de Programación
+# ReservaYa · Frontend React
 
-## Frontend: guía de diseño
+Frontend de ReservaYa en React 18 + Vite + Tailwind CSS v4. Reemplaza al
+frontend anterior en HTML/CSS/JS sin framework.
 
-Identidad "Mantel y brasa": peltre vinotinto, mostaza de letrero y papel cálido.
-Todo el estilo vive en `styles/styles.css`, ordenado por secciones numeradas.
+## Ejecución
 
-**Tokens** (definidos en `:root`)
+```powershell
+cd frontend
+npm install
+npm run dev        # http://localhost:3000, contra el gateway en http://localhost:8080
+npm run dev:demo   # igual, pero con datos de ejemplo en memoria (sin backend)
+npm run build      # build de producción en dist/
+```
 
-| Token | Valor | Uso |
-| --- | --- | --- |
-| `--vino` | `#6b1626` | Color de marca, botones, cabecera |
-| `--vino-claro` | `#8e2233` | Estado hover de los botones |
-| `--brasa` | `#3a0c16` | Fondos profundos y textos sobre mostaza |
-| `--mostaza` | `#e9b23c` | Acento: filete de títulos, foco, distintivos |
-| `--papel` / `--papel-hondo` | `#fbf5ea` / `#f2e8d8` | Fondo de página y superficies suaves |
-| `--tinta` / `--humo` | `#26161a` / `#7c666b` | Texto principal y secundario |
-| `--verde` / `--ladrillo` | `#2e7d57` / `#b23a2b` | Confirmado y error/cancelado |
+En el modo demo se entra con cualquier correo y contraseña; si el correo
+contiene `admin` o `restaurante`, la cuenta es de administrador. El modo demo
+vive en `src/lib/demo.js` y no se incluye en el build de producción.
 
-**Tipografías**: *Alfa Slab One* solo para el logotipo, el titular de portada y
-las cifras del resumen; *Epilogue* para títulos, formularios y texto corrido.
+## Rutas
 
-**Estructura de páginas**
+| Ruta | Pantalla | Acceso |
+|---|---|---|
+| `/` | Landing con buscador y sedes destacadas | Público |
+| `/sedes` | Búsqueda de sedes (nombre, ciudad, cocina) con paginación | Público |
+| `/sedes/:id` | Ficha de sede, galería y flujo de reserva | Público (reservar exige cuenta de cliente) |
+| `/login`, `/registro`, `/recuperar` | Acceso; `/recuperar?token=...` define una contraseña nueva | Público |
+| `/cliente` | Mis reservas: activas, historial, modificar, cancelar, PDF | Rol `CLIENT` |
+| `/admin` | Reservas de las sedes, restaurantes, sedes, horarios y aforo | Rol `RESTAURANT_ADMIN` |
 
-- `index.html` y `login.html`: pantalla partida (`.auth-layout`), foto con
-  lavado vinotinto a la izquierda y formulario sobre papel a la derecha.
-- `cliente.html` y `admin.html`: barra vinotinto (`.site-header`), portada con
-  título (`.page-head`), tarjetas (`.panel`) en `.dashboard-grid` y estados
-  vacíos ilustrados (`.empty-state`).
+## Estructura
 
-**Distintivos de estado**: `.badge` acepta `badge-ok` (verde), `badge-warn`
-(mostaza), `badge-alert` (ladrillo) y `badge-off` (gris). El color comunica el
-estado de la reserva; no es decoración.
+```
+src/
+  index.css          Tokens del sistema de diseño (@theme de Tailwind)
+  main.jsx           Rutas (carga diferida por pantalla) y rutas protegidas
+  lib/               api.js (contrato con el backend), formato, PDF, notificaciones, fotos
+  components/ui/     Button, Input, Select, Badge, Card, Modal, Skeleton, Toast, EmptyState
+  components/        Carousel, Gallery, Lightbox, BranchCard, ReservationCard, DatePicker, TimeSlots, BookingPanel…
+  layouts/           SiteLayout (header, menú móvil, pie) y AuthLayout
+  pages/             Una pantalla por archivo
+```
 
-Las ilustraciones y el logotipo son SVG en `images/`, así que pesan poco y se
-ven nítidos en cualquier pantalla.
+## Contrato con el backend
+
+`src/lib/api.js` conserva `apiFetch`, la sesión en `localStorage`
+(`reservaya.session`), el token Bearer, la redirección a `/login` ante un 401,
+`API_BASE` (puerto 3000 → `http://localhost:8080`, el gateway Django; en
+producción la API va por el mismo dominio), los mapas `STATUS` y `EVENTS`, y
+`formatDate` / `todayIso`.
+
+El backend Django (ver `backend/README.md`) responde con los mismos campos
+que espera este contrato. Un token vencido devuelve 401 y `apiFetch` lleva al
+login. El correo de recuperación enlaza a `/recuperar?token=...`.
+
+Para levantar backend y frontend juntos: `backend\run-dev.ps1 -Frontend`.
+En producción Caddy construye este proyecto (`npm run build`) y sirve `dist/`.
+
+## Paleta
+
+| Token | Color | Uso |
+|---|---|---|
+| `crema` | `#F5F5DC` | Fondos y superficies |
+| `mostaza` | `#FBC02D` | Acentos, seleccionados, resaltados |
+| `naranja` | `#FF8F00` | Acción principal y foco |
+| `rojo` | `#C62828` | Marca, títulos, errores y cancelaciones |
+
+Cada color tiene escala 50–900 en `src/index.css`, junto con los neutros
+cálidos (`tinta`, `piedra`, `papel`) y el verde `exito`.
+
+## Fotos
+
+El backend aún no guarda fotos de las sedes. `src/lib/images.js` asigna fotos
+de referencia (Unsplash, licencia libre) según el tipo de cocina; cuando el
+backend entregue imágenes basta con cambiar `photosFor()`.

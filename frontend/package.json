@@ -1,9 +1,28 @@
 {
-  "name": "reservaya-frontend",
+  "name": "reservaya-frontend-react",
   "version": "1.0.0",
   "private": true,
-  "description": "Frontend de ReservaYa: paginas estaticas servidas con node:http. La API la expone el backend.",
+  "type": "module",
   "scripts": {
-    "start": "node js/server.js"
+    "dev": "vite",
+    "dev:demo": "vite --mode demo",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "embla-carousel-autoplay": "^8.6.0",
+    "embla-carousel-react": "^8.6.0",
+    "jspdf": "^4.2.1",
+    "lucide-react": "^1.72.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.18.5"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.5",
+    "@vitejs/plugin-react": "^4.3.4",
+    "tailwindcss": "^4.3.5",
+    "vite": "^6.0.5"
   }
 }

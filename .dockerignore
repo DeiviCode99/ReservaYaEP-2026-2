@@ -1,0 +1,13 @@
+# Contexto de la imagen de Caddy (raiz del repo): solo hace falta frontend/ y
+# backend/caddy/. Sin esto se copiarian node_modules de Windows (binarios que
+# no sirven en Linux), .git y el .env con secretos.
+**/node_modules
+**/dist
+.git
+**/.env
+**/.env.*
+!**/.env.example
+**/.venv
+**/__pycache__
+**/.pytest_cache
+*.pdf

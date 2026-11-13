@@ -1,0 +1,9 @@
+# Fin de linea normalizado: evita "cambios" que solo son CRLF/LF.
+* text=auto eol=lf
+*.ps1 text eol=crlf
+*.cmd text eol=crlf
+*.png binary
+*.jpg binary
+*.webp binary
+*.pdf binary
+*.ico binary

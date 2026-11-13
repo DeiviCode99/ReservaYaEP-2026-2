@@ -106,5 +106,7 @@ def base_settings(service_name: str, *, with_db: bool, extra_apps: list[str] | N
     }
     # El gateway no verifica tokens; los servicios con BD sí.
     if with_db and len(settings["RESERVAYA_JWT"]["SECRET"]) < 32:
-        raise RuntimeError("JWT_SECRET debe tener al menos 32 caracteres (ver backend/.env.example).")
+        raise RuntimeError(
+            f"JWT_SECRET debe tener al menos 32 caracteres y tiene {len(settings['RESERVAYA_JWT']['SECRET'])}. "
+            "Genera uno con: python -c \"import secrets; print(secrets.token_urlsafe(48))\" (ver backend/.env.example).")
     return settings

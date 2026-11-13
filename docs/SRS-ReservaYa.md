@@ -4,7 +4,7 @@
 **Asignatura:** Entornos de Programación — UIS, 2026-2
 **Equipo:** Ivan Herrera (Product Owner / dev), Juan Rangel (dev), David Zapata (Scrum Master / dev)
 **Producción:** https://reservaya.duckdns.org
-**Versión del documento:** 1.0 — octubre 2026 (rama `backend`)
+**Versión del documento:** 1.0 — octubre 2026 (rama `frontend`, versión Django + React)
 
 > Este documento recoge los requisitos **más importantes** del sistema y cómo
 > quedaron implementados. No es exhaustivo: el detalle operativo está en el
@@ -121,7 +121,9 @@ Solo las reservas `PENDING` y `CONFIRMED` ocupan cupo. Modificar una reserva
 la devuelve a `PENDING` porque el restaurante debe aceptar el nuevo horario.
 
 ### 2.4 Restricciones de diseño
-- Backend obligatorio en **Spring Boot (Java)** con API REST.
+- Frontend en **React** y backend con API REST en un framework **distinto de Spring Boot**
+  (requisito actualizado de la entrega; se eligió **Django**). La primera versión del
+  backend fue en Spring Boot y se reemplazó conservando el mismo contrato HTTP.
 - Base de datos relacional (**PostgreSQL** en Supabase).
 - Zona horaria del negocio: `America/Bogota`.
 
@@ -135,15 +137,15 @@ la devuelve a `PENDING` porque el restaurante debe aceptar el nuevo horario.
 | **RF-02** | Inicio de sesión con correo y contraseña; error claro si falla y redirección al panel según rol. | `POST /api/auth/login`. El frontend redirige a `cliente.html` o `admin.html`. | ✅ |
 | **RF-03 / RF-13** | El administrador registra y edita su restaurante y sus sedes: dirección, tipo de cocina, horario por día y aforo. | `POST/PUT /api/restaurants` y `/api/restaurants/{id}/branches`. Horario en tabla `schedules` (día ISO 1=lunes … 7=domingo). Sedes activables/desactivables. | ✅ |
 | **RF-04** | Buscar sedes por nombre, ubicación (ciudad) y/o tipo de cocina. | `GET /api/restaurants/branches?…` con índices `lower(name)`, `lower(city)`, `lower(cuisine_type)`. Solo sedes activas. | ✅ |
-| **RF-05** | Mostrar la disponibilidad de una sede en una fecha: solo franjas con cupo, y aviso si no abre o está llena. | `GET /api/reservations/availability` (`AvailabilityService`): genera franjas de 1 h dentro del horario y resta lo reservado. Omite franjas ya iniciadas. | ✅ |
+| **RF-05** | Mostrar la disponibilidad de una sede en una fecha: solo franjas con cupo, y aviso si no abre o está llena. | `GET /api/reservations/availability` (`bookings/availability.py`): genera franjas de 1 h dentro del horario y resta lo reservado. Omite franjas ya iniciadas. | ✅ |
 | **RF-06** | Crear reserva indicando sede, fecha, hora y número de personas. | `POST /api/reservations`. Nace en `PENDING`. Flujo de 2 pasos en la UI (cumple RNF-01). | ✅ |
 | **RF-07** | No permitir exceder el aforo de la franja. | Antes de guardar se recalcula el cupo real de la franja; si no alcanza, responde con error de cupo insuficiente. Un índice único evita reservas duplicadas del mismo cliente en la misma franja. | ✅ |
 | **RF-08** | Historial y estado de las reservas del cliente. | `GET /api/reservations`, ordenado por fecha y hora descendente. Estados con color en el panel. | ✅ |
 | **RF-09** | Modificar o cancelar una reserva propia hasta un tiempo mínimo antes (2 h). El cupo liberado vuelve a estar disponible. | `PUT /api/reservations/{id}` y `PATCH /api/reservations/{id}`. Límite configurable con `MIN_HOURS_BEFORE_CANCEL` (por defecto 2). | ✅ |
 | **RF-10** | El administrador ve las reservas de sus sedes filtradas por fecha y estado. | Panel *Reservas de tus sedes*: filtro por sede, rango de fechas (por defecto el próximo mes) y estado; muestra nombre y correo del cliente. | ✅ |
-| **RF-11** | El administrador confirma, rechaza (con motivo) o marca como completada una reserva. | `PATCH /api/reservations/{id}/status` (`BranchReservationService`). Se verifica que la sede pertenezca a un restaurante del admin. | ✅ |
+| **RF-11** | El administrador confirma, rechaza (con motivo) o marca como completada una reserva. | `PATCH /api/reservations/{id}/status` (`bookings/services.py`). Se verifica que la sede pertenezca a un restaurante del admin. | ✅ |
 | **RF-12** | Confirmación al cliente cuando su reserva se crea, modifica o cancela. | En pantalla siempre. Correo (SMTP) al modificar, cancelar y cuando el admin cambia el estado. Campanita de notificaciones en ambos paneles (consulta cada 15 s). | ⚠️ Parcial: no se envía correo al **crear**. |
-| **RF-14** | Restringir funcionalidades según el rol. | El JWT lleva el rol; cada microservicio valida token y rol con Spring Security. La tabla `restaurant_admins` limita al admin a sus propias marcas. | ✅ |
+| **RF-14** | Restringir funcionalidades según el rol. | El JWT lleva el rol; cada microservicio valida token y rol con la autenticación JWT compartida (Django REST Framework). La tabla `restaurant_admins` limita al admin a sus propias marcas. | ✅ |
 | **RF-15** | Registro e inicio de sesión con Google. | `POST /api/auth/google`: verifica el *ID token* de Google y crea o reutiliza la cuenta. | ✅ |
 | **RF-16** | Recuperar la contraseña por correo. | `POST /api/auth/forgot-password` y `/reset-password`. Enlace de un solo uso que vence en 30 min. | ✅ |
 
@@ -158,11 +160,11 @@ la devuelve a `PENDING` porque el restaurante debe aceptar el nuevo horario.
 | **RNF-01** | Usabilidad | Reservar en máximo 3 pasos. | Reserva en 2 pasos: elegir sede → elegir día, hora y personas. |
 | **RNF-02** | Rendimiento | Disponibilidad en < 2 s. | Consulta indexada por `(branch_id, reservation_date)`; el cálculo se hace en memoria sobre las reservas del día. |
 | **RNF-03** | Seguridad | Contraseñas nunca en texto plano. | Hash **BCrypt** (`password_hash`). |
-| **RNF-04** | Seguridad | Endpoints protegidos con JWT y roles. | Filtro `JwtAuthenticationFilter` en cada servicio; secreto compartido de ≥ 32 caracteres. Sesión de 120 min. |
-| **RNF-05** | Escalabilidad | Agregar módulos sin reescribir. | Arquitectura de **microservicios**; las notificaciones están detrás de la interfaz `ReservationNotifier`. |
+| **RNF-04** | Seguridad | Endpoints protegidos con JWT y roles. | Filtro `reservaya_common.drf.JWTAuthentication` en cada servicio; secreto compartido de ≥ 32 caracteres. Sesión de 120 min. |
+| **RNF-05** | Escalabilidad | Agregar módulos sin reescribir. | Arquitectura de **microservicios**; las notificaciones están detrás de la interfaz `bookings/notifier.py`. |
 | **RNF-07** | Portabilidad | Correr en local y en Docker sin cambiar código. | Toda la configuración por variables de entorno (`.env`). `run-dev.ps1` en local y `docker-compose.yml` en producción. |
-| **RNF-08** | Mantenibilidad | Arquitectura en capas. | Cada servicio sigue `controller → service → repository`, con `dto`, `entity`, `exception` y `security`. |
-| **RNF-09** | Compatibilidad | Interfaz responsiva en Chrome, Firefox y Edge. | HTML/CSS/JS sin frameworks, diseño responsivo en `styles.css`. |
+| **RNF-08** | Mantenibilidad | Arquitectura en capas. | Cada servicio separa `views` (HTTP) → `services` (casos de uso) → `models` (datos), con las reglas puras en `domain`/`rules` y lo transversal en `reservaya_common`. |
+| **RNF-09** | Compatibilidad | Interfaz responsiva en Chrome, Firefox y Edge. | React + Tailwind CSS con diseño responsivo (móvil, tableta y escritorio). |
 | **RNF-10** | Persistencia | BD relacional con integridad referencial. | PostgreSQL con llaves foráneas, `CHECK` (estados, aforo 1–500, personas 1–50, horarios válidos) y auditoría en `reservation_audit`. |
 
 ---
@@ -176,10 +178,10 @@ flowchart LR
     U(["👤 Navegador<br/>(cliente / admin)"])
 
     subgraph VM["VM Oracle Cloud — Docker Compose"]
-        Caddy["Caddy<br/>HTTPS + archivos estáticos<br/>(HTML/CSS/JS)"]
-        GW["api-gateway :8080<br/>Spring Cloud Gateway<br/>enrutamiento + CORS"]
+        Caddy["Caddy<br/>HTTPS + build de React"]
+        GW["gateway :8080<br/>Django<br/>enrutamiento + CORS"]
 
-        subgraph MS["Microservicios Spring Boot"]
+        subgraph MS["Microservicios Django + DRF"]
             AUTH["auth-service :8081<br/>cuentas, login, Google,<br/>recuperación, emite JWT"]
             REST["restaurant-service :8082<br/>restaurantes, sedes,<br/>horarios, búsqueda"]
             RES["reservation-service :8083<br/>reservas, disponibilidad,<br/>cupo, estados, auditoría"]
@@ -211,7 +213,7 @@ El JWT lo emite **auth-service** y cada microservicio lo valida por su cuenta
 con el mismo secreto, así que no hace falta consultar a auth-service en cada
 petición.
 
-- **api-gateway** (Spring Cloud Gateway): punto único de entrada, enruta por
+- **gateway** (Django): punto único de entrada, enruta por
   prefijo (`/api/auth`, `/api/restaurants`, `/api/reservations`) y aplica CORS.
 - **reservation-service** consulta a **restaurant-service** (horario y aforo de
   la sede, verificación de admin) y a **auth-service** (datos del cliente) por
@@ -223,8 +225,8 @@ petición.
 
 | Capa | Tecnología |
 |---|---|
-| Frontend | HTML, CSS y JavaScript sin frameworks |
-| Backend | Java 21, Spring Boot 4, Spring Security, Spring Data JPA, Spring Cloud Gateway |
+| Frontend | React 18, Vite, Tailwind CSS v4, React Router |
+| Backend | Python 3.12, Django 5.2, Django REST Framework, PyJWT, bcrypt, gunicorn |
 | Base de datos | PostgreSQL 15+ en Supabase |
 | Autenticación | JWT, BCrypt, Google Identity |
 | Despliegue | Docker Compose, Caddy |
@@ -251,7 +253,7 @@ users ─┬─< restaurant_admins >─── restaurants ───< branches �
 
 ### 5.4 Diagrama de clases
 
-**Modelo de dominio (entidades JPA).** Cada microservicio tiene sus propias
+**Modelo de dominio (modelos de Django, `managed = False`).** Cada microservicio tiene sus propias
 entidades; entre servicios se referencian por id (`userId`, `branchId`), no
 por objeto.
 
@@ -351,81 +353,66 @@ classDiagram
     Reservation "1" -- "1..*" ReservationAudit : historial
 ```
 
-**Capas del reservation-service** (el servicio con más lógica de negocio). Los
-otros dos servicios siguen el mismo patrón `Controller → Service → Repository`.
+**Capas del reservation_service** (el servicio con más lógica de negocio). Las
+vistas solo traducen HTTP; las reglas puras (`domain.py`) no dependen de Django,
+y lo transversal (JWT, errores, cliente HTTP) viene de `reservaya_common`.
 
 ```mermaid
 classDiagram
-    direction TB
-
-    class ReservationController {
-        +availability(branchId, date)
-        +create(request)
-        +list(...)
-        +update(id, request)
-        +cancel(id, reason)
-        +updateStatus(id, request)
+    direction LR
+    class views {
+        AvailabilityView (pública)
+        ReservationsView
+        ReservationDetailView
+        ReservationStatusView
     }
-    class ReservationService {
-        +create(request, user) ReservationResponse
-        +update(id, request, user) ReservationResponse
-        +cancel(id, reason, user) ReservationResponse
-        +getMyReservations(user) List
-        -findChangeable(id, user, action) Reservation
-        -availableSeats(request) int
+    class services {
+        +create(data, user)
+        +my_reservations(user)
+        +update(id, data, user)
+        +cancel(id, reason, user)
+        +branch_reservations(branchId, from, to, status, user)
+        +update_status(id, status, reason, user)
+        +require_branch_admin(branchId, user)
     }
-    class BranchReservationService {
-        +getByBranch(branchId, from, to, status, user) List
-        +updateStatus(id, request, user) ReservationResponse
+    class availability {
+        +compute(branch, date)
+        +seats_in_slot(branch, date, time)
+        +occupied_by_slot(branchId, date)
+        +lock_slot(branchId, date, time)
     }
-    class AvailabilityService {
-        +getAvailability(branchId, date) AvailabilityResponse
+    class domain {
+        +hourly_slots(open, close, day, today, now)
+        +can_restaurant_change(prev, next)
+        +confirmation_code(customer, restaurant, n)
+        +whole_hours_between(start, end)
     }
-    class ReservationNotifier {
-        <<interface>>
-        +notifyCustomer(reservation, subject, message)
+    class clients {
+        +get_branch(branchId)
+        +is_admin_of(userId, restaurantId)
+        +users_by_ids(ids, token)
     }
-    class EmailReservationNotifier {
-        +notifyCustomer(reservation, subject, message)
+    class notifier {
+        +notify_customer(reservation, subject, message)
     }
-    class BranchAccess {
-        +requireAdmin(branchId, user)
+    class models {
+        Reservation
+        ReservationAudit
     }
-    class RestaurantClient {
-        +getBranch(branchId) BranchInfoDto
-        +isAdminOfRestaurant(userId, restaurantId) boolean
-    }
-    class UserClient {
-        +findByIds(ids) Map
-    }
-    class ReservationRepository {
-        <<interface>>
-    }
-    class ReservationAuditRepository {
-        <<interface>>
-    }
-
-    ReservationController --> ReservationService
-    ReservationController --> BranchReservationService
-    ReservationController --> AvailabilityService
-    ReservationService --> AvailabilityService
-    ReservationService --> ReservationRepository
-    ReservationService --> ReservationAuditRepository
-    ReservationService --> ReservationNotifier
-    BranchReservationService --> ReservationRepository
-    BranchReservationService --> ReservationAuditRepository
-    BranchReservationService --> BranchAccess
-    BranchReservationService --> UserClient
-    BranchReservationService --> ReservationNotifier
-    AvailabilityService --> RestaurantClient
-    AvailabilityService --> ReservationRepository
-    BranchAccess --> RestaurantClient
-    ReservationNotifier <|.. EmailReservationNotifier
+    views --> services
+    services --> availability
+    services --> domain
+    services --> clients
+    services --> notifier
+    services --> models
+    availability --> domain
+    clients ..> restaurant_service : HTTP
+    clients ..> auth_service : HTTP
 ```
 
-`ReservationNotifier` es el punto de extensión de RNF-05: para añadir
-notificaciones por SMS o push basta otra implementación, sin tocar los
-servicios.
+`bookings/notifier.py` es el punto de extensión de RNF-05: para añadir
+notificaciones por SMS o push basta cambiar ese módulo, sin tocar los casos de
+uso.
 
 ### 5.5 Regla de cupo (núcleo del negocio)
 
